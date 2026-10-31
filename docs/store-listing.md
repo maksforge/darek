@@ -125,16 +125,16 @@ The first release.
 Pierwsze wydanie.
 ```
 
-### 0.2.0 — Darek's own colours
+### 0.2.0 — the first build of Darek
 
-**English** — 57/500:
-
-```
-New colours: cobalt blue and amber, with a matching icon.
-```
-
-**Polish** — 61/500:
+**English** — 114/500:
 
 ```
-Nowe kolory: kobaltowy błękit i bursztyn, z dopasowaną ikoną.
+The first build of Darek: he opens on his own home screen, in Polish and in his own colours. Listening comes next.
+```
+
+**Polish** — 111/500:
+
+```
+Pierwsza wersja Darka: otwiera się na własnym ekranie, po polsku i we własnych kolorach. Słuchanie już wkrótce.
 ```
