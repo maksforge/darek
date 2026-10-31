@@ -124,3 +124,17 @@ The first release.
 ```
 Pierwsze wydanie.
 ```
+
+### 0.2.0 — Darek's own colours
+
+**English** — 57/500:
+
+```
+New colours: cobalt blue and amber, with a matching icon.
+```
+
+**Polish** — 61/500:
+
+```
+Nowe kolory: kobaltowy błękit i bursztyn, z dopasowaną ikoną.
+```
