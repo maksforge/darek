@@ -21,6 +21,17 @@ import java.time.Instant
  */
 internal val Context.preferencesStore: DataStore<Preferences> by preferencesDataStore(name = "app_preferences")
 
+internal fun Context.firstInstalledAt(): Instant {
+    val info =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
+        } else {
+            @Suppress("DEPRECATION")
+            packageManager.getPackageInfo(packageName, 0)
+        }
+    return Instant.ofEpochMilli(info.firstInstallTime)
+}
+
 /**
  * Manual dependency injection — deliberately not Hilt.
  *
@@ -39,6 +50,8 @@ internal val Context.preferencesStore: DataStore<Preferences> by preferencesData
 class AppContainer(
     context: Context,
     val preferences: AppPreferences,
+    /** When this package was first installed on this phone, which the one-time markers are judged against. */
+    val installedAt: Instant,
     @Suppress("unused") private val applicationScope: CoroutineScope,
 ) {
     private val appContext = context.applicationContext
@@ -48,17 +61,4 @@ class AppContainer(
      * screen that opened Play's sheet is gone, and it still has to be consumed — see [TipJar].
      */
     val tipJar = TipJar(appContext, applicationScope)
-
-    /** When this package was first installed on this phone — the tip ask's clock, not a restore's. */
-    val installedAt: Instant by lazy {
-        val packageManager = appContext.packageManager
-        val info =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                packageManager.getPackageInfo(appContext.packageName, PackageManager.PackageInfoFlags.of(0))
-            } else {
-                @Suppress("DEPRECATION")
-                packageManager.getPackageInfo(appContext.packageName, 0)
-            }
-        Instant.ofEpochMilli(info.firstInstallTime)
-    }
 }

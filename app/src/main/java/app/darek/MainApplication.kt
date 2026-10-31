@@ -7,15 +7,20 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import app.darek.data.AppPreferences
 import app.darek.data.ThemeMode
 import app.darek.theme.applyThemeMode
+import app.darek.ui.settings.AppLanguage
+import app.darek.ui.settings.opensInPolish
+import app.darek.ui.settings.setAppLanguage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.time.Instant
 
 /**
- * Holds the one [AppContainer] for the process, and applies the stored theme before any window
- * exists.
+ * Holds the one [AppContainer] for the process, and applies the stored theme and the first-launch
+ * language before any window exists.
  *
  * Kotlin note: `by lazy` computes on first read and caches — like a memoised getter.
  */
@@ -38,19 +43,32 @@ class MainApplication : Application() {
     var startupThemeMode: ThemeMode = ThemeMode.SYSTEM
         private set
 
-    val container: AppContainer by lazy { AppContainer(this, preferences, applicationScope) }
+    private lateinit var installedAt: Instant
+
+    val container: AppContainer by lazy { AppContainer(this, preferences, installedAt, applicationScope) }
 
     override fun onCreate() {
         super.onCreate()
 
         preferences = AppPreferences(preferencesStore)
+        installedAt = firstInstalledAt()
 
-        // A blocking read, deliberately and exactly once. Everything else about DataStore is a Flow,
-        // but this value has to be known before the first window is created — a Flow collected in a
-        // composition arrives a frame later, which is a visible light flash for a user who chose
-        // dark. One small file read at process start is the cheaper of the two costs.
-        startupThemeMode = runBlocking { preferences.themeModeNow() }
+        // A blocking wait, deliberately and exactly once. Everything else about DataStore is a Flow,
+        // but the theme and the first-launch language have to be known before the first window is
+        // created — a Flow collected in a composition arrives a frame later, which is a visible
+        // flash of the wrong palette or language. One small file read at process start is the
+        // cheaper of the two costs.
+        val switchToPolish =
+            runBlocking {
+                val polish = async { opensInPolish(preferences, installedAt) }
+                startupThemeMode = preferences.themeModeNow()
+                polish.await()
+            }
         applyThemeMode(startupThemeMode)
+        if (switchToPolish) {
+            setAppLanguage(AppLanguage.POLISH)
+            applicationScope.launch { preferences.markOpenedInPolish(installedAt) }
+        }
 
         settleTipsOnEveryForeground()
     }
