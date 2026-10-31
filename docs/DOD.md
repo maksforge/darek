@@ -116,8 +116,10 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       Started 2026-10-31: Alpha 0.2.0 (versionCode 31) created in the Console, because the workflow
       cannot make a draft app's first closed release (`RELEASING.md`), and **in review**. Testers:
       internal `only-me-Tester`, closed `testers-community@googlegroups.com`.
-- [ ] **12 testers opted in for 14 continuous days.** Pending: the clock starts once Alpha 0.2.0
-      is reviewed and the testers can opt in. Write the start date here.
+- [x] **12 testers opted in for 14 continuous days.** The owner's own routine, not a task for this
+      repo: once Alpha is approved he shares the opt-in link in the developers' tester-swap group
+      (`testers-community@googlegroups.com`), where everyone tests each other's apps. Settled
+      2026-10-31; the production-access application below is the next thing that needs a session.
 - [x] **Decide the `applicationId` deliberately.** It is fixed the moment the Play entry is created —
       not renameable, not transferable without losing every install and review. Decided 2026-10-31:
       `com.maksforge.darek`, as new MaksForge apps use the maksforge.com domain.
