@@ -28,7 +28,7 @@ private const val SUPPORT_ADDRESS = "darek.support@maksforge.com"
  * two places. `bootstrap.py` rewrites this line along with every other statement of the
  * applicationId outside Gradle.
  */
-private const val PLAY_PACKAGE = "io.github.srednimax.darek"
+private const val PLAY_PACKAGE = "com.maksforge.darek"
 
 /** The Play app itself, which is the only store this app is listed in. */
 private const val PLAY_STORE_APP = "com.android.vending"
