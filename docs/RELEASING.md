@@ -295,7 +295,7 @@ it is asked for.
 | Type / alias | PKCS12, alias `upload`. PKCS12 keeps **one** password, so `upload.storePassword` and `upload.keyPassword` are the same string |
 | Key | RSA 4096, SHA384withRSA, `CN=Maksymilian Sredniawa`, created 2026-10-31, valid until 2054-03-18 |
 | SHA-256 | `2C:F4:3C:F3:7B:27:57:5D:16:51:5C:F6:B4:2C:22:CF:86:08:5A:C3:2F:83:83:C4:CB:B0:EE:A5:B2:5D:18:02` |
-| Backed up to | *(owed: somewhere that is not this machine)* |
+| Backed up to | `KEYS-2026-10-31.zip` (all five upload keys), copied off this machine by the owner on 2026-10-31 |
 
 ```bash
 keytool -genkeypair -v -storetype PKCS12 -keystore ~/.keystores/<app>-upload.jks \
