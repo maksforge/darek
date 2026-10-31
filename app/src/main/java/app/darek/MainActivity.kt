@@ -19,10 +19,11 @@ import app.darek.ui.settings.setAppLanguage
 /**
  * AppCompatActivity rather than ComponentActivity, and for one reason only: it is where
  * `AppCompatDelegate` lives, and `AppCompatDelegate` is what applies a per-app language on the
- * pre-13 half of the supported range (ADR-0004) and what moves the night mode (ADR-0006). Nothing
- * else here uses AppCompat — no views, no action bar, no AppCompat widgets — and AppCompatActivity
- * is a ComponentActivity subclass, so `setContent`, the window itself and the activity-result APIs
- * all still work unchanged.
+ * pre-13 half of the supported range and, from 13, makes the first-launch switch to Polish here
+ * (ADR-0004), and what moves the night mode (ADR-0006). Nothing else here uses AppCompat — no
+ * views, no action bar, no AppCompat widgets — and AppCompatActivity is a ComponentActivity
+ * subclass, so `setContent`, the window itself and the activity-result APIs all still work
+ * unchanged.
  */
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

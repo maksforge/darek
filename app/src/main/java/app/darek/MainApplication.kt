@@ -1,14 +1,16 @@
 package app.darek
 
 import android.app.Application
+import android.os.Build
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import app.darek.data.AppPreferences
 import app.darek.data.ThemeMode
 import app.darek.theme.applyThemeMode
+import app.darek.ui.settings.AppLanguage
 import app.darek.ui.settings.launchLanguage
-import app.darek.ui.settings.switchToPolishAtStart
+import app.darek.ui.settings.setAppLanguage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -18,8 +20,8 @@ import kotlinx.coroutines.runBlocking
 import java.time.Instant
 
 /**
- * Holds the one [AppContainer] for the process, and applies the stored theme and the first-launch
- * language before any window exists.
+ * Holds the one [AppContainer] for the process, applies the stored theme before any window exists,
+ * and decides the first-launch language: below 13 it applies it here too, from 13 `MainActivity` does.
  *
  * Kotlin note: `by lazy` computes on first read and caches — like a memoised getter.
  */
@@ -68,15 +70,22 @@ class MainApplication : Application() {
                 language.await()
             }
         applyThemeMode(startupThemeMode)
-        if (language.switchToPolish) languageSwitchPending = switchToPolishAtStart()
+        if (language.switchToPolish) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                languageSwitchPending = true
+            } else {
+                setAppLanguage(AppLanguage.POLISH)
+            }
+        }
         languageUnjudged = language.markJudged
 
         settleTipsOnEveryForeground()
     }
 
     /**
-     * True once, on a launch from 13 whose switch to Polish is owed: AppCompat can reach the platform
-     * only from an Activity, so `MainActivity` makes it.
+     * True once, on a launch from 13 whose switch to Polish is owed: from 13
+     * `AppCompatDelegate.setApplicationLocales` reaches `LocaleManager` only through an open Activity,
+     * so at process start it does nothing and `MainActivity` makes the switch.
      */
     fun takeLanguageSwitchPending(): Boolean = languageSwitchPending.also { languageSwitchPending = false }
 
