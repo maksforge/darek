@@ -35,7 +35,7 @@ Play counts characters, not words, and rejects at the limit rather than truncati
 in the heading and update it when you edit: it is the only warning you get before the Console
 refuses a paste.
 
-### App name — 0/30
+### App name — 5/30
 
 **The app name is not translated, in any locale.** `app_name` is `translatable="false"` for the same
 reason, so every listing carries the same name.
@@ -44,14 +44,15 @@ reason, so every listing carries the same name.
 Darek
 ```
 
-### Short description — 0/80
+### Short description — 76/80
 
 The line that appears under the name in search results, and the most-read text in the listing.
 
 ```
+Say "Darek, otwórz bramę" and he calls your gate opener. Offline, in Polish.
 ```
 
-### Full description — 0/4000
+### Full description — 2823/4000
 
 **No health or safety claims**, here or on any page the listing links to — Play's enforcement reads a
 linked page as part of the listing. Say what the app cannot do instead.
@@ -67,25 +68,104 @@ renders no markup. The block below is what `play-metadata.py` uploads, so the ou
 5. `PERMISSIONS` — one line each, in the user's words.
 6. A last line pointing at the source: `github.com/maksforge/darek`.
 
+The second paragraph is for the test builds that ship before Listening does. The release that adds
+Listening and the call deletes it, in both languages.
+
 ```
+Darek is a Polish voice assistant for your gate. Say "Darek, otwórz bramę" and he answers out loud and calls your gate's GSM opener, so you do not have to reach for your phone. Recognition, speech and the call all happen on your phone, with no internet at all.
+
+This test build has only the home screen and settings. Listening and the call arrive in the next test builds.
+
+HOW IT WORKS
+
+Darek knows a few fixed Commands: for a gate, a garage and a wicket. Give each one the phone number of its opener's SIM, and switch on the ones you use.
+
+You start Listening yourself, in the app, from its notification or from a Quick Settings tile. It never starts on its own, not even after the phone restarts, and while it is on, a notification says that Darek is listening.
+
+When he hears a Command, Darek says what he is about to do ("Otwieram bramę") and gives you about two seconds to cancel: say "Darek, stop" or "anuluj", or tap Cancel in the notification. Then he calls the number you entered. An opener that knows your number opens the gate.
+
+He listens for the whole Command, not just his name. "Darek" said to a friend does nothing, and neither does "Marek, otwórz bramę".
+
+FREE, AND NOTHING LEAVES YOUR PHONE
+
+No ads. No account. No server. No subscription. Darek does not request the internet permission, so nothing he hears can leave your phone. Speech is recognised on the phone by an offline recogniser that comes with the app, and the sound is processed as it is heard: never recorded, never stored, never sent. Darek keeps only his settings: the numbers you entered, which Commands are on, your theme and your language. An optional tip through Google Play unlocks nothing.
+
+WHAT IT CANNOT DO
+
+Darek calls your gate opener; he does not control the gate. Whether it opens is up to the opener, which has to accept calls from your number. The call goes through your own SIM and mobile operator like any call you make, so it needs signal.
+
+He understands only his fixed Polish Commands, not free speech, and you cannot add phrases of your own. In a noisy place he can miss a Command; say it again.
+
+He answers through your phone's text-to-speech engine, which needs a Polish voice that works offline. Without one, a Command still places its call, just without a spoken reply.
+
+Listening keeps the microphone on and uses battery while it runs. Some phones, Xiaomi's among them, stop apps in the background; Darek opens the battery and autostart settings for you.
+
+PERMISSIONS
+
+- Microphone. Hears the Commands, only while Listening is on.
+- Phone. Calls the number you entered for a Command, after Darek's reply.
+- Notifications. Shows that Darek is listening, with a button to stop him.
+- Foreground service. Keeps Listening running while the app is closed.
+
+Source available, built in the open: github.com/maksforge/darek
 ```
 
 ## Polish (default listing language, pl-PL — ADR-0012)
 
-### App name — 0/30
+Informal `ty`, as in the app, and no gendered past tense for the user (translator brief §6.2). Darek
+himself is male: *usłyszy*, *odpowie*, *zadzwoni*.
+
+### App name — 5/30
 
 ```
 Darek
 ```
 
-### Short description — 0/80
+### Short description — 79/80
 
 ```
+Powiedz „Darek, otwórz bramę”, a on odpowie i zadzwoni do bramy. Bez internetu.
 ```
 
-### Full description — 0/4000
+### Full description — 2844/4000
 
 ```
+Darek to głosowy asystent do twojej bramy. Powiedz „Darek, otwórz bramę”, a on odpowie na głos i zadzwoni do sterownika GSM bramy, więc nie musisz sięgać po telefon. Rozpoznawanie mowy, odpowiedź i połączenie odbywają się w telefonie, zupełnie bez internetu.
+
+Ta wersja testowa ma tylko ekran główny i ustawienia. Słuchanie i dzwonienie pojawią się w kolejnych wersjach testowych.
+
+JAK TO DZIAŁA
+
+Darek zna kilka stałych komend: do bramy, garażu i furtki. Każdej przypisz numer karty SIM w jej sterowniku i włącz te, których używasz.
+
+Słuchanie włączasz w aplikacji, w jej powiadomieniu albo kafelkiem w szybkich ustawieniach. Nigdy nie włącza się samo, nawet po ponownym uruchomieniu telefonu, a gdy jest włączone, powiadomienie mówi, że Darek słucha.
+
+Gdy usłyszy komendę, Darek mówi, co zrobi („Otwieram bramę”), i daje ci około dwóch sekund na anulowanie: powiedz „Darek, stop” albo „anuluj” lub dotknij Anuluj w powiadomieniu. Potem dzwoni pod numer wpisany dla tej komendy. Sterownik, który zna twój numer, otwiera bramę.
+
+Darek słucha całej komendy, nie samego imienia. „Darek” powiedziane do kolegi nic nie robi, tak samo jak „Marek, otwórz bramę”.
+
+ZA DARMO I NIC NIE OPUSZCZA TELEFONU
+
+Bez reklam, bez konta, bez serwera, bez subskrypcji. Darek nie prosi o uprawnienie do internetu, więc nic, co usłyszy, nie może opuścić telefonu. Mowę rozpoznaje w telefonie dołączony do aplikacji moduł działający offline, a dźwięk jest przetwarzany na bieżąco: nigdy nie jest nagrywany, zapisywany ani wysyłany. Darek przechowuje tylko swoje ustawienia: wpisane numery, włączone komendy, motyw i język. Opcjonalny napiwek przez Google Play niczego nie odblokowuje.
+
+CZEGO NIE POTRAFI
+
+Darek dzwoni do sterownika bramy, ale nie steruje samą bramą. To, czy się otworzy, zależy od sterownika, który musi przyjmować połączenia z twojego numeru. Połączenie idzie przez twoją kartę SIM i twojego operatora, jak każde inne, więc wymaga zasięgu.
+
+Rozumie tylko swoje stałe polskie komendy, nie swobodną mowę, i nie da się dodać własnych zwrotów. W hałasie może nie usłyszeć komendy; wtedy ją powtórz.
+
+Odpowiada przez syntezator mowy w twoim telefonie, który potrzebuje do tego polskiego głosu działającego offline. Bez niego komenda i tak dzwoni, tylko bez odpowiedzi na głos.
+
+Słuchanie trzyma włączony mikrofon i zużywa baterię. Niektóre telefony, w tym Xiaomi, zamykają aplikacje działające w tle; Darek sam otworzy ci ustawienia baterii i autostartu.
+
+UPRAWNIENIA
+
+- Mikrofon. Darek słyszy przez niego komendy, tylko gdy słuchanie jest włączone.
+- Telefon. Darek dzwoni pod numer wpisany dla komendy, po swojej odpowiedzi.
+- Powiadomienia. Pokazują, że Darek słucha, z przyciskiem, który go zatrzymuje.
+- Usługa na pierwszym planie. Utrzymuje słuchanie, gdy aplikacja jest zamknięta.
+
+Kod źródłowy jest publicznie dostępny: github.com/maksforge/darek
 ```
 
 ## Release notes (Play's "What's new", 500 chars per locale)

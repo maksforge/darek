@@ -43,7 +43,8 @@ ART = Path(__file__).parent
 # Edit them; everything else is layout. Translate from the English, per docs/translator-brief.md.
 APP_NAME = "Darek"
 COPY = {
-    None: ("One line about your app", "Private  ·  Offline  ·  No ads  ·  Free"),
+    None: ("Asystent głosowy do twojej bramy", "Po polsku  ·  Offline  ·  Bez reklam  ·  Darmowy"),
+    "en": ("A Polish voice assistant for your gate", "Offline  ·  No internet  ·  No ads  ·  Free"),
 }
 BACKGROUND = ART / "feature-background.png"
 W, H = 1024, 500

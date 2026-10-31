@@ -62,12 +62,19 @@ def main():
         action="store_true",
         help=f"drop the top {STATUS_BAR_PX}px (status bar and cutout) before padding",
     )
+    parser.add_argument(
+        "--status-bar-px",
+        type=int,
+        default=STATUS_BAR_PX,
+        help="the phone's own portrait statusBars inset, for --crop-status-bar on another phone; "
+        "the test Redmi Note 8 Pro reads 76 in `dumpsys window`",
+    )
     args = parser.parse_args()
 
     src, dst = args.src, args.dst
     img = Image.open(src).convert("RGB")
     if args.crop_status_bar:
-        img = img.crop((0, STATUS_BAR_PX, img.size[0], img.size[1]))
+        img = img.crop((0, args.status_bar_px, img.size[0], img.size[1]))
     w, h = img.size
 
     target_w = max(w, round(h * RATIO_W / RATIO_H))
@@ -83,7 +90,7 @@ def main():
     canvas.save(dst, "PNG", optimize=True)
 
     ratio = target_w / target_h
-    cropped = f" (status bar cropped, -{STATUS_BAR_PX}px)" if args.crop_status_bar else ""
+    cropped = f" (status bar cropped, -{args.status_bar_px}px)" if args.crop_status_bar else ""
     print(f"{dst}  {w}x{h} -> {target_w}x{target_h}  ({ratio:.4f}, 9:16 = {RATIO_W / RATIO_H:.4f}){cropped}")
 
 
