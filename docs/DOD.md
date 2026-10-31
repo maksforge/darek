@@ -72,19 +72,26 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
 - [ ] **`LICENSE` and `README.md`.** Bootstrap wrote a source-available notice and a *Contributing*
       that refuses pull requests, or with `--licence reserved` a notice that grants nothing and a
       placeholder. Keep both or replace both; they must agree.
-- [ ] **Create the upload keystore, outside the repo**, and put its four values in
+- [x] **Create the upload keystore, outside the repo**, and put its four values in
       `local.properties`. Back it up somewhere that is not this machine: losing it means never being
       able to update the app on Play again. Fill in *The upload key* table in `RELEASING.md` the same
       day — the fingerprint is what Play asks you to compare.
-- [ ] **Set up the GitHub repository** — `python3 scripts/repo-setup.py` does the ruleset, the
+      Done 2026-10-31: `~/.keystores/darek-upload.jks`, table filled. **The off-machine backup is
+      still owed.**
+- [x] **Set up the GitHub repository** — `python3 scripts/repo-setup.py` does the ruleset, the
       merge setting and Pages; the release-please PAT is the one step it cannot do, and without it
       no release PR is ever opened. *Setting up a new repository* in [`RELEASING.md`](RELEASING.md).
       **None of this is inherited from the template** — GitHub copies files, never settings — and
       the build stays green while it is all still undone. **Write the PAT's expiry date into this
       item** the day you create it: when it lapses the release PR simply stops appearing.
-- [ ] **Set the five Play secrets and create the service account** (`docs/RELEASING.md`) — the
+      Done 2026-10-31: ruleset, rebase-only merging and Pages by `repo-setup.py`; the PAT is set.
+      **Its expiry date is still owed here.**
+- [x] **Set the five Play secrets and create the service account** (`docs/RELEASING.md`) — the
       service account is the one step CI cannot do for itself. No account permissions; two app
       permissions, on this app only; no expiry date.
+      Done 2026-10-31: `darek-play-ci@darek-play.iam.gserviceaccount.com` in Cloud project
+      `darek-play`, invited with *View app information* and *Release apps to testing tracks* on
+      Darek only; all six secrets set.
 - [ ] **Plan the closed test.** A new personal developer account reaches production only after a
       closed test — at the time of writing 12 testers opted in for 14 continuous days, then an access
       application. Recruit the testers before the build is ready, not after; `publish-play-closed.yml`
