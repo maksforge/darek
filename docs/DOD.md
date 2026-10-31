@@ -4,7 +4,10 @@ The **live checklist**. Keep it short: when an item closes, tick it, write the *
 long-form record you keep, and delete the detail from here. A session should be able to pick up the
 work by reading this file alone.
 
-## The standing schema gate — never ticked, checked at every bump
+## The standing schema gate — parked
+
+*Parked 2026-10-31: Darek has no database (ADR-0001's amendment). It comes back, as written
+below, the day a feature adds a table.*
 
 **An update must migrate an existing install without losing anything** (ADR-0001). This item does not
 close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release goes out:
