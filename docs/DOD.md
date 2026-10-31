@@ -71,9 +71,14 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       page. Replace `description` in `docs/_config.yml` too: it is the tagline under the app's name.
 - [ ] **Write the privacy policy** and confirm GitHub Pages is serving `docs/`. Play requires a
       *hosted* URL, and an offline app has no server of its own.
+      2026-10-31: written for Darek as it will ship; Pages serves `docs/` (both URL forms return 200).
+      Ticked once the merge is read live at `https://maksforge.com/darek/privacy-policy`.
 - [ ] **Answer the Console's App content pages and write [`play-app-content.md`](play-app-content.md)
       in the same sitting** — the reasons are in front of you then and gone a week later. It moves in
       the same commit as the privacy policy, every time.
+      2026-10-31: every page answered and recorded except the **content rating**, which waits for the
+      owner to accept IARC's Terms of Use; its answers are in `play-app-content.md`. Nothing sent
+      for review.
 - [ ] **`LICENSE` and `README.md`.** Bootstrap wrote a source-available notice and a *Contributing*
       that refuses pull requests, or with `--licence reserved` a notice that grants nothing and a
       placeholder. Keep both or replace both; they must agree.

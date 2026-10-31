@@ -1,37 +1,36 @@
 ---
 layout: default
-title: <App name>
+title: Darek
 ---
 
-# <App name>
+# Darek
 
-<!--
-    The site root, served by GitHub Pages from `docs/`. It exists for two reasons: Play's listing
-    asks for a Website, and the privacy policy needs a hosted URL. Both come free from a public
-    repo — no hosting, no domain, no bill.
+**A Polish voice assistant that calls your gate opener when you tell him to.** Say *"Darek, otwórz
+bramę"*, and he answers out loud and calls the number you gave him. Recognition, speech and the call
+all happen on your phone: the app has no internet permission, no account and no server.
 
-    Write it for someone who found the app in the store and wants to know what it is before
-    installing. It is not the store listing (that is `store-listing.md`, which scripts parse) and it
-    is not the README (that is for someone reading the code).
--->
-
-**<One sentence about what it does.>** <And the constraint that makes it different — "Free, ad-free,
-and entirely on your own phone: no account, no sign-up, no server.">
+Darek is still being built, and is not on Google Play yet.
 
 ## What it does
 
-- **<Feature>** — <what it is for, in the user's words, not the schema's>.
-- **<Feature>** — <…>.
+- **Listens only when you turn it on.** While Listening is on, a notification says so, and you can
+  stop it there at any time.
+- **Hears a few fixed Polish Commands**, for a gate, a garage or a wicket, and ignores everything
+  else said around the phone. Nothing it hears is recorded.
+- **Answers before he acts.** Darek says what he is about to do, gives you a moment to cancel, and
+  then calls the number you entered for that Command.
 
-## <The honest limitation>
+## What it does not do
 
-<If the app is in a domain where people might over-trust it — health, finance, safety — say plainly
-what it does not do. This section costs nothing and is the one people remember.>
+Darek **calls** your gate opener; he does not control the gate. Whether the gate opens is up to the
+opener, which has to recognise your phone's number, and the call goes through your own SIM and
+mobile operator like any call you make.
 
-## Your data stays on your device
+## Your data stays on your phone
 
-There is no backend to send anything to. Everything lives in the app's private storage on your phone.
-Your settings travel with Android's own backup; nothing else leaves the phone. The details are in the
+The numbers you enter and your settings are kept on your phone. They travel only in Android's own
+backup to your own Google account. Audio is processed on the phone as it is heard and is never
+stored or sent. The details are in the
 
 **[Privacy Policy](privacy-policy.md)**.
 
