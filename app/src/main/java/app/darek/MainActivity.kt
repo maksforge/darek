@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.darek.theme.AppTheme
+import app.darek.ui.settings.AppLanguage
+import app.darek.ui.settings.setAppLanguage
 
 /**
  * AppCompatActivity rather than ComponentActivity, and for one reason only: it is where
@@ -28,6 +30,7 @@ class MainActivity : AppCompatActivity() {
 
         val app = application as MainApplication
         app.markLanguageJudged()
+        if (app.takeLanguageSwitchPending()) setAppLanguage(AppLanguage.POLISH)
 
         // Edge-to-edge, and **not** `enableEdgeToEdge()`. Every path in androidx.activity's version
         // of that call — `EdgeToEdgeApi35` included — reaches `Window.setStatusBarColor` and
