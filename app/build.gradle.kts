@@ -81,7 +81,7 @@ android {
         // The install identity, and **the one string here that can never change**: a Play Console
         // package name is fixed the moment the app entry is created. Deliberately allowed to differ
         // from `namespace` for that reason — see docs/adr/0002.
-        applicationId = "io.github.srednimax.darek"
+        applicationId = "com.maksforge.darek"
         minSdk = 26
         targetSdk = 36
         versionCode = gitVersionCode
