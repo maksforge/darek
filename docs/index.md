@@ -30,8 +30,8 @@ what it does not do. This section costs nothing and is the one people remember.>
 
 ## Your data stays on your device
 
-There is no backend to send anything to. Everything lives in the app's private storage on your phone,
-and backups go to storage you choose. The details are in the
+There is no backend to send anything to. Everything lives in the app's private storage on your phone.
+Your settings travel with Android's own backup; nothing else leaves the phone. The details are in the
 
 **[Privacy Policy](privacy-policy.md)**.
 
