@@ -14,8 +14,8 @@
 remote_theme: maksforge/pages-theme
 plugins:
   - jekyll-remote-theme
-title: Starter
+title: Darek
 description: <One line about the app>
 maksforge:
-  icon: /assets/icons/android-starter.webp
-  status: oss
+  icon: /assets/icons/darek.webp
+  status: building
