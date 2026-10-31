@@ -99,15 +99,122 @@ Readings 1 and 2 on the test phone, from a plain debuggable build (`./gradlew in
 a fresh install and one launch:
 
 1. `adb shell pm path com.maksforge.darek.debug` prints a path (the package is installed), then
-   `adb shell dumpsys package com.maksforge.darek.debug | grep permission` — no
+   the permission sections of `adb shell dumpsys package com.maksforge.darek.debug` — no
    `FOREGROUND_SERVICE`, `POST_NOTIFICATIONS`, `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED`,
-   `SCHEDULE_EXACT_ALARM`.
+   `SCHEDULE_EXACT_ALARM`, `INTERNET`. Read the sections whole: `grep permission` is case-sensitive
+   and drops `com.android.vending.BILLING` and `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
 2. `adb shell run-as com.maksforge.darek.debug ls databases` — no `darek.db`. Not on
    `-PreleaseShapedDebug`: it is not debuggable, so `run-as` fails and lists nothing.
 3. On both phones, with the language set to English: a fresh install opens in Polish; switching to
    English in Settings, force-stopping and reopening keeps English. The test phone (API 30) reads
    AppCompat's storage; the owner's phone `132bc856` (API 36) reads `LocaleManager`, and is announced
    in chat before the reading takes its screen (`CLAUDE.md`).
+
+### Taken 2026-10-31
+
+All from `./gradlew assembleDebug` at `bdaebbc` (versionCode 34, versionName 0.2.0), installed with
+`adb install -t` after `adb uninstall com.maksforge.darek.debug`, and launched once with
+`adb shell am start -W -n com.maksforge.darek.debug/app.darek.MainActivity` (the activity's class
+keeps the `app.darek` namespace; only the `applicationId` is `com.maksforge.darek`).
+
+**1. Permissions — pass.** Test phone `mnbm7hw8ivdqzx9l`, API 30:
+
+```text
+$ adb shell pm path com.maksforge.darek.debug
+package:/data/app/~~Evrn_CR7AWB5zn-Q6ktCkQ==/com.maksforge.darek.debug-R1knJcU9noC0mzXx5S7xvA==/base.apk
+$ adb shell dumpsys package com.maksforge.darek.debug | sed -n '/declared permissions:/,/runtime permissions:/p'
+    declared permissions:
+      com.maksforge.darek.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: prot=signature, INSTALLED
+    requested permissions:
+      com.android.vending.BILLING
+      com.maksforge.darek.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+      android.permission.ACCESS_NETWORK_STATE
+    install permissions:
+      com.maksforge.darek.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: granted=true
+      com.android.vending.BILLING: granted=true
+      android.permission.ACCESS_NETWORK_STATE: granted=true
+    ...
+      runtime permissions:
+$ adb shell dumpsys package com.maksforge.darek.debug | grep -cE "FOREGROUND_SERVICE|POST_NOTIFICATIONS|WAKE_LOCK|RECEIVE_BOOT_COMPLETED|SCHEDULE_EXACT_ALARM|android.permission.INTERNET"
+0
+```
+
+The three requested are the three `play-app-content.md` accounts for; none of the six asked about.
+
+**2. No database of the app's own — pass.** Test phone, same install:
+
+```text
+$ adb shell run-as com.maksforge.darek.debug ls databases
+com.google.android.datatransport.events
+com.google.android.datatransport.events-journal
+```
+
+No `darek.db`. The two files are Play Billing's `datatransport` usage log, the one
+`backup_rules.xml` and `data_extraction_rules.xml` keep out of Auto Backup; it exists from the first
+launch, before any purchase. The rest of the sandbox is `files/datastore/app_preferences.preferences_pb`
+and AppCompat's locale file.
+
+**3. API 36 — not taken.** The owner's phone, adb serial `192.168.0.28:46073` (Wi-Fi), agreed in chat
+for one install, launch, locale read and uninstall:
+
+```text
+$ adb shell getprop ro.build.version.sdk
+36
+$ adb shell getprop persist.sys.locale
+en-US
+$ adb shell settings get system system_locales
+en-US,pl-PL
+$ adb install -t app/build/outputs/apk/debug/app-debug.apk
+adb: failed to install app/build/outputs/apk/debug/app-debug.apk: Failure [INSTALL_FAILED_USER_RESTRICTED: Install canceled by user]
+$ adb shell pm path com.maksforge.darek.debug   # exit 1, nothing left behind
+```
+
+HyperOS refusing the first install of a new package, as `CLAUDE.md`'s environment notes say. The
+reading stopped there: the workarounds (USB installation in developer options, or a file-manager
+tap) are the owner's to make. **The phone is English first**, so once the build is on it, a Polish
+first screen and `adb shell cmd locale get-app-locales com.maksforge.darek.debug` printing `pl` prove
+the override of an English phone through `LocaleManager`, not only the write.
+
+**3, API 30 half — pass.** Test phone. MIUI's *Languages* screen
+(`adb shell am start -a android.settings.LOCALE_SETTINGS`) is a single-choice list, not AOSP's
+ordered one, so the phone was switched by tapping *English (United States)* and restored by tapping
+*Polski*:
+
+```text
+$ adb shell getprop persist.sys.locale        # after choosing English
+en-US
+$ adb uninstall com.maksforge.darek.debug && adb install -t app/build/outputs/apk/debug/app-debug.apk
+$ adb shell run-as com.maksforge.darek.debug ls files     # before the launch
+ls: files: No such file or directory
+$ adb shell am start -W -n com.maksforge.darek.debug/app.darek.MainActivity
+$ adb shell run-as com.maksforge.darek.debug cat files/androidx.appcompat.app.AppCompatDelegate.application_locales_record_file
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><locales application_locales="pl" />
+```
+
+The first screen read *Tu Darek będzie słuchał.*, the Polish `home_listening_placeholder` (English:
+*Darek will listen here.*). Then, in the app's Settings, *Język → English*, a force-stop and a
+relaunch:
+
+```text
+$ adb shell am force-stop com.maksforge.darek.debug
+$ adb shell am start -W -n com.maksforge.darek.debug/app.darek.MainActivity
+$ adb shell uiautomator dump /sdcard/ui.xml && adb shell cat /sdcard/ui.xml | grep -oE 'text="[^"]+"'
+text="Darek will listen here."
+text="Darek debug"
+$ adb shell run-as com.maksforge.darek.debug cat files/androidx.appcompat.app.AppCompatDelegate.application_locales_record_file
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><locales application_locales="en" />
+```
+
+The user's English survived the restart: the first-launch marker did not switch it back.
+
+**Restored afterwards:** the test phone's language is Polish again (`persist.sys.locale` and
+`system_locales` both `pl-PL`), `stay_on_while_plugged_in` still `2`, no keyguard showing, MIUI
+optimisation still `false`; the debug build is reinstalled clean and not launched. Nothing on the
+owner's phone changed.
+
+**Verdict:** readings 1 and 2 and the API 30 half of 3 pass. **Checkpoint E stays open on one
+reading**: the owner's phone (API 36, `LocaleManager`), which needs the debug package installable
+there first.
 
 ## Amendments owed
 

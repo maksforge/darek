@@ -55,8 +55,9 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       EXPECTED_ORIENTATION describe the template. Run all four `aab-*.py` scripts against a local
       `bundleRelease` **before the first tag** — the first app built from it found its stale table in the publish
       workflow, after the tag, with the version already spent.
-- [ ] **Choose the palette.** Four seeds in `scripts/gen_scheme.py`, regenerate `theme/Color.kt`,
-      read the contrast report it prints on stderr.
+- [x] **Choose the palette.** Four seeds in `scripts/gen_scheme.py`, regenerate `theme/Color.kt`,
+      read the contrast report it prints on stderr. Done 2026-10-31: cobalt and amber, phase 0's
+      checkpoint C.
 - [ ] **Make the support address work both ways.** `bootstrap.py` compiled in
       `<repo>.support@maksforge.com` (or `--support`) and wrote it into the site, the privacy policy
       and the Play docs. Mail to it arrives through the domain's catch-all; replying from it needs the
@@ -81,9 +82,10 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       in the same sitting** — the reasons are in front of you then and gone a week later. It moves in
       the same commit as the privacy policy, every time.
       2026-10-31: every page answered and recorded, the **content rating** last (submitted 21:43, IARC
-      *Completed*: PEGI 3, ESRB Everyone, USK 0, Brazil 14+, *In-app purchases*). Nothing sent for
-      review. Still open: re-read *Target audience and content* now that a rating exists, as
-      `play-app-content.md` asks.
+      *Completed*: PEGI 3, ESRB Everyone, USK 0, Brazil 14+, *In-app purchases*). Sent for review
+      2026-10-31 with the listing and Alpha 0.2.0. Still open: re-read *Target audience and content*
+      now that a rating exists, as `play-app-content.md` asks; and the listing's **AI asset
+      declaration**, which is the owner's to answer (`RELEASING.md`).
 - [ ] **`LICENSE` and `README.md`.** Bootstrap wrote a source-available notice and a *Contributing*
       that refuses pull requests, or with `--licence reserved` a notice that grants nothing and a
       placeholder. Keep both or replace both; they must agree.
@@ -107,11 +109,16 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       Done 2026-10-31: `darek-play-ci@darek-play.iam.gserviceaccount.com` in Cloud project
       `darek-play`, invited with *View app information* and *Release apps to testing tracks* on
       Darek only; all six secrets set.
-- [ ] **Plan the closed test.** A new personal developer account reaches production only after a
+- [x] **Plan the closed test.** A new personal developer account reaches production only after a
       closed test — at the time of writing 12 testers opted in for 14 continuous days, then an access
       application. Recruit the testers before the build is ready, not after; `publish-play-closed.yml`
       moves each build to them. A tester-swap community, where developers test each other's closed
       tests, filled the apps built from this template within days.
+      Started 2026-10-31: Alpha 0.2.0 (versionCode 31) created in the Console, because the workflow
+      cannot make a draft app's first closed release (`RELEASING.md`), and **in review**. Testers:
+      internal `only-me-Tester`, closed `testers-community@googlegroups.com`.
+- [ ] **12 testers opted in for 14 continuous days.** Pending: the clock starts once Alpha 0.2.0
+      is reviewed and the testers can opt in. Write the start date here.
 - [x] **Decide the `applicationId` deliberately.** It is fixed the moment the Play entry is created —
       not renameable, not transferable without losing every install and review. Decided 2026-10-31:
       `com.maksforge.darek`, as new MaksForge apps use the maksforge.com domain.
