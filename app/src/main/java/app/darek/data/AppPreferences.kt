@@ -4,10 +4,12 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.time.Instant
 
 /** Which colour scheme applies, regardless of what the phone is set to. */
 enum class ThemeMode {
@@ -43,9 +45,8 @@ class AppPreferences(
     internal object Keys {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val MATERIAL_YOU = booleanPreferencesKey("material_you")
-        val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
         val BACKUP_FOLDER_URI = stringPreferencesKey("backup_folder_uri")
-        val TIP_ASKED = booleanPreferencesKey("tip_asked")
+        val TIP_ANSWERED_UNDER = longPreferencesKey("tip_answered_under")
 
         /** What *Restore to default* removes: everything the user chose, so each reads its default again. */
         val SETTINGS: List<Preferences.Key<*>> =
@@ -60,9 +61,8 @@ class AppPreferences(
          */
         val KEPT: List<Preferences.Key<*>> =
             listOf(
-                ONBOARDING_DONE,
                 BACKUP_FOLDER_URI,
-                TIP_ASKED,
+                TIP_ANSWERED_UNDER,
             )
     }
 
@@ -89,9 +89,6 @@ class AppPreferences(
      */
     val materialYou: Flow<Boolean> = store.data.map { it[Keys.MATERIAL_YOU] ?: false }
 
-    /** Whether first-run setup has been completed. */
-    val onboardingDone: Flow<Boolean> = store.data.map { it[Keys.ONBOARDING_DONE] ?: false }
-
     /**
      * The tree Uri the user picked for automatic backups, if any.
      *
@@ -103,11 +100,14 @@ class AppPreferences(
     val backupFolderUri: Flow<String?> = store.data.map { it[Keys.BACKUP_FOLDER_URI] }
 
     /**
-     * Whether the home screen's one tip ask has been answered, either way (ADR-0007). It does not reach
-     * the next phone: `AppBackupAgent` backs up only the database and the thumbnails (ADR-0005), so
-     * after a move the user is asked once more, a month after the new install.
+     * The `firstInstallTime` the home screen's one tip ask was answered under, either way (ADR-0007).
+     * Auto Backup carries it to the user's next phone, where the install time differs, so
+     * `tip/TipAsk.kt` counts it only on the install that gave it.
      */
-    val tipAsked: Flow<Boolean> = store.data.map { it[Keys.TIP_ASKED] ?: false }
+    val tipAnsweredUnder: Flow<Instant?> =
+        store.data.map { prefs ->
+            prefs[Keys.TIP_ANSWERED_UNDER]?.let(Instant::ofEpochMilli)
+        }
 
     /**
      * The theme mode, read once, before any Activity exists.
@@ -127,12 +127,8 @@ class AppPreferences(
         store.edit { it[Keys.MATERIAL_YOU] = enabled }
     }
 
-    suspend fun setOnboardingDone(done: Boolean) {
-        store.edit { it[Keys.ONBOARDING_DONE] = done }
-    }
-
-    suspend fun markTipAsked() {
-        store.edit { it[Keys.TIP_ASKED] = true }
+    suspend fun markTipAnswered(installedAt: Instant) {
+        store.edit { it[Keys.TIP_ANSWERED_UNDER] = installedAt.toEpochMilli() }
     }
 
     suspend fun setBackupFolderUri(uri: String?) {

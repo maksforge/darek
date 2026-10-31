@@ -778,26 +778,17 @@ def relaunch() -> None:
 
 
 # The two needles the isolation step is built on, both from the shell rather than from any screen.
-# The bottom bar is drawn only while `onDetailScreen` is false (Navigation.kt), so finding a tab in
-# it is exactly the question "is a top-level destination on screen?" — and [HOME_TAB] is the bar's
-# first item, the one the back stack is rooted at. Naming them here rather than inline is what lets
+# Darek has no tab bar: Home is the root of the back stack and everything else is pushed from it, so
+# "is a top-level destination on screen?" and "is Home on screen?" are the same question, asked of
+# the line that holds the Listening switch's place. Naming them here rather than inline is what lets
 # a locale run translate them with the rest of the table.
-TAB_BAR = "Items"
-HOME_TAB = "Items"
+TAB_BAR = "Darek will listen here."
+HOME_TAB = "Darek will listen here."
 
-# The top-level destinations, named so [tap] can tell a tab from anything else it is asked to
-# press. Two things follow from being on this list, and both are about a tab label being a *short*
-# string that other strings can quote: the needle is matched exactly rather than by substring
-# ([find]'s `exact`), and the tap is not believed until the tab it names reports itself selected
-# ([showing_tab]). Kept as the English literals the scene table is written in — translation happens
-# inside [find], one layer down.
-#
-# Exactness narrows the trap without closing it. Translation routinely makes a tab label collide
-# with some other string on a screen — a two-word English label can become a one-word translation
-# that is also a button somewhere — and where that happens, [showing_tab] turns it into a *failed
-# scene* rather than a wrong screenshot. That is the division of labour: exactness is the fix, the
-# assertion is what makes the next collision survivable.
-TAB_NEEDLES = (HOME_TAB, "Settings")
+# The top-level destinations [tap] has to treat as tabs: matched exactly, and not believed until the
+# tab reports itself selected ([showing_tab]). Empty, because Darek has no tab bar; "Settings" is an
+# icon button on Home, and a tap on it is an ordinary tap.
+TAB_NEEDLES: tuple[str, ...] = ()
 
 # How many times [return_to_home] may press back before it gives up. Six covers the deepest route in
 # the app (Settings → Licences → one licence, plus a dialog and an IME) with room to spare; it is a
@@ -806,18 +797,8 @@ BACK_BOUND = 6
 
 
 def showing_home(nodes: list[Node]) -> bool:
-    """Is the *Home* tab the selected one, rather than merely some top-level tab?
-
-    The distinction is the whole reason this exists. A restored back stack does not have to be a
-    detail route — it can be another *tab*, which has the tab bar, passes every "are we at
-    the shell?" check, and is still the wrong screen for `home`, `home-bottom` and every scene that
-    taps *Edit* on a profile card.
-
-    The selected navigation item carries no text of its own, so this is geometry: the one node in
-    the dump with `selected="true"` is the current tab, and the *Home* label is inside it exactly
-    when Home is that tab.
-    """
-    return showing_tab(nodes, HOME_TAB)
+    """Is Home on screen? Darek has one root and no tab bar, so this is the Home line being found."""
+    return find(nodes, HOME_TAB) is not None
 
 
 def showing_tab(nodes: list[Node], needle: str) -> bool:
@@ -1202,19 +1183,13 @@ def wipe() -> None:
 
 
 def reset_to_seeded() -> None:
-    """Wipe, skip the wizard, and seed the debug sample data — a known state, not just a clean one.
+    """Wipe, then walk [SEED_WALK]: a known state, not just a clean one.
 
-    The inverse of [wipe]: the `empty` suite ends with the install wiped, so without this a matrix
-    run leaves the phone with no sample data and no media directories at all.
-
-    It matters more than tidiness for repeat runs. Anything the seed stages for a scene to answer — a
-    prompt, a pending state — is consumed the first time a scene answers it, so without a reseed a
-    second capture cell would find it already gone and quietly shoot the wrong screen.
+    Darek has no sample data, so today this is a wipe. The seam stays because the `full` suite and
+    `screenshots.py` both start every cell here, and a first-run screen will need walking past.
     """
     wipe()
     for label in SEED_WALK:
-        # `tap` scrolls when it cannot find its target, which is what reaches *Add the sample data*:
-        # the sample-data block is the debug-only tail of a scrolling Settings column.
         tap(label)
     settle(1.0)
     global _SEEDED
@@ -1433,33 +1408,18 @@ SCENES = [
         suite="mismatch",
     ),
 
-    # --- a wiped install: the empty states, which no seeded run can show ------------------------
-    Scene("items-empty", "tab", [("wipe", "")], suite="empty"),
+    # --- a wiped install: the first launch ------------------------------------------------------
+    Scene("home-first-run", "home", [("wipe", "")], suite="empty"),
 
-    # --- the tabs ------------------------------------------------------------------------------
-    Scene("items", "tab", []),
-    Scene("items-bottom", "tab", [("swipe_end", "")]),
-    Scene("settings", "tab", [("tap", "Settings")]),
-    Scene("settings-bottom", "tab", [("tap", "Settings"), ("swipe_end", "")]),
+    # --- Home, the root -------------------------------------------------------------------------
+    Scene("home", "home", []),
 
-    # --- detail screens: no bottom bar, so the navigation-bar inset is the app's own problem ----
-    Scene("item-detail", "detail", [("tap", "First item")]),
-    Scene("backup", "detail", [("tap", "Settings"), ("tap", "Backup and restore")]),
+    # --- pushed screens: a top bar with a back arrow, and the navigation-bar inset ---------------
+    Scene("settings", "detail", [("tap", "Settings")]),
+    Scene("settings-bottom", "detail", [("tap", "Settings"), ("swipe_end", "")]),
     Scene("support", "detail", [("tap", "Settings"), ("tap", "Help and feedback")]),
     Scene("licences", "detail", [("tap", "Settings"), ("tap", "Open-source licences")]),
     Scene("licences-bottom", "detail", [("tap", "Settings"), ("tap", "Open-source licences"), ("swipe_end", "")]),
-
-    # --- forms: the keyboard is an inset too, and this is where `imePadding` is proved ----------
-    Scene("item-editor", "form", [("tap", "Add an item")]),
-    Scene("item-editor-bottom", "form", [("tap", "Add an item"), ("swipe_end", "")]),
-    Scene(
-        "item-editor-keyboard",
-        "form",
-        # Focus the first field and wait for the keyboard to finish animating in. This is the scene
-        # that catches a window being *panned* instead of resized — the top bar, Save button and all,
-        # slides off the top of the screen and only a screenshot shows it.
-        [("tap", "Add an item"), ("tap_field", "0"), ("wait", "1.5")],
-    ),
 ]
 
 
@@ -1483,9 +1443,9 @@ DEBUG_RES_DIR = Path(__file__).resolve().parent.parent / "app" / "src" / "debug"
 # stages none; leave it as None until yours does, and see `Scene.keeps_seeded_prompt`.
 PROMPT_DISMISS: "str | None" = None
 
-# The walk from a wiped install to the seeded fixture: into Settings and through the debug-only
-# sample-data block at the end of it. Extend this as your app grows a first-run wizard in front of it.
-SEED_WALK = ("Settings", "Seed sample data")
+# The walk from a wiped install to the fixture. Empty: Darek has no sample data, so a wiped install
+# is the fixture. Extend this when a first-run screen stands in front of Home.
+SEED_WALK: tuple[str, ...] = ()
 
 
 def require_bcp47(tag: str) -> None:

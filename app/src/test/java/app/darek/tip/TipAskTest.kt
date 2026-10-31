@@ -10,28 +10,27 @@ class TipAskTest {
     private val monthLater = installedAt + TIP_ASK_AFTER
 
     private fun due(
-        asked: Boolean = false,
-        items: Int = TIP_ASK_AFTER_ITEMS,
+        answeredUnder: Instant? = null,
         now: Instant = monthLater,
-    ) = tipAskDue(asked, items, installedAt, now)
+    ) = tipAskDue(answeredUnder, installedAt, now)
 
     @Test
-    fun `due once installed a month with enough recorded`() {
+    fun `due once installed a month`() {
         assertTrue(due())
     }
 
     @Test
     fun `not due a millisecond short of the month`() {
-        assertFalse(due(items = 1_000, now = monthLater.minusMillis(1)))
+        assertFalse(due(now = monthLater.minusMillis(1)))
     }
 
     @Test
-    fun `not due one item short`() {
-        assertFalse(due(items = TIP_ASK_AFTER_ITEMS - 1, now = monthLater.plus(TIP_ASK_AFTER)))
+    fun `never again once answered on this install`() {
+        assertFalse(due(answeredUnder = installedAt, now = monthLater.plus(TIP_ASK_AFTER)))
     }
 
     @Test
-    fun `never again once answered`() {
-        assertFalse(due(asked = true, items = 1_000, now = monthLater.plus(TIP_ASK_AFTER)))
+    fun `an answer restored from another install does not count`() {
+        assertTrue(due(answeredUnder = installedAt.minus(TIP_ASK_AFTER)))
     }
 }

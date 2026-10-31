@@ -10,10 +10,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +26,7 @@ import app.darek.R
 import app.darek.data.ThemeMode
 import app.darek.theme.Spacing
 import app.darek.ui.appViewModelExtras
+import app.darek.ui.common.DetailScaffold
 import app.darek.ui.common.LinkRow
 import app.darek.ui.common.LinkTarget
 import app.darek.ui.common.SectionHeader
@@ -40,6 +39,7 @@ import app.darek.ui.support.titleRes
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    onBack: () -> Unit,
     onOpenBackup: () -> Unit,
     onOpenLicences: () -> Unit,
     onOpenSupport: () -> Unit,
@@ -50,11 +50,12 @@ fun SettingsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    Scaffold(
+    DetailScaffold(
+        title = stringResource(R.string.settings_title),
+        onBack = onBack,
         modifier = modifier,
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_settings)) }) },
-    ) { insets ->
-        Column(modifier = Modifier.padding(insets).verticalScroll(rememberScrollState())) {
+    ) { contentModifier ->
+        Column(modifier = contentModifier.verticalScroll(rememberScrollState())) {
             SectionHeader(stringResource(R.string.settings_appearance))
 
             Row(modifier = Modifier.padding(horizontal = Spacing.base)) {

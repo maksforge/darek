@@ -42,10 +42,11 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       `make-feature-graphic.py`. Commit the concept image and record its provenance in
       `art/README.md` — where the art came from is the thing most likely to block a first upload, and
       it is discovered late.
-- [ ] **Replace the placeholder domain.** `data/ItemEntity.kt` and `ui/items/` — or delete them
-      (above).
-- [ ] **Rewrite `scripts/edge-to-edge.py`'s SCENES** against your screens. Until then the nightly
+- [x] **Replace the placeholder domain.** `data/ItemEntity.kt` and `ui/items/` — or delete them
+      (above). Done 2026-10-31: deleted, with Darek's Home screen in their place.
+- [x] **Rewrite `scripts/edge-to-edge.py`'s SCENES** against your screens. Until then the nightly
       walks screens that do not exist, and `screenshots.py` cannot shoot a listing.
+      Done 2026-10-31: Home, Settings, Help and the Licences.
 - [ ] **Make the artifact allowlists yours.** `aab-permissions.py`'s EXPECTED, FORBIDDEN and
       EXPECTED_ORIENTATION describe the template. Run all four `aab-*.py` scripts against a local
       `bundleRelease` **before the first tag** — the first app built from it found its stale table in the publish
