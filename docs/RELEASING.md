@@ -388,6 +388,15 @@ send it for review with the listing and the App content answers in the same subm
 **Alpha 0.2.0** was made that way (versionCode 31) and sent for review on 2026-10-31. After that
 first review the app is no longer a draft, and the workflow is the path again.
 
+⚠ **A green closed promotion says nothing about the listing.** It skips the listing by construction,
+and every *dry* listing run is validated and discarded. Nor does the listing wait for production: it
+belongs to the app rather than to a track, so the first `publish-play-production.yml` run with
+`update_listing: true` and `dry_run: false` — to any track — is the one that changes what the Console
+shows. Re-promoting a build a track already holds is accepted, so a listing-only push is that
+workflow re-promoting what the track already has. And before production access is granted, a dry run
+`internal → production` fails with `Precondition check failed.` rather than a 403: that is the
+production track not being open to the account yet, and says nothing about the service account.
+
 ### Testers, the same lists on every app
 
 - **Internal testing:** the Play email list **`only-me-Tester`** (hyphens, as the Console spells it),
@@ -404,15 +413,6 @@ first review the app is no longer a draft, and the workflow is the path again.
 - **Re-read *Target audience and content* after the content rating exists.** The page judges its
   age bands against the rating, and on Darek it said the under-13 bands were blocked by an ESRB
   rating before any rating existed (`play-app-content.md`).
-
-⚠ **A green closed promotion says nothing about the listing.** It skips the listing by construction,
-and every *dry* listing run is validated and discarded. Nor does the listing wait for production: it
-belongs to the app rather than to a track, so the first `publish-play-production.yml` run with
-`update_listing: true` and `dry_run: false` — to any track — is the one that changes what the Console
-shows. Re-promoting a build a track already holds is accepted, so a listing-only push is that
-workflow re-promoting what the track already has. And before production access is granted, a dry run
-`internal → production` fails with `Precondition check failed.` rather than a 403: that is the
-production track not being open to the account yet, and says nothing about the service account.
 
 ## Going to production (manual, gated, staged)
 
