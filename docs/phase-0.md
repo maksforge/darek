@@ -225,16 +225,79 @@ while the marker was written. From 13 `AppCompatDelegate.setApplicationLocales` 
 did nothing; below 13 it only records the request, which is why the API 30 reading passed. Calling
 `LocaleManager` directly from the Application set `[pl]` but left the first screen English until the
 next launch. The fix keeps the decision in `MainApplication` and, from 13, makes the switch in
-`MainActivity.onCreate` through AppCompat, which applies it to that screen. With it, after
-`adb shell pm clear com.maksforge.darek.debug` and a launch:
+`MainActivity.onCreate` through AppCompat, which applies it to that screen. The test phone (API 30)
+re-read after the fix: AppCompat's file still holds `application_locales="pl"` on a fresh launch.
+
+**3, API 36, both halves — pass.** Owner's phone, from `./gradlew assembleDebug` at `2a94688`
+(versionCode 40, versionName 0.2.0), the phone still English first (`persist.sys.locale` `en-US`).
+The build went on as an update, and `pm clear` stood in for the uninstall + install: the rule
+switches when the stored marker differs from `firstInstallTime`, and a clear deletes the marker and
+the platform's app language alike, which is the state a fresh install starts in, while an uninstall
+would make the next install a first install again, which HyperOS refused above without the owner's
+tap.
 
 ```text
+$ adb shell dumpsys package com.maksforge.darek.debug | grep firstInstallTime   # before
+      firstInstallTime=2026-10-31 22:50:58
+$ adb install -r -t app/build/outputs/apk/debug/app-debug.apk
+Success
+$ adb shell pm clear com.maksforge.darek.debug
+Success
+$ adb shell cmd locale get-app-locales com.maksforge.darek.debug
+Locales for com.maksforge.darek.debug for user 0 are []
+$ adb shell am start -W -n com.maksforge.darek.debug/app.darek.MainActivity
+LaunchState: COLD
 $ adb shell cmd locale get-app-locales com.maksforge.darek.debug
 Locales for com.maksforge.darek.debug for user 0 are [pl]
+$ adb shell uiautomator dump /sdcard/ui.xml && adb shell cat /sdcard/ui.xml | grep -oE '(text|content-desc)="[^"]+"'
+text="Tu Darek będzie słuchał."
+text="Darek debug"
+content-desc="Ustawienia"
 ```
 
-and the first screen read *Tu Darek będzie słuchał.* on the English phone. The test phone (API 30)
-re-read after the fix: AppCompat's file still holds `application_locales="pl"` on a fresh launch.
+Then, in the app's Settings, *Język → English* (an `input tap` on the option `uiautomator dump`
+located), a force-stop and a relaunch:
+
+```text
+$ adb shell cmd locale get-app-locales com.maksforge.darek.debug   # straight after the tap
+Locales for com.maksforge.darek.debug for user 0 are [en]
+$ adb shell am force-stop com.maksforge.darek.debug
+$ adb shell pidof com.maksforge.darek.debug   # prints nothing: no process left
+$ adb shell am start -W -n com.maksforge.darek.debug/app.darek.MainActivity
+LaunchState: COLD
+$ adb shell cmd locale get-app-locales com.maksforge.darek.debug
+Locales for com.maksforge.darek.debug for user 0 are [en]
+$ adb shell uiautomator dump /sdcard/ui.xml && adb shell cat /sdcard/ui.xml | grep -oE '(text|content-desc)="[^"]+"'
+text="Darek will listen here."
+text="Darek debug"
+content-desc="Settings"
+```
+
+English survived the restart. Then *Language → System*, the same force-stop and relaunch:
+
+```text
+$ adb shell cmd locale get-app-locales com.maksforge.darek.debug   # straight after the tap
+Locales for com.maksforge.darek.debug for user 0 are []
+$ adb shell am force-stop com.maksforge.darek.debug
+$ adb shell pidof com.maksforge.darek.debug   # prints nothing: no process left
+$ adb shell am start -W -n com.maksforge.darek.debug/app.darek.MainActivity
+LaunchState: COLD
+$ adb shell cmd locale get-app-locales com.maksforge.darek.debug
+Locales for com.maksforge.darek.debug for user 0 are []
+$ adb shell uiautomator dump /sdcard/ui.xml && adb shell cat /sdcard/ui.xml | grep -oE '(text|content-desc)="[^"]+"'
+text="Darek will listen here."
+text="Darek debug"
+content-desc="Settings"
+```
+
+Following the phone stayed so: the marker did not switch it back to Polish.
+
+**Left on the owner's phone:** the debug build at `2a94688` (versionCode 40), installed since the
+first install of the earlier reading. Its data is the DataStore file
+`files/datastore/app_preferences.preferences_pb`, whose one key is this install's first-launch
+marker `language_judged_under`, and the platform's app language, set back to Polish through the app's Settings (`get-app-locales` `[pl]`) so
+the owner sees Darek as designed. `/sdcard/ui.xml` was deleted and the phone left on its home screen;
+no phone setting was changed.
 
 **Verdict:** all readings pass. Phase 0 closes.
 
