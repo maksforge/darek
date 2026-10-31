@@ -80,9 +80,10 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
 - [ ] **Answer the Console's App content pages and write [`play-app-content.md`](play-app-content.md)
       in the same sitting** — the reasons are in front of you then and gone a week later. It moves in
       the same commit as the privacy policy, every time.
-      2026-10-31: every page answered and recorded except the **content rating**, which waits for the
-      owner to accept IARC's Terms of Use; its answers are in `play-app-content.md`. Nothing sent
-      for review.
+      2026-10-31: every page answered and recorded, the **content rating** last (submitted 21:43, IARC
+      *Completed*: PEGI 3, ESRB Everyone, USK 0, Brazil 14+, *In-app purchases*). Nothing sent for
+      review. Still open: re-read *Target audience and content* now that a rating exists, as
+      `play-app-content.md` asks.
 - [ ] **`LICENSE` and `README.md`.** Bootstrap wrote a source-available notice and a *Contributing*
       that refuses pull requests, or with `--licence reserved` a notice that grants nothing and a
       placeholder. Keep both or replace both; they must agree.
