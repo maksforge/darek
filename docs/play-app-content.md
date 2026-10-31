@@ -122,18 +122,16 @@ The answer rests on one fact per route data could take:
 
 1. **The app cannot transmit anything.** `INTERNET` is absent from the artifact, and
    `aab-permissions.py` fails the upload if it ever appears. This one fact is most of the answer.
-2. **Photos are processed only on the device.** Picked or taken, re-encoded by `media/MediaFiles.kt`
-   with their metadata — GPS included — stripped, and stored in the app's private storage.
-3. **Auto Backup is still "no data collected".** The platform moves the user's backup to the user's
+2. **Auto Backup is still "no data collected".** The platform moves the user's backup to the user's
    own Google Drive; the developer never sees it. That is Android transmitting the user's backup, not
    the app transmitting to the developer. ⚠ Every preference the backup carries lands on the user's
    *next* phone too — ADR-0005's amendment says what that is and why it is safe.
-4. **A support mail is still "no data collected", and the reason is the definition rather than an
+3. **A support mail is still "no data collected", and the reason is the definition rather than an
    exemption.** A `mailto:` hands a draft to **another app**; the user reads it, can edit every line,
    and sends it from their own mail client, or does not. ⚠ **Do not write "Play exempts support
    flows" in a re-declaration.** The help page has no such exemption; the claim is true because of
    what "collect" means, and that is the reason to give.
-5. **A tip is still "no data collected", by the same help page's FAQ on payment services.** It names
+4. **A tip is still "no data collected", by the same help page's FAQ on payment services.** It names
    Google Play's billing system as a service whose payment data you don't need to declare when the
    app never accesses that information and the service collects it directly from the user under its
    own terms. The tip meets both: Play's own sheet takes the payment details, under Google's terms,
@@ -148,7 +146,7 @@ Would change any of it:
 - **Anything the app sends by itself**, such as crash reporting or analytics. There is none today.
 - **The app keeping a purchase**, such as a tip history or a supporter badge: that is *Purchase
   history* the app collects, and the form has no way to declare it as Google Play's.
-- **Location of any kind**, including through a photo's metadata surviving into storage or a backup.
+- **Location of any kind.**
 
 ## Advertising ID
 
@@ -262,7 +260,7 @@ What a reviewer can still ask about, and the answer:
 - **The *Contains in-app purchases* label** on a free app: the tip unlocks nothing, and the Support
   section says so in the user's language.
 - **The content rating**: re-answered above, with Brazil at 14+.
-- **Data safety**: point 5 above.
+- **Data safety**: point 4 above.
 - **Financial features**: unchanged. A tip is an in-app purchase, not a financial feature.
 
 ---

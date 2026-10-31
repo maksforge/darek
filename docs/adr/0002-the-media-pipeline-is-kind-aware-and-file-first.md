@@ -53,3 +53,11 @@ else — and "missing media renders as a placeholder" already covers the other d
 - The crop is blind: there is no crop-and-zoom UI, so re-picking is the user's only recourse. Keep
   the crop centred and predictable.
 - Nothing upscales. A 300 px source is stored at 300 px, not blown up with invented pixels.
+
+## Amendment — 2026-10-31
+
+Darek stores no images. The media pipeline, the photo picker and camera hand-off, the `FileProvider`
+and Coil were deleted before the first upload (phase 0, checkpoint A); nothing replaced them, because
+nothing in Darek is a picture. `CAMERA` stays forbidden in `scripts/aab-permissions.py`, so a
+dependency that merges it still fails the build. This decision comes back unchanged with the first
+feature that keeps an image.

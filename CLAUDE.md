@@ -43,8 +43,6 @@ let us do otherwise".">
 | Kotlin, Jetpack Compose, Material 3 | Android only, `minSdk` 26 |
 | **Navigation 3** (`androidx.navigation3`) | Replaces Navigation Compose 2.x — don't reintroduce the old one |
 | Manual DI via `AppContainer`, **not Hilt** | Constructor injection is clearer at this size and easy to migrate later |
-| Photo Picker + `TakePicture` intent, **not CameraX** | Far less code; the system camera is fine here |
-| Coil 3 images | Compose-native, local files only |
 | Play Billing (`tip/`), for the tip only | Unlocks nothing; adds `BILLING`, and its merged `INTERNET` is removed — ADR-0007 |
 | On-device storage only | No backend. Platform Auto Backup, no custom agent — ADR-0005 |
 
@@ -56,14 +54,6 @@ let us do otherwise".">
   else about a translation — format arguments, plural categories per CLDR, orphans,
   `translatable="false"` — is `TranslationTest` and holds continuously. Translate from **English
   only**, per [`docs/translator-brief.md`](docs/translator-brief.md).
-- **Media paths in the DB are relative** and split by kind — `thumbnails/<uuid>.jpg`,
-  `photos/<uuid>.jpg`, `documents/<uuid>.jpg` — resolved against `filesDir` at read time. Absolute
-  paths change across installs and break restored backups; the split makes the backup export scopes a
-  list of directories.
-- **All image writes go through `media/MediaFiles.kt`** — it downsamples and re-encodes per kind,
-  bakes in EXIF rotation, strips metadata (GPS included), and writes the file before the row.
-  Bypassing it puts full-resolution bitmaps in memory and blows up any image grid.
-- **Missing media renders as a placeholder, never a crash.** A restore may legitimately lack files.
 - **Enums, not loose strings**, for closed vocabularies. Store enums by **name, never ordinal**, so
   adding a value can't rewrite history.
 - **A new preference follows *Adding a preference* in `data/AppPreferences.kt`.** A list the user
@@ -105,7 +95,6 @@ app/src/main/java/<namespace>/
                the app shell and Nav3 wiring stay at the package root, not under ui/ — they describe
                how the app hangs together rather than any one screen
   data/        the preferences (DataStore)
-  media/       MediaFiles.kt — the single path for persisting images, kind-aware
   theme/       generated palette, type scale, spacing, the night-mode window half
   tip/         the tip through Play Billing, held by AppContainer so a purchase finishes after its
                screen is gone, and the rule for its one ask on the home screen (ADR-0007)
