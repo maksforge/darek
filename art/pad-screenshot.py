@@ -1,30 +1,17 @@
 #!/usr/bin/env python3
 """Pad a device screenshot out to Play's 9:16 phone-screenshot ratio.
 
-The test Xiaomi is 1220x2712, which is 2.22:1 — taller than the 9:16 Play documents for
-phone screenshots. Rather than crop the UI or squash it, this centres the shot on a 9:16
-canvas filled with the screenshot's own edge colour, so the padding reads as background
-rather than as letterboxing.
+Phones are taller than the 9:16 Play documents for phone screenshots (a 1220x2712 phone is 2.22:1).
+Rather than crop the UI or squash it, this centres the shot on a 9:16 canvas filled with the
+screenshot's own edge colour, so the padding reads as background rather than as letterboxing.
 
     python3 art/pad-screenshot.py <in.png> <out.png>
-    python3 art/pad-screenshot.py <in.png> <out.png> --crop-status-bar
+    python3 art/pad-screenshot.py <in.png> <out.png> --crop-status-bar [--status-bar-px N]
 
-`--crop-status-bar` removes the top [STATUS_BAR_PX] before padding, and **the screenshot path does
-not need it any more.** The problem it solved is real: the driver holds the phone in Do Not Disturb
-for the length of a run — see `set_dnd` in `scripts/edge-to-edge.py` — and Zen puts a crossed bell in
-the status bar of every frame, alongside notification icons and a network-speed readout that are
-nobody's business.
-
-**This file used to say HyperOS ignores SystemUI demo mode outright. That was wrong, or has stopped
-being true** — re-measured by an app built from this template (2026-09): `sysui_demo_allowed` plus
-the notifications/battery commands empties the bar. `set_demo_status_bar` in
-`scripts/edge-to-edge.py` records what the ROM honours and what it drops, and `screenshots.py` turns
-it on for every run. So the bar is cleaned at capture time and kept in frame, which keeps the shot
-the shape of a phone.
-
-The flag stays for a device where demo mode does not work, because cropping is still the only answer
-to a bar that cannot be emptied. Prefer emptying it: a cropped shot is not the shape of anything the
-user has ever held.
+Prefer emptying the status bar at capture time: `screenshots.py` turns on SystemUI demo mode
+(`set_demo_status_bar` in `scripts/edge-to-edge.py`), which keeps the shot the shape of a phone.
+`--crop-status-bar` is for a ROM that ignores demo mode, such as MIUI 12.5, where the bar would
+otherwise show Do Not Disturb's crossed bell, notification icons and a network-speed readout.
 """
 
 import argparse
@@ -34,10 +21,8 @@ from PIL import Image
 
 RATIO_W, RATIO_H = 9, 16
 
-# The portrait `statusBars` inset on the test Xiaomi, measured by the edge-to-edge matrix rather
-# than derived from a density: 130px at 480dpi, and it coincides with the punch-hole cutout, so one
-# number takes both. `scripts/edge-to-edge.py` is what measures it. A different phone would need its own
-# reading — this is a device constant, not a Play one.
+# A device constant, not a Play one: the portrait `statusBars` inset `scripts/edge-to-edge.py` measured
+# on a 1220x2712, 480dpi phone, where it also covers the punch-hole cutout.
 STATUS_BAR_PX = 130
 
 
@@ -60,13 +45,13 @@ def main():
     parser.add_argument(
         "--crop-status-bar",
         action="store_true",
-        help=f"drop the top {STATUS_BAR_PX}px (status bar and cutout) before padding",
+        help="drop the top --status-bar-px pixels (status bar and cutout) before padding",
     )
     parser.add_argument(
         "--status-bar-px",
         type=int,
         default=STATUS_BAR_PX,
-        help="the phone's own portrait statusBars inset, for --crop-status-bar on another phone; "
+        help="the phone's portrait statusBars inset (default: %(default)s); "
         "the test Redmi Note 8 Pro reads 76 in `dumpsys window`",
     )
     args = parser.parse_args()
