@@ -96,9 +96,11 @@ Uninstalling the app removes everything it stored on the phone, including the nu
 copy can be in two other places:
 
 - **Android's backup in your Google account**, if backup is on. It outlives an uninstall, which is how
-  a reinstall gets your settings back. Deleting it under Backups in Google Drive deletes your phone's
-  whole backup, not only Darek's settings; to remove only Darek's, clear the app's data in your
-  phone's settings. You can also turn backup off there.
+  a reinstall gets your settings back. To remove it at once, turn backup off in your phone's
+  settings, or delete it under Backups in Google Drive, which deletes your phone's whole backup, not
+  only Darek's settings. If Darek is still installed, clearing its data in your phone's settings
+  also works: Android's next backup, at most a day later, replaces the copy with the cleared
+  settings.
 - **An email you sent the developer.** It is kept in the support mailbox, with your email address and
   what the draft carried, until you ask for it to be deleted. Write to the address below and it will
   be.

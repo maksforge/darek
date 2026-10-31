@@ -3,12 +3,12 @@
 
 The Console takes release notes for all languages in a **single** textarea, tagged by locale:
 
-    <en-US>
-    …
-    </en-US>
     <pl-PL>
     …
     </pl-PL>
+    <en-US>
+    …
+    </en-US>
 
 Nine notes pasted one listing at a time is nine chances to put the Czech text on the Ukrainian
 listing, and Play does not warn — it just publishes what you gave it. This turns the nine blocks
@@ -39,6 +39,9 @@ RES = Path(__file__).resolve().parent.parent / "app" / "src" / "main" / "res"
 
 # Play's limit. It truncates rather than warns, which is why this is asserted and not trusted.
 LIMIT = 500
+
+# The listing's default language, per ADR-0012.
+DEFAULT_LOCALE = "pl-PL"
 
 # The heading label used in store-listing.md -> Play's locale code. Play wants a *region*, so `pl`
 # alone is not accepted; `pt-BR` is already regional and stays as it is.
@@ -174,9 +177,8 @@ def main() -> int:
     # Not an error: a listing may carry a language the app does not, and that is the listing's call.
     extra = set(notes) - shipped_locales()
 
-    # en-US first because it is the listing's default language and the one a reviewer reads; the
-    # rest alphabetical so two runs of this script always produce the same block.
-    order = (["en-US"] if "en-US" in notes else []) + sorted(k for k in notes if k != "en-US")
+    # The default language first, the rest alphabetical so two runs produce the same block.
+    order = ([DEFAULT_LOCALE] if DEFAULT_LOCALE in notes else []) + sorted(k for k in notes if k != DEFAULT_LOCALE)
     block = "\n".join(f"<{locale}>\n{notes[locale]}\n</{locale}>" for locale in order)
 
     print(block)
