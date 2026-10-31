@@ -1,6 +1,7 @@
 package app.darek.ui.settings
 
 import android.content.Context
+import android.os.Build
 import androidx.core.app.LocaleManagerCompat
 import app.darek.data.AppPreferences
 import kotlinx.coroutines.Dispatchers
@@ -39,3 +40,11 @@ suspend fun Context.launchLanguage(
             appLanguageSet = !LocaleManagerCompat.getApplicationLocales(this@launchLanguage).isEmpty,
         )
     }
+
+// From 13 AppCompatDelegate.setApplicationLocales reaches LocaleManager only through an open
+// Activity, so at process start it does nothing there: the switch is left to MainActivity.
+fun Context.switchToPolishAtStart(): Boolean {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return true
+    setAppLanguage(AppLanguage.POLISH)
+    return false
+}

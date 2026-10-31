@@ -212,9 +212,31 @@ The user's English survived the restart: the first-launch marker did not switch 
 optimisation still `false`; the debug build is reinstalled clean and not launched. Nothing on the
 owner's phone changed.
 
-**Verdict:** readings 1 and 2 and the API 30 half of 3 pass. **Checkpoint E stays open on one
-reading**: the owner's phone (API 36, `LocaleManager`), which needs the debug package installable
-there first.
+**3, API 36 — taken later the same day, failed, fixed, passed.** The owner allowed the install on
+the phone. The first launch of current main opened in English and the platform held no app language:
+
+```text
+$ adb shell cmd locale get-app-locales com.maksforge.darek.debug   # after the first launch
+Locales for com.maksforge.darek.debug for user 0 are []
+```
+
+while the marker was written. From 13 `AppCompatDelegate.setApplicationLocales` reaches
+`LocaleManager` only through an open Activity's delegate, so called from `MainApplication.onCreate` it
+did nothing; below 13 it only records the request, which is why the API 30 reading passed. Calling
+`LocaleManager` directly from the Application set `[pl]` but left the first screen English until the
+next launch. The fix keeps the decision in `MainApplication` and, from 13, makes the switch in
+`MainActivity.onCreate` through AppCompat, which applies it to that screen. With it, after
+`adb shell pm clear com.maksforge.darek.debug` and a launch:
+
+```text
+$ adb shell cmd locale get-app-locales com.maksforge.darek.debug
+Locales for com.maksforge.darek.debug for user 0 are [pl]
+```
+
+and the first screen read *Tu Darek będzie słuchał.* on the English phone. The test phone (API 30)
+re-read after the fix: AppCompat's file still holds `application_locales="pl"` on a fresh launch.
+
+**Verdict:** all readings pass. Phase 0 closes.
 
 ## Amendments owed
 

@@ -16,7 +16,7 @@ was extracted from and the first app built from it settled on exactly this split
 
 ## Status
 
-- [ ] **Phase 0** ([`phase-0.md`](phase-0.md)) — Skeleton: Items, photos, reminders, Room and the
+- [x] **Phase 0** ([`phase-0.md`](phase-0.md)) — Skeleton: Items, photos, reminders, Room and the
   custom backup agent stripped, platform Auto Backup in their place; one home screen holding the
   Listening switch's place; Darek's palette; the app opens in Polish on first launch (ADR-0012).
   ADR-0001, 0002, 0003 and 0005 get their amendments as their modules go.

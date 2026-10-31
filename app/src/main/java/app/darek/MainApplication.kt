@@ -7,9 +7,8 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import app.darek.data.AppPreferences
 import app.darek.data.ThemeMode
 import app.darek.theme.applyThemeMode
-import app.darek.ui.settings.AppLanguage
 import app.darek.ui.settings.launchLanguage
-import app.darek.ui.settings.setAppLanguage
+import app.darek.ui.settings.switchToPolishAtStart
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -47,6 +46,8 @@ class MainApplication : Application() {
 
     private var languageUnjudged = false
 
+    private var languageSwitchPending = false
+
     val container: AppContainer by lazy { AppContainer(this, preferences, installedAt, applicationScope) }
 
     override fun onCreate() {
@@ -67,11 +68,17 @@ class MainApplication : Application() {
                 language.await()
             }
         applyThemeMode(startupThemeMode)
-        if (language.switchToPolish) setAppLanguage(AppLanguage.POLISH)
+        if (language.switchToPolish) languageSwitchPending = switchToPolishAtStart()
         languageUnjudged = language.markJudged
 
         settleTipsOnEveryForeground()
     }
+
+    /**
+     * True once, on a launch from 13 whose switch to Polish is owed: AppCompat can reach the platform
+     * only from an Activity, so `MainActivity` makes it.
+     */
+    fun takeLanguageSwitchPending(): Boolean = languageSwitchPending.also { languageSwitchPending = false }
 
     /**
      * Records that this install's first launch was judged, from `MainActivity.onCreate`. Below 33
