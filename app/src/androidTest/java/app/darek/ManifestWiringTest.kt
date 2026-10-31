@@ -1,16 +1,12 @@
 package app.darek
 
-import android.Manifest
 import android.content.ComponentName
-import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.darek.ui.common.ShareChosenReceiver
-import app.darek.work.BootReceiver
-import app.darek.work.PackageReplacedReceiver
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -24,23 +20,14 @@ class ManifestWiringTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     @Test
-    fun the_boot_receiver_is_private_and_hears_boot() {
-        assertPrivateReceiverHears(BootReceiver::class.java, Intent.ACTION_BOOT_COMPLETED)
-    }
-
-    @Test
-    fun the_update_receiver_is_private_and_hears_the_update() {
-        assertPrivateReceiverHears(PackageReplacedReceiver::class.java, Intent.ACTION_MY_PACKAGE_REPLACED)
-    }
-
-    @Test
-    fun the_boot_permission_is_requested() {
+    fun no_network_and_none_of_the_stripped_permissions() {
         val requested =
             context.packageManager
                 .getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
                 .requestedPermissions
                 .orEmpty()
-        assertTrue(Manifest.permission.RECEIVE_BOOT_COMPLETED in requested)
+                .toSet()
+        assertEquals(emptySet<String>(), requested intersect NOT_REQUESTED)
     }
 
     @Test
@@ -49,15 +36,18 @@ class ManifestWiringTest {
         assertFalse(context.packageManager.getReceiverInfo(receiver, 0).exported)
     }
 
-    private fun assertPrivateReceiverHears(
-        receiver: Class<*>,
-        action: String,
-    ) {
-        assertFalse(context.packageManager.getReceiverInfo(ComponentName(context, receiver), 0).exported)
-        val names =
-            context.packageManager
-                .queryBroadcastReceivers(Intent(action).setPackage(context.packageName), 0)
-                .map { it.activityInfo.name }
-        assertTrue("$action reaches $names", receiver.name in names)
+    private companion object {
+        // INTERNET never (ADR-0008); the rest is what the template's reminders and WorkManager
+        // declared or merged. Phase 2 brings POST_NOTIFICATIONS and FOREGROUND_SERVICE back with the
+        // Listening service, and this list and aab-permissions.py move with them.
+        val NOT_REQUESTED =
+            setOf(
+                "android.permission.INTERNET",
+                "android.permission.POST_NOTIFICATIONS",
+                "android.permission.RECEIVE_BOOT_COMPLETED",
+                "android.permission.SCHEDULE_EXACT_ALARM",
+                "android.permission.WAKE_LOCK",
+                "android.permission.FOREGROUND_SERVICE",
+            )
     }
 }

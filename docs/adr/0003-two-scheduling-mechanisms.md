@@ -61,3 +61,12 @@ the user's patience on nudges that do not need any of it. If everything is urgen
   user**. Creating a channel quiet is a decision with no second attempt.
 - Testing any of this on a vendor ROM requires reading the autostart state first. A run against an
   unknown one proves nothing either way — `scripts/device-gate.py` reads it.
+
+## Amendment — 2026-10-31
+
+Neither mechanism is in Darek any more. Reminders, the daily sweep, WorkManager, the exact-alarm path
+and both receivers were deleted before the first upload (phase 0, checkpoint A), and the app schedules
+nothing. What it runs instead is a microphone service the user starts
+([ADR-0010](0010-listening-is-a-microphone-service-the-user-starts.md)); the notification ask and
+the autostart and battery hand-offs in `work/` stay for that service. This decision comes back only
+with a feature that has to happen later rather than now.
