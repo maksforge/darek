@@ -6,8 +6,9 @@ when the app changes, when the questionnaire changes, and once a year. A re-decl
 memory a year from now is how a true answer turns false.
 
 **Status:** answered 2026-10-31 with managed publishing on, so every page is saved and **nothing has
-been sent for review**. The content rating is **not yet submitted** (below). Play reviews the rest
-with the first release sent for review; re-read every section against that build first.
+been sent for review**. The content rating was submitted the same evening and IARC's ratings are in
+(below). Play reviews the rest with the first release sent for review; re-read every section against
+that build first.
 
 Two rules keep this file honest:
 
@@ -80,9 +81,8 @@ behind a login, or a purchase that unlocks something.
 
 ## Content rating
 
-**NOT YET SUBMITTED.** The questionnaire's first step has a required checkbox, *"I agree to the Terms
-of Use as outlined by the IARC"*, and accepting terms is the owner's own consent to give, so on
-2026-10-31 nothing was entered. It is the one App content page still open. The answers to give:
+**Submitted 2026-10-31 21:43; IARC status *Completed*.** The owner accepted IARC's Terms of Use. The
+answers given:
 
 - **Email:** `darek.support@maksforge.com`, the listing's address, so there is one address to keep
   alive, not two. (Kozica used the developer account's Gmail.)
@@ -92,12 +92,13 @@ of Use as outlined by the IARC"*, and accepting terms is the owner's own consent
   the tip (ADR-0007), with its follow-up, *can these purchases include random items* (loot boxes),
   **No**.
 
-Expected result, from the siblings that re-rated with the tip: PEGI 3, ESRB Everyone, USK 0 and 3+
-elsewhere, with an *In-app purchases* notice — and **Brazil's ClassInd at 14+**, which it gives any
-app selling digital goods. Deleting the tip is the only answer that keeps Brazil at L.
+The ratings IARC returned, as the siblings that re-rated with the tip predicted: **PEGI 3, ESRB
+Everyone, USK 0**, the *3* level in the other rating systems, and **Brazil's ClassInd at 14+**, which
+it gives any app selling digital goods. The interactive element shown is *In-app purchases*. Deleting
+the tip is the only answer that brings Brazil back to L.
 
 In the Console the questionnaire shows one section at a time, and *Next* stays disabled until *Save*
-has been pressed. Record the submission date and the ratings here when it is done.
+has been pressed.
 
 Would change: user-generated content, communication between users, or a link out to anything that
 has either. A support `mailto:` hand-off is not user-to-user communication — it opens the user's own
