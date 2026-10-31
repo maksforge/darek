@@ -90,8 +90,9 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       application. Recruit the testers before the build is ready, not after; `publish-play-closed.yml`
       moves each build to them. A tester-swap community, where developers test each other's closed
       tests, filled the apps built from this template within days.
-- [ ] **Decide the `applicationId` deliberately.** It is fixed the moment the Play entry is created —
-      not renameable, not transferable without losing every install and review.
+- [x] **Decide the `applicationId` deliberately.** It is fixed the moment the Play entry is created —
+      not renameable, not transferable without losing every install and review. Decided 2026-10-31:
+      `com.maksforge.darek`, as new MaksForge apps use the maksforge.com domain.
 
 ## The tip — open until a real purchase is consumed
 
