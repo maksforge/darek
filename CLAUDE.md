@@ -1,7 +1,10 @@
-# <app name>
+# Darek
 
-<One paragraph: what this app does, for whom, and the one constraint that shapes everything —
-"free, ad-free, no server, all data on the device", or whatever replaces it.>
+A Polish voice assistant for Android. It listens in the background for a short, fixed set of
+Commands — *"Darek, otwórz bramę"* — answers out loud, and calls the number the user gave it, which is
+how a GSM gate opener is driven. Polish is the language users speak to it and hear from it. The
+constraint that shapes everything: **recognition, speech and the call all happen on the phone, and
+the app never opens a network connection.**
 
 - **Vocabulary:** [`CONTEXT.md`](CONTEXT.md) — use these terms in code and UI.
 - **Decisions and why:** [`docs/adr/`](docs/adr/) — read before changing anything they cover.
@@ -140,39 +143,45 @@ with a build to prove it.
 
 ## Environment notes
 
-<Fill this in for the machine and phone you actually develop on — it is the section that saves the
-most time, and none of it is discoverable from the code. What belongs here:>
-
-- Whether there is an Android Studio, or everything is CLI against a physical phone over USB.
-- **More than one device attached: name one.** Gradle and adb both reach every attached device;
-  set `ANDROID_SERIAL` (both honour it) or pass `adb -s <serial>`. List each phone here with its
-  serial, API level, and whether it is a test phone to drive at will or someone's phone in use.
-- **A screenshot of a sleeping phone is its lock screen.** `adb shell svc power stayon usb` keeps it
-  awake on USB, and `adb shell wm dismiss-keyguard` gets past a swipe lock.
-- **On Xiaomi/HyperOS, MIUI optimisation decides whether adb installs work.** Off, they are
-  tap-free; the toggle is at the bottom of Developer options, revealed by tapping "Reset to default
-  values" a few times, and an OS update can turn it back on, so check
-  `adb shell getprop persist.sys.miui_optimization` reads `false`. On, installs fail
-  `INSTALL_FAILED_USER_RESTRICTED`: a split-APK install (`connectedAndroidTest`) prompts on the phone
-  and a missed prompt fails the run, and the first install of a brand-new `applicationId` is refused
-  outright with no dialog. "Install via USB" lifts that but wants a Mi account and a SIM. With
-  neither, install both APKs plain and run the instrumentation directly:
+- **Two phones, so name one.** Gradle and adb both reach every attached device; set
+  `ANDROID_SERIAL` (both honour it) or pass `adb -s <serial>`.
+  - **The test phone**, `mnbm7hw8ivdqzx9l`: a wiped, debloated Redmi Note 8 Pro, Android 11 (API
+    30), MIUI 12.5, Polish, on USB for good, in airplane mode with no SIM. Location stays on: turning
+    it off raises a Play services popup. It has **no screen lock** since 2026-10-22,
+    but MIUI still shows a swipe keyguard, and `screencap` captures that instead of the app;
+    `svc power stayon usb` keeps it awake on USB, `adb shell input keyevent KEYCODE_WAKEUP` wakes it
+    and `adb shell wm dismiss-keyguard` clears the keyguard. Drive it at will.
+    `connectedAndroidTest` runs on it with no prompt.
+    **It has no SIM, so it cannot place the gate call**: the voice-to-reply half of Darek can be read
+    on it, the dial needs the owner's phone.
+    **This PC's internet runs through it**: its USB tether outranks the PC's Ethernet (route
+    metric 100 against 101), so its Wi-Fi stays on; switching it off takes the PC offline.
+  - **The owner's phone**, `132bc856`: a Redmi Note 14 Pro 5G, API 36, HyperOS. Drive it without
+    asking whenever adb reaches it (the owner's standing permission since 2026-10-20), but it is in
+    use: say so in chat before a reading takes its screen, and restore any toggle afterwards.
+    **That permission does not cover dialling**: the gate call really opens the gate on the owner's
+    SIM, so any reading that can reach it needs the owner's go-ahead in chat, every time.
+- **MIUI optimisation is off on the test phone**, and that is what makes it tap-free. With it on,
+  every adb install fails `INSTALL_FAILED_USER_RESTRICTED`, and the "Install via USB" fix wants a Mi
+  account and a SIM. An update can turn it back on, so check before installing:
+  `adb shell getprop persist.sys.miui_optimization` reads `false`. The toggle is at the bottom of
+  Developer options, revealed by tapping "Reset to default values" a few times.
+- **On the owner's phone (HyperOS)**, split-APK installs (`connectedAndroidTest`) prompt on the
+  phone and a missed prompt fails the run with `INSTALL_FAILED_USER_RESTRICTED`; the workaround is
+  to install both APKs plain and run the instrumentation directly:
   ```bash
   adb install -r -t app/build/outputs/apk/debug/app-debug.apk
   adb install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
   adb shell am instrument -w <applicationId>.debug.test/androidx.test.runner.AndroidJUnitRunner
   ```
-  and for a brand-new `applicationId`, `adb push` the APK to `/sdcard/Download/` and tap it in the
-  file manager.
-- **Xiaomi kills background work aggressively.** Scheduled notifications need battery-optimisation
-  exemption and **autostart**, and autostart is the load-bearing one: without it the ROM does not
-  start the process for a broadcast at all. It has no appop, it is a Settings toggle, and the grant
-  **lapses on its own** — re-read it before any run that depends on it. `scripts/device-gate.py`
-  reads and sets it.
-- **Two device readings look identical to a pass when they are nothing at all.** A database pulled
+  **A brand-new `applicationId` is a different failure with the same error string**: HyperOS refuses
+  the *first* install of a package outright, with no dialog to miss. Either enable USB installation
+  in developer options, or `adb push` the APK to `/sdcard/Download/` and tap it in the file manager.
+- **Xiaomi kills background work aggressively.** Anything that must run without the app on screen
+  may need battery-optimisation exemption and **autostart**, and autostart is the load-bearing one:
+  without it the ROM does not start the process for a broadcast at all. It has no appop, it is a
+  Settings toggle, and the grant **lapses on its own** — re-read it before any run that depends on
+  it. `scripts/device-gate.py` reads and sets it.
+- **A device reading can look identical to a pass when it is nothing at all.** A database pulled
   without its `-wal` sidecar is **stale** — the app's most recent writes sit in the WAL, so a deleted
-  row still reads as present. Pull both and `PRAGMA wal_checkpoint(TRUNCATE)` on the host. And
-  `cmd jobscheduler run -f -n androidx.work.systemjobscheduler <pkg> <id>` answers *"Could not find
-  job N"* on stderr and **exits 0**: `am force-stop` cancels the app's jobs and WorkManager
-  re-enqueues under a new id at the next launch, so read the id from `dumpsys jobscheduler` and
-  confirm `WM-WorkerWrapper: Starting work for …` in logcat before believing any sweep result.
+  row still reads as present. Pull both and `PRAGMA wal_checkpoint(TRUNCATE)` on the host.

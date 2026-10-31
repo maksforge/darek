@@ -88,4 +88,4 @@ in the repository.
 
 ## Contact
 
-**<support email>**
+**darek.support@maksforge.com**

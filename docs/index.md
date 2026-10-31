@@ -37,8 +37,8 @@ and backups go to storage you choose. The details are in the
 
 ## Support
 
-**<support email>** — an ordinary mailbox that a person reads.
+**darek.support@maksforge.com** — an ordinary mailbox that a person reads.
 
 ## The source
 
-Built in the open at **[maksforge/<repo>](https://github.com/maksforge/<repo>)**.
+Built in the open at **[maksforge/darek](https://github.com/maksforge/darek)**.
