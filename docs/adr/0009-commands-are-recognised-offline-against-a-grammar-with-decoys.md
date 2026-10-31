@@ -37,10 +37,11 @@ confidence 1.00. That is the failure this ADR exists to prevent.
   [ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)) and Decoys**: names and
   words close to the Commands' (*marek, jarek, janek, darka, darku, dawid, otwórz, zamknij, brama*)
   and `[unk]`, so near-misses have somewhere to land.
-- **A Command fires when its words appear as a contiguous run in a single final result**, after
-  `[unk]` is dropped. Decoys or `[unk]` around it do not stop it, so *"darek otwórz bramę proszę"*
-  and a Command joined to surrounding noise fire. A partial or reordered Command (*"darek bramę
-  otwórz"*) and partial results never fire.
+- **A Command fires when its words are adjacent in a single final result's raw tokens**, with
+  nothing between them, not even `[unk]`. Anything before or after, Decoys or `[unk]`, is ignored,
+  so *"darek otwórz bramę proszę"* and a Command joined to surrounding noise fire. A split Command
+  (*"Darek powiedział: otwórz bramę"* → `darek [unk] otwórz bramę`), a partial or reordered one
+  (*"darek bramę otwórz"*) and partial results never fire.
 
 ## Alternatives
 

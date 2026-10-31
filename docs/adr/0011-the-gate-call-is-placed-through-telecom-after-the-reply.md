@@ -20,14 +20,17 @@ premium-rate fraud, and `CALL_PHONE` is otherwise unrestricted.
   reads contacts.
 - **A Command is acknowledged before it acts**: Darek speaks the Reply (*"Otwieram bramę"*) and waits
   for the engine's `onDone`. A **cancel window** of about 2 s follows, in which *"Darek, stop"*,
-  *"anuluj"* or the notification's *Anuluj* action cancels; only then does he dial.
+  *"anuluj"* or the notification's *Anuluj* action cancels; only then does he dial. Cancel words act
+  on **partial** results: one containing *"stop"* or *"anuluj"* cancels at once, because a final
+  result comes only after a pause and could land after the dial.
 - **Consent** is the Number the user typed for that Command and the user's own start of Listening:
   that is what Play's malware policy asks for. A false match therefore costs a spoken Reply the user
   can cancel, not a silent dial.
 - **Recognition is paused while he speaks and from the dial until the call ends**, so he cannot hear
-  himself or the call. The end of the call is read from `AudioManager`'s mode
-  (`OnModeChangedListener` on API 31+, `getMode()` below): recognition resumes when it returns to
-  `MODE_NORMAL`, or after a timeout. No `READ_PHONE_STATE`.
+  himself or the call; it runs through the cancel window. The end of the call is read from
+  `AudioManager`'s mode (`OnModeChangedListener` on API 31+, `getMode()` below). Because `placeCall`
+  is asynchronous, phase 2 resumes recognition only once the mode has left `MODE_NORMAL` and come
+  back, or after a timeout. No `READ_PHONE_STATE`.
 - If dialling fails, he says so (*"Nie udało się zadzwonić"*) rather than staying silent.
 
 ## Alternatives
