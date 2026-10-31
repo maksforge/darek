@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/maksforge/darek/compare/v0.2.0...v0.2.1) (2026-10-31)
+
+
+### Bug Fixes
+
+* switch to Polish from the first screen on Android 13 and later ([9e2e934](https://github.com/maksforge/darek/commit/9e2e934874d3cd95b996f7438196269b3de7a883))
+
 ## [0.2.0](https://github.com/maksforge/darek/compare/v0.1.0...v0.2.0) (2026-10-31)
 
 
