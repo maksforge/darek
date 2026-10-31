@@ -63,9 +63,13 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       receiving Gmail's *Send mail as* entry, confirmed. Send *Report a problem* from a non-Gmail
       account and check it lands outside Spam. One address everywhere — the listing's contact field
       and IARC's rating contact too; `SupportHandoff.kt` says why it lives on our own domain.
-- [ ] **Write the listing.** `docs/store-listing.md` — every heading in it is parsed by a script.
-- [ ] **Capture the screenshots** with `scripts/screenshots.py` from a release-shaped build, in every
+- [x] **Write the listing.** `docs/store-listing.md` — every heading in it is parsed by a script.
+      Done 2026-10-31, Polish and English, for Darek as he will ship, with one paragraph saying the
+      test build has only Home and Settings; the release that adds Listening deletes it.
+- [x] **Capture the screenshots** with `scripts/screenshots.py` from a release-shaped build, in every
       listing language, into `art/play-screenshots/`. Play wants at least two before the first review.
+      Done 2026-10-31 as **current-build placeholders**: Home and Settings, light, in pl and en, from
+      a local release build on the test phone. Re-shoot when Listening has a screen.
 - [ ] **Put the app on maksforge.com.** Its icon goes at `assets/icons/<repo>.webp` in
       maksforge/maksforge.github.io, which the app's own site loads, and the app goes on that home
       page. Replace `description` in `docs/_config.yml` too: it is the tagline under the app's name.
