@@ -33,12 +33,6 @@ The Google Play Billing library, which handles tips, carries usage logging of it
 
 ## What the app can access, and why
 
-- **Photos you choose.** The app uses Android's Photo Picker, which hands it the single file you
-  picked and nothing else — it never has access to your gallery. A picture you attach is copied into
-  the app's own storage, **re-encoded so that the original's metadata does not travel with it**;
-  the location a camera stamps on a photo is removed in the process.
-- **The camera**, only when you tap to take a picture, through the system camera app. The app
-  declares no camera permission.
 - **Google Play billing.** Lets the app ask the Google Play app for the price of a tip and open its
   payment sheet. It gives the app nothing about you.
 

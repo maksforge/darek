@@ -33,9 +33,10 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
 
 ## Before the first upload
 
-- [ ] **Delete what the app does not need**, while deleting is free — [`optional-modules.md`](optional-modules.md)
+- [x] **Delete what the app does not need**, while deleting is free — [`optional-modules.md`](optional-modules.md)
       lists each module's files and the five places around the code a strip reaches. Room, photos,
       backup and reminders are each a data-loss or Data safety story you will otherwise defend forever.
+      Done 2026-10-31: all four deleted, and the placeholder Items with them; the tip stays.
 - [ ] **Decide `minSdk` deliberately, before launch.** The direction is asymmetric: raising it later
       strands existing installs on the last build that fitted them, lowering it later is free. If the
       only phone in the loop sits at the top of the range, every `SDK_INT` branch below it ships

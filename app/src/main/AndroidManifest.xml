@@ -73,24 +73,6 @@
         </activity>
 
         <!--
-            The camera app writes the photo it takes into a file we own, and hands back a Uri for
-            it. A file:// Uri has been illegal to pass across apps since Android 7, so this provider
-            vends a content:// one instead, scoped to the single cache directory in file_paths.xml.
-            Photo Picker needs none of this — it hands us a Uri of its own — but "take a photo"
-            does. No CAMERA permission is declared on purpose: declaring it would make a camera
-            *required* at install time, and firing the system camera intent needs none.
-        -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
-
-        <!--
             Not a service anybody starts — `android:enabled="false"` means it can never run. It is a
             manifest entry used as a storage slot: AppCompat looks itself up here, reads the
             `autoStoreLocales` flag, and takes responsibility for persisting the chosen language on

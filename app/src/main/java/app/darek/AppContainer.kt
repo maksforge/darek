@@ -7,7 +7,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import app.darek.data.AppPreferences
-import app.darek.media.MediaFiles
 import app.darek.tip.TipJar
 import kotlinx.coroutines.CoroutineScope
 import java.time.Instant
@@ -43,8 +42,6 @@ class AppContainer(
     @Suppress("unused") private val applicationScope: CoroutineScope,
 ) {
     private val appContext = context.applicationContext
-
-    val media by lazy { MediaFiles(appContext) }
 
     /**
      * The tip (ADR-0007). Here rather than in a `ViewModel` because a purchase can finish after the
