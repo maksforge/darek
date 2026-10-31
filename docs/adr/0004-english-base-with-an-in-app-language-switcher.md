@@ -65,3 +65,9 @@ gate does not.
   outside an activity takes its strings from `context.inAppLanguage()` (`ui/settings/AppLanguage.kt`),
   which reads the stored choice itself because a process the OS started for a worker never loaded
   AppCompat's copy. From 13 the platform applies the choice to every context and the call is a no-op.
+
+## Amendment — 2026-10-31
+
+For Darek, which string set *shows* is amended by
+[ADR-0012](0012-darek-speaks-polish-and-opens-in-polish.md): the app opens in Polish on every phone.
+How strings are written and translated is unchanged.
