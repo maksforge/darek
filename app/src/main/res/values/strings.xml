@@ -23,7 +23,7 @@
     <string name="home_listening_placeholder">Darek will listen here.</string>
     <!-- The tip's one ask (ADR-0007): once per install, so a moved install asks again -->
     <string name="home_tip_ask_title">This app is free, and stays free</string>
-    <string name="home_tip_ask_body">If it is useful to you, you can leave the developer a tip. It unlocks nothing, and the app will not ask again on this phone.</string>
+    <string name="home_tip_ask_body">If it is useful to you, you can leave the developer a tip. It unlocks nothing, and the app won\'t ask again.</string>
     <string name="home_tip_ask_accept">Leave a tip</string>
     <string name="home_tip_ask_decline">No thanks</string>
 

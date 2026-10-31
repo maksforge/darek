@@ -296,8 +296,7 @@ def shell_ok(cmd: str) -> str:
     """`adb shell`, tolerating a non-zero exit.
 
     `e2e.shell` raises on one, which is right for the commands that ought to succeed and wrong for
-    the ones whose *failure is the answer*: `pidof` exits 1 when the process is not running, which
-    is precisely the reading the reboot check is taking.
+    the readings here, which are judged by what they print rather than by their exit status.
     """
     import subprocess
 
