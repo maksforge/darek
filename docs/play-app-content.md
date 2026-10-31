@@ -5,10 +5,10 @@ fact that would change it**. The Console shows what was answered but never why, 
 when the app changes, when the questionnaire changes, and once a year. A re-declaration made from
 memory a year from now is how a true answer turns false.
 
-**Status:** answered 2026-10-31 with managed publishing on, so every page is saved and **nothing has
-been sent for review**. The content rating was submitted the same evening and IARC's ratings are in
-(below). Play reviews the rest with the first release sent for review; re-read every section against
-that build first.
+**Status:** answered 2026-10-31 with managed publishing on. The content rating was submitted the same
+evening and IARC's ratings are in (below). **Sent for review 2026-10-31**, together with the listing
+and the first closed release, Alpha 0.2.0 (versionCode 31). Still owed: the re-read of *Target
+audience and content* (below), and the listing's AI asset declaration, which is the owner's answer.
 
 Two rules keep this file honest:
 

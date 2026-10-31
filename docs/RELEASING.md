@@ -374,6 +374,37 @@ name the version in the dialog.
 ⚠ **The first release on a closed track waits on Play review.** A green run means the promotion was
 accepted, not that any tester has the build. Later releases on a reviewed track appear within minutes.
 
+⚠ **On an app that has never been published, this workflow cannot make the first closed release.**
+Until Play has reviewed something, the app is a *draft* app, and the API creates only draft releases
+on it. Darek's first run failed on 2026-10-31 with:
+
+```
+[!] Google Api Error: Invalid request - Only releases with status draft may be created on draft app.
+```
+
+The workflow always sends `completed`, so the fix is the Console, once: *Test and release → Closed
+testing → (track) → Create new release → Add from library*, pick the build already on internal, and
+send it for review with the listing and the App content answers in the same submission. Darek's
+**Alpha 0.2.0** was made that way (versionCode 31) and sent for review on 2026-10-31. After that
+first review the app is no longer a draft, and the workflow is the path again.
+
+### Testers, the same lists on every app
+
+- **Internal testing:** the Play email list **`only-me-Tester`** (hyphens, as the Console spells it),
+  the owner alone. It is attached to Darek's internal track, saved 2026-10-31; Urgent, Gloam and
+  Kozica use the same list.
+- **Closed testing:** the Google Group **`testers-community@googlegroups.com`**, always. Darek's
+  closed track (Alpha) uses it.
+
+### What the first submission for review asks that no workflow answers
+
+- **The listing's AI asset declaration** — whether the store assets were made with generative AI —
+  is the owner's to answer, from what they know of where each asset came from. Not answered for
+  them.
+- **Re-read *Target audience and content* after the content rating exists.** The page judges its
+  age bands against the rating, and on Darek it said the under-13 bands were blocked by an ESRB
+  rating before any rating existed (`play-app-content.md`).
+
 ⚠ **A green closed promotion says nothing about the listing.** It skips the listing by construction,
 and every *dry* listing run is validated and discarded. Nor does the listing wait for production: it
 belongs to the app rather than to a track, so the first `publish-play-production.yml` run with

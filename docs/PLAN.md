@@ -19,7 +19,9 @@ was extracted from and the first app built from it settled on exactly this split
 - [ ] **Phase 0** ([`phase-0.md`](phase-0.md)) — Skeleton: Items, photos, reminders, Room and the
   custom backup agent stripped, platform Auto Backup in their place; one home screen holding the
   Listening switch's place; Darek's palette; the app opens in Polish on first launch (ADR-0012).
-  ADR-0001, 0002, 0003 and 0005 get their amendments as their modules go
+  ADR-0001, 0002, 0003 and 0005 get their amendments as their modules go.
+  2026-10-31: checkpoints A–D merged; E is open on its API 36 reading alone, refused by HyperOS's
+  first-install block (`phase-0.md`, *Taken 2026-10-31*)
 - [ ] **Phase P** — The pipeline: repository setup, upload key, Play entry, secrets, a green internal upload
 - [ ] **Phase 1** — The mechanism on the phone, app open: the bundled model hears one Command from a
   real voice, Darek speaks the Reply offline, and `placeCall` dials (ADR-0009, ADR-0011). Readings:
