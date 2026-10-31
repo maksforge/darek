@@ -32,7 +32,7 @@
     <string name="settings_restore">Przywróć ustawienia domyślne</string>
     <string name="settings_restore_hint">Motyw, kolory i język</string>
     <string name="settings_restore_confirm_title">Przywrócić ustawienia domyślne?</string>
-    <string name="settings_restore_confirm_body">Motyw, kolory i język wrócą do wartości początkowych. Tego nie można cofnąć.</string>
+    <string name="settings_restore_confirm_body">Motyw i kolory wrócą do wartości początkowych, a język do polskiego. Tego nie można cofnąć.</string>
     <string name="settings_restore_confirm">Przywróć</string>
     <string name="settings_about">O aplikacji</string>
     <string name="settings_support">Pomoc i opinie</string>

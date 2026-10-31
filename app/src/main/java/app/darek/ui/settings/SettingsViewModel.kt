@@ -49,13 +49,14 @@ class SettingsViewModel(
     /**
      * Every setting back to how the app came, then the two halves the store does not hold: the
      * theme's window half, as in [setThemeMode], and the language, which the platform keeps
-     * ([setAppLanguage]). Language last, because it recreates the Activity.
+     * ([setAppLanguage]) and which goes back to Polish, as on a first launch (ADR-0012). Language
+     * last, because it recreates the Activity.
      */
     fun restoreDefaults() {
         viewModelScope.launch {
             preferences.restoreDefaults()
             applyThemeMode(preferences.themeModeNow())
-            setAppLanguage(null)
+            setAppLanguage(AppLanguage.POLISH)
         }
     }
 
