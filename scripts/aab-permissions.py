@@ -80,25 +80,9 @@ PRIM_INT_HEX = 7
 # being true the day you remove a module docs/optional-modules.md lists, and that
 # is the day to edit it.
 EXPECTED = {
-    # Declared in AndroidManifest.xml. Runtime on API 33+, asked for from a screen
-    # that explains it first (work/NotificationPermission.kt, ADR-0003).
-    "android.permission.POST_NOTIFICATIONS": "ours — reminder notifications, ADR-0003",
-    # Declared. Install-time and invisible; BootReceiver re-arms the sweep after a restart.
-    "android.permission.RECEIVE_BOOT_COMPLETED": "ours — work/BootReceiver.kt, ADR-0003",
-    # Declared, and deliberately not USE_EXACT_ALARM (the manifest comment says why).
-    # Delete the manifest line and this row together if nothing needs a precise moment.
-    "android.permission.SCHEDULE_EXACT_ALARM": "ours — work/ExactAlarms.kt, ADR-0003",
-    # The three WorkManager merges, none of them in our source. They leave with
-    # WorkManager — and an artifact that carries one again without it has a new
-    # dependency that wants a wake lock or network state, which is a Data safety
-    # question before it is a build one.
-    "android.permission.WAKE_LOCK": "WorkManager",
-    # The Play Billing Library's datatransport (the tip) merges it too, so it leaves
-    # only once both are gone.
-    "android.permission.ACCESS_NETWORK_STATE": (
-        "WorkManager and Play Billing's datatransport — read connectivity state, open nothing"
-    ),
-    "android.permission.FOREGROUND_SERVICE": "WorkManager — its SystemForegroundService, never started here",
+    # The Play Billing Library's datatransport (the tip) merges it, and is its only owner
+    # now that WorkManager is gone. It leaves with the tip.
+    "android.permission.ACCESS_NETWORK_STATE": "Play Billing's datatransport — reads connectivity state, opens nothing",
     # The tip (ADR-0007), merged from the Play Billing Library. It lets the app talk to
     # the Play Store app's billing service; no dialog, and no data of the user's. Its
     # datatransport dependency also merges INTERNET, which the manifest removes.

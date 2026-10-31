@@ -44,8 +44,7 @@ fun Context.hasAutostartSettings(): Boolean = autostartIntent().resolveActivity(
  * recoverable only host-side, by `scripts/device-gate.py` scraping that screen over `adb`. So this
  * is the case `PLAN.md` rule 4 names as the exception that proves the clause: the app still owns the
  * hand-off and still owns saying what a denial costs — a permanent row that makes no claim, never a
- * `WarningBanner`, which could not clear. What stands behind the claim that the grant matters is an
- * overnight Doze run on a real device (`scripts/doze-capture.sh`).
+ * `WarningBanner`, which could not clear.
  */
 fun Context.openAutostartSettings(): Boolean =
     startActivitySafely(autostartIntent().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))

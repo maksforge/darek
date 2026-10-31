@@ -95,12 +95,11 @@ fun rememberNotificationPermissionAsk(onOutcome: (NotificationPermissionOutcome)
  * The outcome of [rememberNotificationPermissionAsk] is true at the moment it is delivered and can
  * be stale a minute later: the screen this app *deliberately sends the user to* when the system
  * dialog is spent is the one where they flip this switch, so an answer cached before that trip is
- * wrong exactly when it decides whether to tell the user their reminders are going nowhere. Read it
- * again on every resume — `ui/settings/SettingsScreen.kt` is the worked example.
+ * wrong exactly when it decides whether to tell the user their notifications are going nowhere. Read
+ * it again on every resume.
  *
  * It is only half the question: a channel muted on its own hides its notifications while this still
- * answers true. [channelCanAppear] reads the other half, and [openChannelNotificationSettings] is its
- * way back.
+ * answers true, and [openChannelNotificationSettings] is the way back from that.
  */
 fun Context.notificationsAllowed(): Boolean = NotificationManagerCompat.from(this).areNotificationsEnabled()
 
@@ -131,11 +130,11 @@ fun Context.openAppNotificationSettings() {
  * there is no version branch to write — but a skin can still decline to export it, so it falls
  * through to the same two screens as above.
  */
-fun Context.openChannelNotificationSettings(channel: ReminderChannel) {
+fun Context.openChannelNotificationSettings(channelId: String) {
     startFirstAvailable(
         Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
             .putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-            .putExtra(Settings.EXTRA_CHANNEL_ID, channel.id),
+            .putExtra(Settings.EXTRA_CHANNEL_ID, channelId),
         Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
             .putExtra(Settings.EXTRA_APP_PACKAGE, packageName),
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)),

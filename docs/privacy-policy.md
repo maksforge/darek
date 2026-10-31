@@ -39,7 +39,6 @@ The Google Play Billing library, which handles tips, carries usage logging of it
   the location a camera stamps on a photo is removed in the process.
 - **The camera**, only when you tap to take a picture, through the system camera app. The app
   declares no camera permission.
-- **Notifications**, only if you turn reminders on.
 - **Google Play billing.** Lets the app ask the Google Play app for the price of a tip and open its
   payment sheet. It gives the app nothing about you.
 
