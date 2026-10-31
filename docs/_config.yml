@@ -15,7 +15,7 @@ remote_theme: maksforge/pages-theme
 plugins:
   - jekyll-remote-theme
 title: Darek
-description: <One line about the app>
+description: A Polish voice assistant that opens your gate with a phone call, offline.
 maksforge:
   icon: /assets/icons/darek.webp
   status: building
