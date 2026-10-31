@@ -39,3 +39,4 @@ voice — a mismatch that only confuses.
   screenshots are Polish.
 - `TranslationTest` and the gate keep working unchanged.
 - A user who picks English in the switcher keeps English; Darek still speaks Polish.
+- *Restore default settings* sets Polish, as a first launch does, rather than following the phone.
