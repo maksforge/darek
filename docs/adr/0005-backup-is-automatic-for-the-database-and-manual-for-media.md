@@ -82,8 +82,12 @@ system — for a feature the platform already provides.
 
 Darek has no records and no media, so neither half of this decision applies to it. The manual export
 and restore, the backup screen, the share hand-off and the custom `AppBackupAgent` were deleted before
-the first upload (phase 0, checkpoint A). Platform Auto Backup took over, with no rules file: what the
-app keeps is DataStore preferences, every one of them a setting the user's next phone should have.
-The one exception is the tip ask's answer, which is judged at the read against
-`PackageInfo.firstInstallTime` rather than trusted from a restore (ADR-0007's amendment). Live state
-added later, such as Listening in phase 2, is judged the same way.
+the first upload (phase 0, checkpoint A). Platform Auto Backup took over, carrying DataStore
+preferences only, every one of them a setting the user's next phone should have. The one exception is
+the tip ask's answer, which is judged at the read against `PackageInfo.firstInstallTime` rather than
+trusted from a restore (ADR-0007's amendment). Live state added later, such as Listening in phase 2,
+is judged the same way.
+
+Darek has no database of its own, but Billing's `datatransport` keeps its usage log in one, so
+`res/xml/backup_rules.xml` (API 30 and below) and `res/xml/data_extraction_rules.xml` (31 and up)
+exclude the `database` domain from both cloud backup and device transfer.
