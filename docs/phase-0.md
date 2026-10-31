@@ -8,6 +8,9 @@ amends [ADR-0001](adr/0001-the-database-stops-being-disposable-at-1-0.md),
 go, and builds [ADR-0012](adr/0012-darek-speaks-polish-and-opens-in-polish.md)'s first-launch switch.
 `CONTEXT.md` is owed nothing: no domain term appears on screen yet.
 
+**`PLAN.md`'s phase 0 line was wrong, and this PR corrects it.** It promised the Commands' storage
+and the mark; both move out of this phase (below).
+
 **What closing this phase means.** Today the app is the template: an Items list with photos, a
 database with its schema gate, reminders on WorkManager, a manual backup export, a slate-blue scheme.
 After this phase it opens — in Polish, on any phone — on one Darek home screen that holds the place of
@@ -22,6 +25,8 @@ permissions, has no `darek.db`, and a first launch on an English phone shows Pol
 - Phase P's pipeline: secrets, the `main` ruleset, Pages, the Play entry `com.maksforge.darek`.
   Nothing has been uploaded, so nothing is frozen beyond the package name.
 - The tip stays (the owner's default for MaksForge apps); its one ask moves to the home screen.
+  The Items count goes with the Items, so `tipAskDue` becomes "installed at least 7 days ago and not
+  asked yet".
 - `minSdk` 26 stays. The test phone is API 30, the owner's is API 36.
 
 ## What is in, and what is deliberately not
@@ -31,7 +36,10 @@ the photo pipeline, the manual backup export and the custom `BackupAgent` (platf
 over), reminders and WorkManager, and the Items domain; a home screen that holds the Listening
 switch's place and carries the tip's ask; Darek's palette; the one-time Polish switch on first launch;
 `aab-permissions.py`, `edge-to-edge.py`'s SCENES, the privacy policy and `play-app-content.md`
-rewritten against what is left.
+rewritten against what is left. Around the code: CI's instrumented job stays green on one kept
+`ManifestWiringTest` case, rewritten to assert the stripped permissions are absent; `CLAUDE.md`'s
+Stack, Layout and Commands rows are updated; `device-gate.py` keeps its autostart half and loses
+the reminder checks.
 
 **Not in, and each with a reason rather than a phase:**
 
@@ -44,14 +52,21 @@ rewritten against what is left.
 **Kept although nothing uses them yet:** `work/Autostart.kt`, `work/BatteryExemption.kt`,
 `work/NotificationPermission.kt` and the `com.miui.securitycenter` `<queries>` entry. Phase 2's
 Listening service needs all four (ADR-0010), and deleting them now means rewriting them in a month.
+`NotificationPermission.kt` loses its reminder half: `openChannelNotificationSettings(ReminderChannel)`
+and the KDoc's references to it and `channelCanAppear`. The permissions are not kept with the code:
+after the strip the manifest declares none of `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE`,
+`WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED`, `SCHEDULE_EXACT_ALARM`, and phase 2 re-adds what it uses.
 
 ## Auto Backup and live state
 
-With the custom agent gone, every DataStore key reaches the user's next phone. Phase 0's keys are all
-settings (theme, language, the tip's ask). The **one-time Polish marker** is the exception worth
-naming: restored onto a new phone it says "already switched", which is right — the user's language
-choice is restored with it. Listening state, which arrives in phase 2, is live state and is judged at
-the read (`optional-modules.md`), not trusted from a restore.
+With the custom agent gone, every DataStore key reaches the user's next phone. Phase 0's keys are
+settings (theme, the tip's ask) and one that is not. The **one-time Polish marker** is judged at the
+read (`optional-modules.md`): it stores the `PackageInfo.firstInstallTime` it was written under and
+counts only if that equals the current one. The language itself is not a DataStore key and is not
+reliably restored with it, so a marker restored from another install re-runs the switch once.
+`BACKUP_FOLDER_URI` leaves with the backup module; `ONBOARDING_DONE` stays only if something still
+reads it. Listening state, which arrives in phase 2, is live state and is judged at the read the
+same way.
 
 ---
 
@@ -63,20 +78,26 @@ the read (`optional-modules.md`), not trusted from a restore.
 | **B** | The home screen, with the tip's ask | `feat:` | A |
 | **C** | Darek's palette | `feat:` | — |
 | **D** | Opens in Polish on first launch (ADR-0012) | `feat:` | — |
-| **E** | Readings on the test phone | `docs:` | A–D |
+| **E** | Readings on both phones | `docs:` | A–D |
 
 A goes first because B replaces the screen A removes. C and D touch nothing A does and can merge in
 any order.
 
 ## E. The readings
 
-On the test phone, from a release-shaped build (`./gradlew assembleDebug -PreleaseShapedDebug`):
+Readings 1 and 2 on the test phone, from a plain debuggable build (`./gradlew installDebug`), after
+a fresh install and one launch:
 
-1. `adb shell dumpsys package com.maksforge.darek.debug | grep permission` — no
-   `RECEIVE_BOOT_COMPLETED`, `SCHEDULE_EXACT_ALARM`, `WAKE_LOCK`.
-2. `adb shell run-as com.maksforge.darek.debug ls databases` — no `darek.db`.
-3. With the phone's language set to English: a fresh install opens in Polish; switching to English
-   in Settings, force-stopping and reopening keeps English.
+1. `adb shell pm path com.maksforge.darek.debug` prints a path (the package is installed), then
+   `adb shell dumpsys package com.maksforge.darek.debug | grep permission` — no
+   `FOREGROUND_SERVICE`, `POST_NOTIFICATIONS`, `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED`,
+   `SCHEDULE_EXACT_ALARM`.
+2. `adb shell run-as com.maksforge.darek.debug ls databases` — no `darek.db`. Not on
+   `-PreleaseShapedDebug`: it is not debuggable, so `run-as` fails and lists nothing.
+3. On both phones, with the language set to English: a fresh install opens in Polish; switching to
+   English in Settings, force-stopping and reopening keeps English. The test phone (API 30) reads
+   AppCompat's storage; the owner's phone `132bc856` (API 36) reads `LocaleManager`, and is announced
+   in chat before the reading takes its screen (`CLAUDE.md`).
 
 ## Amendments owed
 
