@@ -8,7 +8,7 @@ memory a year from now is how a true answer turns false.
 **Status:** answered 2026-10-31 with managed publishing on. The content rating was submitted the same
 evening and IARC's ratings are in (below). **Sent for review 2026-10-31**, together with the listing
 and the first closed release, Alpha 0.2.0 (versionCode 31). Still owed: the re-read of *Target
-audience and content* (below), and the listing's AI asset declaration, which is the owner's answer.
+audience and content* (below).
 
 Two rules keep this file honest:
 

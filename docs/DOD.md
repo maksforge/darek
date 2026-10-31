@@ -84,8 +84,7 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       2026-10-31: every page answered and recorded, the **content rating** last (submitted 21:43, IARC
       *Completed*: PEGI 3, ESRB Everyone, USK 0, Brazil 14+, *In-app purchases*). Sent for review
       2026-10-31 with the listing and Alpha 0.2.0. Still open: re-read *Target audience and content*
-      now that a rating exists, as `play-app-content.md` asks; and the listing's **AI asset
-      declaration**, which is the owner's to answer (`RELEASING.md`).
+      now that a rating exists, as `play-app-content.md` asks.
 - [ ] **`LICENSE` and `README.md`.** Bootstrap wrote a source-available notice and a *Contributing*
       that refuses pull requests, or with `--licence reserved` a notice that grants nothing and a
       placeholder. Keep both or replace both; they must agree.
