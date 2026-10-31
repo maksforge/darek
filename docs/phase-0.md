@@ -25,8 +25,8 @@ permissions, has no `darek.db`, and a first launch on an English phone shows Pol
 - Phase P's pipeline: secrets, the `main` ruleset, Pages, the Play entry `com.maksforge.darek`.
   Nothing has been uploaded, so nothing is frozen beyond the package name.
 - The tip stays (the owner's default for MaksForge apps); its one ask moves to the home screen.
-  The Items count goes with the Items, so `tipAskDue` becomes "installed at least 7 days ago and not
-  asked yet".
+  ADR-0007's ten items go with the Items and its 30 days stay, so `tipAskDue` becomes "installed at
+  least 30 days ago and not asked yet".
 - `minSdk` 26 stays. The test phone is API 30, the owner's is API 36.
 
 ## What is in, and what is deliberately not
@@ -37,7 +37,8 @@ over), reminders and WorkManager, and the Items domain; a home screen that holds
 switch's place and carries the tip's ask; Darek's palette; the one-time Polish switch on first launch;
 `aab-permissions.py`, `edge-to-edge.py`'s SCENES, the privacy policy and `play-app-content.md`
 rewritten against what is left. Around the code: CI's instrumented job stays green on one kept
-`ManifestWiringTest` case, rewritten to assert the stripped permissions are absent; `CLAUDE.md`'s
+`ManifestWiringTest` case, rewritten to assert the stripped permissions are absent and that
+`INTERNET` is absent too (ADR-0008), which stays true after phase 2; `CLAUDE.md`'s
 Stack, Layout and Commands rows are updated; `device-gate.py` keeps its autostart half and loses
 the reminder checks.
 
@@ -60,10 +61,17 @@ after the strip the manifest declares none of `POST_NOTIFICATIONS`, `FOREGROUND_
 ## Auto Backup and live state
 
 With the custom agent gone, every DataStore key reaches the user's next phone. Phase 0's keys are
-settings (theme, the tip's ask) and one that is not. The **one-time Polish marker** is judged at the
-read (`optional-modules.md`): it stores the `PackageInfo.firstInstallTime` it was written under and
-counts only if that equals the current one. The language itself is not a DataStore key and is not
-reliably restored with it, so a marker restored from another install re-runs the switch once.
+the theme, a setting, and two one-time markers, both judged at the read (`optional-modules.md`):
+each stores the `PackageInfo.firstInstallTime` it was written under and counts only if that equals
+the current one.
+
+- **The Polish marker.** The switch runs only when the marker does not match **and**
+  `AppCompatDelegate.getApplicationLocales()` is empty, so a restored explicit choice, English or
+  Polish, is never overwritten. The one accepted edge: a user who chose "follow the phone" and moves
+  phones gets Polish once on the new one.
+- **`TIP_ASKED`.** A restored answer from another install does not count, so after a phone move the
+  ask comes again 30 days later, as ADR-0007 intends.
+
 `BACKUP_FOLDER_URI` leaves with the backup module; `ONBOARDING_DONE` stays only if something still
 reads it. Listening state, which arrives in phase 2, is live state and is judged at the read the
 same way.
@@ -103,4 +111,5 @@ a fresh install and one launch:
 
 ADR-0001, 0002, 0003 and 0005 each get a dated amendment in checkpoint A's PR, saying the module is
 gone from Darek and what replaced it. The `DOD.md` standing schema gate is marked *parked* with its
-five points kept verbatim.
+five points kept verbatim. ADR-0007 gets one in checkpoint B's PR: the ask's item count leaves with
+the Items domain, and it is due 30 days after install.
