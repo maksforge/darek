@@ -150,11 +150,16 @@ them at each re-declaration rather than trusting this quote:
 >
 > "User data accessed by your app that is only processed locally on the user's device and not sent
 > off device does **not** need to be disclosed."
+>
+> Not sharing: "Transferring user data to a third party based on a specific user-initiated action
+> where the user reasonably expects the data to be shared."
 
 The answer rests on one fact per route data could take:
 
-1. **The app cannot transmit anything.** `INTERNET` is absent from the artifact (ADR-0008), and
-   `aab-permissions.py` fails the upload if it ever appears. This one fact is most of the answer.
+1. **The app opens no network connection.** `INTERNET` is absent from the artifact (ADR-0008), and
+   `aab-permissions.py` fails the upload if it ever appears. This one fact is most of the answer. From
+   phase 1, when `CALL_PHONE` arrives, one thing does leave the phone at the app's request: the Gate
+   call of point 4.
 2. **Audio is processed on the device, and that is not collection.** The bundled recogniser consumes
    the microphone frame by frame; only the text of a matched Command is kept, in memory, and audio is
    never stored or sent (ADR-0008, ADR-0009). From phase 1, when `RECORD_AUDIO` arrives; still no
@@ -167,7 +172,11 @@ The answer rests on one fact per route data could take:
 4. **The call and the voice are other apps' work.** The Reply is spoken by the phone's own
    text-to-speech engine, which Darek hands only the fixed Reply. The Gate call is placed by the
    phone's Telecom service on the user's SIM, to the Number the user typed for that Command
-   (ADR-0011); the app itself opens no connection and sends nothing.
+   (ADR-0011). The app opens no network connection, but the call does leave the phone at its request,
+   with no tap at that moment: the user's operator carries the Number dialled and the user's own caller
+   ID to the user's own opener. **Still "No data shared"**, for Play's own reason quoted above: a
+   transfer from a specific user-initiated action the user reasonably expects, here the Command they
+   set up for that Number. ⚠ Give that reason in a re-declaration, not "the app sends nothing".
 5. **A support mail is still "no data collected", and the reason is the definition rather than an
    exemption.** A `mailto:` hands a draft to **another app**; the user reads it, can edit every line,
    and sends it from their own mail client, or does not. ⚠ **Do not write "Play exempts support
