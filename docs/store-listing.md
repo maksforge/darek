@@ -218,3 +218,17 @@ The first build of Darek: he opens on his own home screen, in Polish and in his 
 ```
 Pierwsza wersja Darka: otwiera się na własnym ekranie, po polsku i we własnych kolorach. Słuchanie już wkrótce.
 ```
+
+### 0.2.1 — Polish from the first launch on newer Android
+
+**English** — 111/500:
+
+```
+On Android 13 and later, Darek now opens in Polish on the very first launch, as he already did on older phones.
+```
+
+**Polish** — 108/500:
+
+```
+Na Androidzie 13 i nowszym Darek od pierwszego uruchomienia mówi po polsku, tak jak na starszych telefonach.
+```
