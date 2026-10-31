@@ -67,8 +67,10 @@ the current one.
 
 - **The Polish marker.** The switch runs only when the marker does not match **and**
   `LocaleManagerCompat.getApplicationLocales(context)` is empty (the platform store on 33+,
-  AppCompat's file below), so a restored explicit choice, English or Polish, is never overwritten. The one accepted edge: a user who chose "follow the phone" and moves
-  phones gets Polish once on the new one.
+  AppCompat's file below), so a restored explicit choice, English or Polish, is never overwritten.
+  The marker is written whether or not the app switched, and only once an Activity exists, because
+  below 33 AppCompat stores the locale only when one attaches. The one accepted edge: a user who
+  chose "follow the phone" and moves phones gets Polish once on the new one.
 - **`TIP_ASKED`.** A restored answer from another install does not count, so after a phone move the
   ask comes again 30 days later, as ADR-0007 intends.
 

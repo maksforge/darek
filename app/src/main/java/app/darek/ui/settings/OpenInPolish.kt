@@ -9,24 +9,33 @@ import kotlinx.coroutines.withContext
 import java.time.Instant
 
 /**
- * Whether to switch the app to Polish at this launch (ADR-0012): once per install, and never over a
- * language already set, so a restored explicit choice survives a phone move. The marker is judged
- * at the read, as `docs/phase-0.md`, *Auto Backup and live state*, describes.
+ * What this launch does about the switch to Polish (ADR-0012). Each install's first launch is judged
+ * once, switched or not, and never switches over a language already set, so a restored explicit
+ * choice survives a phone move. The marker is judged at the read, as `docs/phase-0.md`, *Auto Backup
+ * and live state*, describes.
  */
-fun opensInPolish(
-    openedUnder: Instant?,
+data class LaunchLanguage(
+    val switchToPolish: Boolean,
+    val markJudged: Boolean,
+)
+
+fun launchLanguage(
+    judgedUnder: Instant?,
     installedAt: Instant,
     appLanguageSet: Boolean,
-): Boolean = openedUnder != installedAt && !appLanguageSet
+): LaunchLanguage {
+    val firstLaunch = judgedUnder != installedAt
+    return LaunchLanguage(switchToPolish = firstLaunch && !appLanguageSet, markJudged = firstLaunch)
+}
 
-suspend fun Context.opensInPolish(
+suspend fun Context.launchLanguage(
     preferences: AppPreferences,
     installedAt: Instant,
-): Boolean =
+): LaunchLanguage =
     withContext(Dispatchers.IO) {
-        opensInPolish(
-            openedUnder = preferences.openedInPolishUnder.first(),
+        launchLanguage(
+            judgedUnder = preferences.languageJudgedUnder.first(),
             installedAt = installedAt,
-            appLanguageSet = !LocaleManagerCompat.getApplicationLocales(this@opensInPolish).isEmpty,
+            appLanguageSet = !LocaleManagerCompat.getApplicationLocales(this@launchLanguage).isEmpty,
         )
     }

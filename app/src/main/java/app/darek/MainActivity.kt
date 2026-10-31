@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val app = application as MainApplication
+        app.markLanguageJudged()
 
         // Edge-to-edge, and **not** `enableEdgeToEdge()`. Every path in androidx.activity's version
         // of that call — `EdgeToEdgeApi35` included — reaches `Window.setStatusBarColor` and

@@ -53,14 +53,14 @@ class AppPreferencesTest {
                 setThemeMode(ThemeMode.DARK)
                 setMaterialYou(true)
                 markTipAnswered(Instant.ofEpochMilli(1))
-                markOpenedInPolish(Instant.ofEpochMilli(2))
+                markLanguageJudged(Instant.ofEpochMilli(2))
 
                 restoreDefaults()
 
                 assertEquals(ThemeMode.SYSTEM, themeMode.first())
                 assertFalse(materialYou.first())
                 assertEquals(Instant.ofEpochMilli(1), tipAnsweredUnder.first())
-                assertEquals(Instant.ofEpochMilli(2), openedInPolishUnder.first())
+                assertEquals(Instant.ofEpochMilli(2), languageJudgedUnder.first())
             }
         }
 }
