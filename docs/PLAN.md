@@ -16,7 +16,7 @@ was extracted from and the first app built from it settled on exactly this split
 
 ## Status
 
-- [ ] **Phase 0** — Skeleton: Items, photos, reminders, Room and the custom backup agent gone, with
+- [ ] **Phase 0** ([`phase-0.md`](phase-0.md)) — Skeleton: Items, photos, reminders, Room and the custom backup agent gone, with
   platform Auto Backup covering DataStore so Commands and Numbers reach a new phone (live state such
   as Listening is not restored); Commands as JSON in DataStore; the palette and the mark; the app
   opens in Polish (ADR-0012). ADR-0001, 0002, 0003 and 0005 get their amendments as their modules go
