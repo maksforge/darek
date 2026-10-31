@@ -27,13 +27,20 @@ confidence 1.00. That is the failure this ADR exists to prevent.
 
 - **Vosk** (`com.alphacephei:vosk-android`, with JNA) recognises 16 kHz mono audio from `AudioRecord`.
   Both libraries' 64-bit `.so` files are 16 KB page-aligned, which Play requires.
-- **The model ships inside the app** and is unpacked to `filesDir` on first launch. No download step,
-  no network ([ADR-0008](0008-darek-never-opens-a-network-connection.md)).
-- **The grammar is the Commands plus Decoys**: names and words close to the Commands' (*marek, jarek,
-  janek, darka, darku, dawid, otwórz, zamknij, brama*) and `[unk]`, so near-misses have somewhere to
-  land.
-- **A Command fires only on an exact match of a whole Command** in a final result. Partial results
-  and word salads (*"darek bramę otwieraj"*) never fire.
+- **The model ships inside the app** and is unpacked to `noBackupFilesDir` on first launch, never into
+  Auto Backup: it is re-derivable from the APK and alone exceeds Auto Backup's 25 MB quota. No
+  download step, no network ([ADR-0008](0008-darek-never-opens-a-network-connection.md)).
+- **The Commands are a fixed catalogue shipped with the app** (*brama*, *garaż*, *furtka*), each with
+  Decoys tuned for it. The user cannot type a phrase: nothing would choose its Decoys, and Vosk drops
+  grammar words its model does not know.
+- **The grammar is the Commands, the cancel words (*"Darek, stop"*, *"anuluj"*,
+  [ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)) and Decoys**: names and
+  words close to the Commands' (*marek, jarek, janek, darka, darku, dawid, otwórz, zamknij, brama*)
+  and `[unk]`, so near-misses have somewhere to land.
+- **A Command fires when its words appear as a contiguous run in a single final result**, after
+  `[unk]` is dropped. Decoys or `[unk]` around it do not stop it, so *"darek otwórz bramę proszę"*
+  and a Command joined to surrounding noise fire. A partial or reordered Command (*"darek bramę
+  otwórz"*) and partial results never fire.
 
 ## Alternatives
 
@@ -53,8 +60,11 @@ launch without signal. Rejected with ADR-0008.
 
 ## Consequences
 
-- The install is ~50 MB larger, and the model takes the same again in `filesDir` once unpacked.
+- The install is ~50 MB larger, and the model takes the same again in `noBackupFilesDir` once
+  unpacked.
 - The Apache 2.0 licences of Vosk, its model and JNA's join `assets/licences/`.
-- The reading is synthetic speech. **Phase 1 owes the real one**: real voices, the phone's own
-  microphone, at a distance and in a car. Decoys are added from what that reading mishears.
+- The reading is synthetic speech of isolated phrases. **Phase 1 owes the real one**: real voices,
+  the phone's own microphone, at a distance and in a car, and Commands embedded in speech (*"…,
+  proszę"*) to check the match rule. Decoys are added from what that reading mishears.
+- A new Command is an app release, with its Decoys read like the first one's.
 - Recognition pauses while Darek speaks, so he does not answer himself (ADR-0011).

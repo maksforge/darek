@@ -16,8 +16,10 @@ was extracted from and the first app built from it settled on exactly this split
 
 ## Status
 
-- [ ] **Phase 0** — Skeleton: Items, photos, reminders and Room gone; Commands as JSON in DataStore;
-  the palette and the mark; the app opens in Polish (ADR-0012)
+- [ ] **Phase 0** — Skeleton: Items, photos, reminders, Room and the custom backup agent gone, with
+  platform Auto Backup covering DataStore so Commands and Numbers reach a new phone (live state such
+  as Listening is not restored); Commands as JSON in DataStore; the palette and the mark; the app
+  opens in Polish (ADR-0012). ADR-0001, 0002, 0003 and 0005 get their amendments as their modules go
 - [ ] **Phase P** — The pipeline: repository setup, upload key, Play entry, secrets, a green internal upload
 - [ ] **Phase 1** — The mechanism on the phone, app open: the bundled model hears one Command from a
   real voice, Darek speaks the Reply offline, and `placeCall` dials (ADR-0009, ADR-0011). Readings:
@@ -25,7 +27,7 @@ was extracted from and the first app built from it settled on exactly this split
 - [ ] **Phase 2** — Listening: the microphone service, its notification, the start paths (switch,
   notification after boot, Quick Settings tile), pausing during the Reply and the call, MIUI setup,
   a night's battery reading (ADR-0010)
-- [ ] **Phase 3** — Safe for a stranger: the user's own Commands and Numbers, the microphone
+- [ ] **Phase 3** — Safe for a stranger: the user's Numbers for the built-in Commands, the microphone
   disclosure before the permission ask, the first-run path ← **the door: closed testing opens here**.
   It freezes `CALL_PHONE`, `RECORD_AUDIO` and the `microphone` service type
 - [ ] **Phase N** — Ship shape: Polish-first listing, screenshots, the foreground-service declaration

@@ -16,9 +16,9 @@ does not speak Polish cannot use him at all. The owner set Polish as the main la
 translated from English and held complete by the translation gate — **and is amended for which one
 shows**:
 
-- **On first launch, if the user has not chosen a language, the app sets its locale to Polish**
-  through AppCompat's `setApplicationLocales`, whatever the phone's language. The in-app switcher can
-  still choose English.
+- **On first launch the app sets its locale to Polish** through AppCompat's `setApplicationLocales`,
+  whatever the phone's language. It does so once, guarded by a one-time DataStore marker, so a later
+  choice in the switcher, English or "follow the phone", sticks.
 - **Commands and Replies are Polish and are not translated.** They are speech, not UI: they live in
   the Command definitions, outside `strings.xml`, and the translation gate does not see them.
 - **The Reply needs an offline Polish voice.** Darek checks the text-to-speech engine for a `pl-PL`
@@ -28,14 +28,14 @@ shows**:
 ## Alternatives
 
 **Polish as the base (`values/` in Polish).** Simplest on paper, but every template script, the
-translator brief and the gate assume an English source, and Play's listing is written in English
-first. Opening in Polish gets the same result for the user without forking the tooling.
+translator brief and the gate assume an English source. Opening in Polish gets the same result for the user without forking the tooling.
 
 **Follow the phone's language.** An English-language phone would get an English UI around a Polish
 voice — a mismatch that only confuses.
 
 ## Consequences
 
-- A store listing and screenshots in Polish are the primary ones; English is the translation.
+- The Play listing's default language is Polish (pl-PL), with English as a translation; the
+  screenshots are Polish.
 - `TranslationTest` and the gate keep working unchanged.
 - A user who picks English in the switcher keeps English; Darek still speaks Polish.

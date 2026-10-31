@@ -9,8 +9,8 @@ user-facing word genuinely differ, both are written here with the difference sta
 | Term | Means | Not |
 | --- | --- | --- |
 | **Darek** | the assistant: the name users speak and the voice that answers. Also the app's name | the bot, the AI, JARVIS |
-| **Command** | one fixed Polish phrase Darek acts on, with its **Number** and its **Reply** — *"Darek, otwórz bramę"*. Spoken, never translated (ADR-0012). In Polish UI: *komenda* | wake word, hotword, skill, intent, trigger |
-| **Gate** | what a Command opens by being called: a GSM gate opener's SIM. A Command for a garage or a wicket is still a Gate in code; the UI uses the user's own name for it. In Polish UI: *brama* | device, relay, contact |
+| **Command** | one fixed Polish phrase Darek acts on, with its **Number** and its **Reply** — *"Darek, otwórz bramę"*. Commands come from a catalogue shipped with the app (*brama*, *garaż*, *furtka*), each with Decoys tuned for it; the user gives each one a Number and switches it on or off, but cannot type new phrases (ADR-0009). Spoken, never translated (ADR-0012). In Polish UI: *komenda* | wake word, hotword, skill, intent, trigger |
+| **Gate** | what a Command opens by being called: a GSM gate opener's SIM. A Command for a garage or a wicket is still a Gate in code; the UI uses the Command's own word for it. In Polish UI: *brama* | device, relay, contact |
 | **Number** | the phone number a Command calls, typed in by the user | contact, recipient |
 | **Reply** | what Darek says aloud when a Command fires, before he dials — *"Otwieram bramę"* | response, answer, confirmation |
 | **Listening** | the state in which the microphone service runs and Commands can fire (ADR-0010). Started and stopped only by the user. In Polish UI: *Darek słucha* | always-on, hotword detection, recording |
