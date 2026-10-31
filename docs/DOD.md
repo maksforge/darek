@@ -65,11 +65,11 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       and IARC's rating contact too; `SupportHandoff.kt` says why it lives on our own domain.
 - [x] **Write the listing.** `docs/store-listing.md` — every heading in it is parsed by a script.
       Done 2026-10-31, Polish and English, for Darek as he will ship, with one paragraph saying the
-      test build has only Home and Settings; the release that adds Listening deletes it.
+      test build has only Home and Settings (see *Before the next upload*).
 - [x] **Capture the screenshots** with `scripts/screenshots.py` from a release-shaped build, in every
       listing language, into `art/play-screenshots/`. Play wants at least two before the first review.
       Done 2026-10-31 as **current-build placeholders**: Home and Settings, light, in pl and en, from
-      a local release build on the test phone. Re-shoot when Listening has a screen.
+      a local release build on the test phone (see *Before the next upload*).
 - [ ] **Put the app on maksforge.com.** Its icon goes at `assets/icons/<repo>.webp` in
       maksforge/maksforge.github.io, which the app's own site loads, and the app goes on that home
       page. Replace `description` in `docs/_config.yml` too: it is the tagline under the app's name.
@@ -135,6 +135,10 @@ ADR-0007. The code is in; these are the parts only Play and a phone can prove. T
 Re-declarations a change owes Play, written down the day the change merges and ticked when the
 Console matches. A new permission, foreground service or data type is a Console change that waits in
 *Publishing overview* for *Send for review* with the upload that needs it. Empty most of the time.
+
+- [ ] **In the release that ships phase 1, rewrite the listing's test-build paragraph and re-shoot
+      the screenshots.** Recognition and the call make "only Home and Settings" false, in both
+      languages of `store-listing.md`; re-shoot again when Listening has a screen.
 
 ## After the closed test
 

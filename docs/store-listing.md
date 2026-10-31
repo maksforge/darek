@@ -52,7 +52,7 @@ The line that appears under the name in search results, and the most-read text i
 Say "Darek, otwórz bramę" and he calls your gate opener. Offline, in Polish.
 ```
 
-### Full description — 2823/4000
+### Full description — 2826/4000
 
 **No health or safety claims**, here or on any page the listing links to — Play's enforcement reads a
 linked page as part of the listing. Say what the app cannot do instead.
@@ -68,8 +68,8 @@ renders no markup. The block below is what `play-metadata.py` uploads, so the ou
 5. `PERMISSIONS` — one line each, in the user's words.
 6. A last line pointing at the source: `github.com/maksforge/darek`.
 
-The second paragraph is for the test builds that ship before Listening does. The release that adds
-Listening and the call deletes it, in both languages.
+The second paragraph is for the test builds that have only Home and Settings. The release that ships
+phase 1, recognition and the call, rewrites or deletes it in both languages.
 
 ```
 Darek is a Polish voice assistant for your gate. Say "Darek, otwórz bramę" and he answers out loud and calls your gate's GSM opener, so you do not have to reach for your phone. Recognition, speech and the call all happen on your phone, with no internet at all.
@@ -84,7 +84,7 @@ You start Listening yourself, in the app, from its notification or from a Quick 
 
 When he hears a Command, Darek says what he is about to do ("Otwieram bramę") and gives you about two seconds to cancel: say "Darek, stop" or "anuluj", or tap Cancel in the notification. Then he calls the number you entered. An opener that knows your number opens the gate.
 
-He listens for the whole Command, not just his name. "Darek" said to a friend does nothing, and neither does "Marek, otwórz bramę".
+He listens for the whole Command, not just his name. "Darek" in ordinary conversation does nothing, and neither does "Marek, otwórz bramę".
 
 FREE, AND NOTHING LEAVES YOUR PHONE
 
@@ -96,7 +96,7 @@ Darek calls your gate opener; he does not control the gate. Whether it opens is 
 
 He understands only his fixed Polish Commands, not free speech, and you cannot add phrases of your own. In a noisy place he can miss a Command; say it again.
 
-He answers through your phone's text-to-speech engine, which needs a Polish voice that works offline. Without one, a Command still places its call, just without a spoken reply.
+He answers through your phone's text-to-speech engine, which needs a Polish voice that works offline. Without one, Darek still makes the call, just without a spoken reply.
 
 Listening keeps the microphone on and uses battery while it runs. Some phones, Xiaomi's among them, stop apps in the background; Darek opens the battery and autostart settings for you.
 
@@ -127,7 +127,7 @@ Darek
 Powiedz „Darek, otwórz bramę”, a on odpowie i zadzwoni do bramy. Bez internetu.
 ```
 
-### Full description — 2844/4000
+### Full description — 2849/4000
 
 ```
 Darek to głosowy asystent do twojej bramy. Powiedz „Darek, otwórz bramę”, a on odpowie na głos i zadzwoni do sterownika GSM bramy, więc nie musisz sięgać po telefon. Rozpoznawanie mowy, odpowiedź i połączenie odbywają się w telefonie, zupełnie bez internetu.
@@ -142,7 +142,7 @@ Słuchanie włączasz w aplikacji, w jej powiadomieniu albo kafelkiem w szybkich
 
 Gdy usłyszy komendę, Darek mówi, co zrobi („Otwieram bramę”), i daje ci około dwóch sekund na anulowanie: powiedz „Darek, stop” albo „anuluj” lub dotknij Anuluj w powiadomieniu. Potem dzwoni pod numer wpisany dla tej komendy. Sterownik, który zna twój numer, otwiera bramę.
 
-Darek słucha całej komendy, nie samego imienia. „Darek” powiedziane do kolegi nic nie robi, tak samo jak „Marek, otwórz bramę”.
+Darek słucha całej komendy, nie samego imienia. „Darek” w zwykłej rozmowie nic nie robi, tak samo jak „Marek, otwórz bramę”.
 
 ZA DARMO I NIC NIE OPUSZCZA TELEFONU
 
@@ -154,9 +154,9 @@ Darek dzwoni do sterownika bramy, ale nie steruje samą bramą. To, czy się otw
 
 Rozumie tylko swoje stałe polskie komendy, nie swobodną mowę, i nie da się dodać własnych zwrotów. W hałasie może nie usłyszeć komendy; wtedy ją powtórz.
 
-Odpowiada przez syntezator mowy w twoim telefonie, który potrzebuje do tego polskiego głosu działającego offline. Bez niego komenda i tak dzwoni, tylko bez odpowiedzi na głos.
+Odpowiada przez syntezator mowy w twoim telefonie, który potrzebuje do tego polskiego głosu działającego offline. Bez niego Darek i tak zadzwoni, tylko bez odpowiedzi na głos.
 
-Słuchanie trzyma włączony mikrofon i zużywa baterię. Niektóre telefony, w tym Xiaomi, zamykają aplikacje działające w tle; Darek sam otworzy ci ustawienia baterii i autostartu.
+Gdy Darek słucha, mikrofon jest włączony, co zużywa baterię. Niektóre telefony, w tym Xiaomi, zamykają aplikacje działające w tle; Darek sam otworzy ci ustawienia baterii i autostartu.
 
 UPRAWNIENIA
 
