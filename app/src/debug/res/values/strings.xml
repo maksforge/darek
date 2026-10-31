@@ -17,5 +17,4 @@
 -->
 <resources>
     <string name="app_name" translatable="false">Darek debug</string>
-    <string name="schema_mismatch_continue" translatable="false">Continue and start fresh</string>
 </resources>

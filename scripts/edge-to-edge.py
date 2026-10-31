@@ -1391,23 +1391,6 @@ class Scene:
 
 # The order matters only in that each scene starts from a relaunch, so they are independent.
 SCENES = [
-    # --- the screen with no Scaffold at all, reachable only by lying to the schema guard --------
-    #
-    # `SchemaMismatchScreen` is the one screen outside a `Scaffold` — it pads itself — so it is
-    # exactly the outlier this matrix exists to look at, and there is no route to it through the UI.
-    Scene(
-        "schema-mismatch",
-        "chrome-free",
-        [("fake_schema_mismatch", "")],
-        suite="mismatch",
-    ),
-    Scene(
-        "schema-mismatch-bottom",
-        "chrome-free",
-        [("fake_schema_mismatch", ""), ("swipe_end", "")],
-        suite="mismatch",
-    ),
-
     # --- a wiped install: the first launch ------------------------------------------------------
     Scene("home-first-run", "home", [("wipe", "")], suite="empty"),
 

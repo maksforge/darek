@@ -62,3 +62,13 @@ A completely green migration suite says nothing about whether a real upgrade is 
   one file per variant, so a release binary carries neither it nor its string; the flag is still
   needed because `-PreleaseShapedDebug` compiles the debug half without the destructive fallback.
 - `preserved/` is never pruned. It is small and it is the last copy.
+
+## Amendment — 2026-10-31
+
+Darek has no database. Room, the launch gate, the consent and refusal screen, the copy-aside and the
+background schema guard were deleted before the first upload (phase 0, checkpoint A), while deleting
+was free: nothing had shipped, so no install holds a `darek.db` to migrate. What Darek keeps is
+DataStore preferences, and the Commands will be a JSON list under one key (house rules), whose
+migration story is the decoder's tolerance rather than a schema. `scripts/schema-gate.py` reports
+*"no database, nothing to gate"*, and `docs/DOD.md` keeps the standing schema gate parked, word for
+word. This decision comes back unchanged the day a feature needs a table.

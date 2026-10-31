@@ -55,10 +55,5 @@
     <string name="support_tip_thanks">Dziękuję. To wiele znaczy.</string>
     <string name="support_tip_pending">Płatność jeszcze się rozlicza. Google Play ją dokończy.</string>
 
-
     <string name="licence_text_missing">Treść tej licencji nie jest dołączona do aplikacji.</string>
-
-    <string name="schema_mismatch_title">Te dane zapisała inna wersja</string>
-    <string name="schema_mismatch_body">Dane na tym telefonie zapisano w wersji %1$d, a ta kompilacja odczytuje wersję %2$d.</string>
-    <string name="schema_mismatch_copy">Kopia została zachowana jako %1$s. Nic nie zostało usunięte.</string>
 </resources>
