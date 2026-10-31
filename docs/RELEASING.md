@@ -291,11 +291,11 @@ it is asked for.
 
 | | |
 | --- | --- |
-| File | `~/.keystores/<app>-upload.jks` — **outside the repo**; `*.jks` is gitignored as a second line of defence |
+| File | `~/.keystores/darek-upload.jks` — **outside the repo**; `*.jks` is gitignored as a second line of defence |
 | Type / alias | PKCS12, alias `upload`. PKCS12 keeps **one** password, so `upload.storePassword` and `upload.keyPassword` are the same string |
-| Key | *(algorithm, size, valid until)* |
-| SHA-256 | *(fingerprint)* |
-| Backed up to | *(somewhere that is not this machine)* |
+| Key | RSA 4096, SHA384withRSA, `CN=Maksymilian Sredniawa`, created 2026-10-31, valid until 2054-03-18 |
+| SHA-256 | `2C:F4:3C:F3:7B:27:57:5D:16:51:5C:F6:B4:2C:22:CF:86:08:5A:C3:2F:83:83:C4:CB:B0:EE:A5:B2:5D:18:02` |
+| Backed up to | *(owed: somewhere that is not this machine)* |
 
 ```bash
 keytool -genkeypair -v -storetype PKCS12 -keystore ~/.keystores/<app>-upload.jks \
