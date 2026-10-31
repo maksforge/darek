@@ -8,7 +8,7 @@ import app.darek.data.AppPreferences
 import app.darek.data.ThemeMode
 import app.darek.theme.applyThemeMode
 import app.darek.ui.settings.AppLanguage
-import app.darek.ui.settings.opensInPolish
+import app.darek.ui.settings.launchLanguage
 import app.darek.ui.settings.setAppLanguage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +45,8 @@ class MainApplication : Application() {
 
     private lateinit var installedAt: Instant
 
+    private var languageUnjudged = false
+
     val container: AppContainer by lazy { AppContainer(this, preferences, installedAt, applicationScope) }
 
     override fun onCreate() {
@@ -58,19 +60,28 @@ class MainApplication : Application() {
         // created — a Flow collected in a composition arrives a frame later, which is a visible
         // flash of the wrong palette or language. One small file read at process start is the
         // cheaper of the two costs.
-        val switchToPolish =
+        val language =
             runBlocking {
-                val polish = async { opensInPolish(preferences, installedAt) }
+                val language = async { launchLanguage(preferences, installedAt) }
                 startupThemeMode = preferences.themeModeNow()
-                polish.await()
+                language.await()
             }
         applyThemeMode(startupThemeMode)
-        if (switchToPolish) {
-            setAppLanguage(AppLanguage.POLISH)
-            applicationScope.launch { preferences.markOpenedInPolish(installedAt) }
-        }
+        if (language.switchToPolish) setAppLanguage(AppLanguage.POLISH)
+        languageUnjudged = language.markJudged
 
         settleTipsOnEveryForeground()
+    }
+
+    /**
+     * Records that this install's first launch was judged, from `MainActivity.onCreate`. Below 33
+     * AppCompat writes the switched locale to its file only when an Activity attaches, so a process
+     * that never shows one leaves the marker stale and the launch is judged again next time.
+     */
+    fun markLanguageJudged() {
+        if (!languageUnjudged) return
+        languageUnjudged = false
+        applicationScope.launch { preferences.markLanguageJudged(installedAt) }
     }
 
     /**

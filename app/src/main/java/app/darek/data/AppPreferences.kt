@@ -46,7 +46,7 @@ class AppPreferences(
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val MATERIAL_YOU = booleanPreferencesKey("material_you")
         val TIP_ANSWERED_UNDER = longPreferencesKey("tip_answered_under")
-        val OPENED_IN_POLISH_UNDER = longPreferencesKey("opened_in_polish_under")
+        val LANGUAGE_JUDGED_UNDER = longPreferencesKey("language_judged_under")
 
         /** What *Restore to default* removes: everything the user chose, so each reads its default again. */
         val SETTINGS: List<Preferences.Key<*>> =
@@ -62,7 +62,7 @@ class AppPreferences(
         val KEPT: List<Preferences.Key<*>> =
             listOf(
                 TIP_ANSWERED_UNDER,
-                OPENED_IN_POLISH_UNDER,
+                LANGUAGE_JUDGED_UNDER,
             )
     }
 
@@ -97,10 +97,10 @@ class AppPreferences(
             prefs[Keys.TIP_ANSWERED_UNDER]?.let(Instant::ofEpochMilli)
         }
 
-    /** The `firstInstallTime` the app last switched itself to Polish under (ADR-0012, `ui/settings/OpenInPolish.kt`). */
-    val openedInPolishUnder: Flow<Instant?> =
+    /** The `firstInstallTime` whose first launch was last judged for the switch to Polish, switched or not (ADR-0012, `ui/settings/OpenInPolish.kt`). */
+    val languageJudgedUnder: Flow<Instant?> =
         store.data.map { prefs ->
-            prefs[Keys.OPENED_IN_POLISH_UNDER]?.let(Instant::ofEpochMilli)
+            prefs[Keys.LANGUAGE_JUDGED_UNDER]?.let(Instant::ofEpochMilli)
         }
 
     /**
@@ -125,8 +125,8 @@ class AppPreferences(
         store.edit { it[Keys.TIP_ANSWERED_UNDER] = installedAt.toEpochMilli() }
     }
 
-    suspend fun markOpenedInPolish(installedAt: Instant) {
-        store.edit { it[Keys.OPENED_IN_POLISH_UNDER] = installedAt.toEpochMilli() }
+    suspend fun markLanguageJudged(installedAt: Instant) {
+        store.edit { it[Keys.LANGUAGE_JUDGED_UNDER] = installedAt.toEpochMilli() }
     }
 
     /**
