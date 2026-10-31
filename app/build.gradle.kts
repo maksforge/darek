@@ -78,9 +78,8 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        // The install identity, and **the one string here that can never change**: a Play Console
-        // package name is fixed the moment the app entry is created. Deliberately allowed to differ
-        // from `namespace` for that reason — see docs/adr/0002.
+        // The one string here that can never change: a Play Console package name is fixed the
+        // moment the app entry is created, so it is deliberately allowed to differ from `namespace`.
         applicationId = "com.maksforge.darek"
         minSdk = 26
         targetSdk = 36
