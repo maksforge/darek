@@ -125,9 +125,8 @@ app/src/main/java/<namespace>/
   work/        the notification ask and the OEM background hand-offs (autostart, battery), kept
                for phase 2's Listening service (ADR-0010)
 
-app/src/debug/    the developer-only build: the sample-data seeder, Settings' debug section and its
-                  strings, the schema-mismatch screen's continue button, and SeedReceiver for the
-                  capture driver
+app/src/debug/    the developer-only build: Settings' debug section and its strings, and the
+                  schema-mismatch screen's continue button
 app/src/release/  only the no-op half of each seam, so main/ can call it unconditionally
 scripts/          the Python toolchain. project.py is the one place the app's identity lives
 art/             mark.py is the identity; both generators derive from it

@@ -20,8 +20,8 @@ scripts yours; everything else here is about the phone, not the app.
     scripts/screenshots.py --out docs/screenshots/before
     scripts/screenshots.py --out docs/screenshots/after
     scripts/screenshots.py --out DIR --theme light          # one cell
-    scripts/screenshots.py --out DIR --scene items,settings # one screen, while iterating
-    scripts/screenshots.py --out DIR --scene items,settings --numbered   # 1_items-en.png, 2_settings-en.png
+    scripts/screenshots.py --out DIR --scene home,settings  # one screen, while iterating
+    scripts/screenshots.py --out DIR --scene home,settings --numbered    # 1_home-en.png, 2_settings-en.png
     scripts/screenshots.py --out DIR --build release --numbered --scene …  # the store set, see below
     scripts/screenshots.py --restore                        # hand the phone back
 

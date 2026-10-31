@@ -71,3 +71,12 @@ Billing, and it unlocks nothing.**
 - **One more dependency and one more permission**: the billing library, `lifecycle-process`, and
   `BILLING` in the artifact. The licences screen links Google's terms for the Play services artifacts
   billing brings in; their text is not ours to ship.
+
+## Amendment — 2026-10-31
+
+Darek has no Items to count, so the ask's "ten items" half is gone: the card shows once an install
+is 30 days old and the ask has not been answered on that install (`tip/TipAsk.kt`). It lives on
+Darek's Home screen. The answer is stored as the `PackageInfo.firstInstallTime` it was given under and
+judged at the read: it counts only while that equals the current install's. With the custom
+`BackupAgent` gone, Auto Backup carries the preference to the user's next phone, whose install time
+differs, so the new install is asked once more, a month after the move, as before.

@@ -15,6 +15,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.time.Instant
 
 class AppPreferencesTest {
     @get:Rule val folder = TemporaryFolder()
@@ -51,17 +52,15 @@ class AppPreferencesTest {
             with(preferences) {
                 setThemeMode(ThemeMode.DARK)
                 setMaterialYou(true)
-                setOnboardingDone(true)
                 setBackupFolderUri("content://tree")
-                markTipAsked()
+                markTipAnswered(Instant.ofEpochMilli(1))
 
                 restoreDefaults()
 
                 assertEquals(ThemeMode.SYSTEM, themeMode.first())
                 assertFalse(materialYou.first())
-                assertTrue(onboardingDone.first())
                 assertEquals("content://tree", backupFolderUri.first())
-                assertTrue(tipAsked.first())
+                assertEquals(Instant.ofEpochMilli(1), tipAnsweredUnder.first())
             }
         }
 }
