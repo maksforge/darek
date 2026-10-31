@@ -159,6 +159,8 @@ with a build to prove it.
   - **The owner's phone**, `132bc856`: a Redmi Note 14 Pro 5G, API 36, HyperOS. Drive it without
     asking whenever adb reaches it (the owner's standing permission since 2026-10-20), but it is in
     use: say so in chat before a reading takes its screen, and restore any toggle afterwards.
+    **That permission does not cover dialling**: the gate call really opens the gate on the owner's
+    SIM, so any reading that can reach it needs the owner's go-ahead in chat, every time.
 - **MIUI optimisation is off on the test phone**, and that is what makes it tap-free. With it on,
   every adb install fails `INSTALL_FAILED_USER_RESTRICTED`, and the "Install via USB" fix wants a Mi
   account and a SIM. An update can turn it back on, so check before installing:
