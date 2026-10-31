@@ -52,14 +52,12 @@ class AppPreferencesTest {
             with(preferences) {
                 setThemeMode(ThemeMode.DARK)
                 setMaterialYou(true)
-                setBackupFolderUri("content://tree")
                 markTipAnswered(Instant.ofEpochMilli(1))
 
                 restoreDefaults()
 
                 assertEquals(ThemeMode.SYSTEM, themeMode.first())
                 assertFalse(materialYou.first())
-                assertEquals("content://tree", backupFolderUri.first())
                 assertEquals(Instant.ofEpochMilli(1), tipAnsweredUnder.first())
             }
         }

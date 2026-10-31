@@ -126,8 +126,8 @@ The answer rests on one fact per route data could take:
    with their metadata — GPS included — stripped, and stored in the app's private storage.
 3. **Auto Backup is still "no data collected".** The platform moves the user's backup to the user's
    own Google Drive; the developer never sees it. That is Android transmitting the user's backup, not
-   the app transmitting to the developer. ⚠ Every file the backup carries lands on the user's *next*
-   phone too — see ADR-0005 for what is included and why.
+   the app transmitting to the developer. ⚠ Every preference the backup carries lands on the user's
+   *next* phone too — ADR-0005's amendment says what that is and why it is safe.
 4. **A support mail is still "no data collected", and the reason is the definition rather than an
    exemption.** A `mailto:` hands a draft to **another app**; the user reads it, can edit every line,
    and sends it from their own mail client, or does not. ⚠ **Do not write "Play exempts support

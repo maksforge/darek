@@ -14,7 +14,6 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import app.darek.ui.backup.BackupScreen
 import app.darek.ui.home.HomeScreen
 import app.darek.ui.settings.SettingsScreen
 import app.darek.ui.support.LicenceTextScreen
@@ -84,13 +83,9 @@ fun MainNavigation(modifier: Modifier = Modifier) {
                     entry<Settings> {
                         SettingsScreen(
                             onBack = { backStack.removeLastOrNull() },
-                            onOpenBackup = { backStack.add(Backup) },
                             onOpenLicences = { backStack.add(Licences) },
                             onOpenSupport = { backStack.add(Support) },
                         )
-                    }
-                    entry<Backup> {
-                        BackupScreen(onBack = { backStack.removeLastOrNull() })
                     }
                     entry<Support> {
                         SupportScreen(onBack = { backStack.removeLastOrNull() })

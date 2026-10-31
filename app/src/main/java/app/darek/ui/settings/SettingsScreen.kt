@@ -40,7 +40,6 @@ import app.darek.ui.support.titleRes
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    onOpenBackup: () -> Unit,
     onOpenLicences: () -> Unit,
     onOpenSupport: () -> Unit,
     modifier: Modifier = Modifier,
@@ -89,7 +88,6 @@ fun SettingsScreen(
             )
 
             SectionHeader(stringResource(R.string.settings_data))
-            LinkRow(stringResource(R.string.settings_backup), LinkTarget.Inside, onClick = onOpenBackup)
             RestoreDefaultsRow(onRestore = viewModel::restoreDefaults)
 
             SectionHeader(stringResource(R.string.settings_about))

@@ -77,3 +77,13 @@ system — for a feature the platform already provides.
   the format.
 - Media is merged rather than replaced on restore: filenames are UUIDs, so a collision means the same
   file, and keeping files the archive does not mention costs disk where deleting them costs photos.
+
+## Amendment — 2026-10-31
+
+Darek has no records and no media, so neither half of this decision applies to it. The manual export
+and restore, the backup screen, the share hand-off and the custom `AppBackupAgent` were deleted before
+the first upload (phase 0, checkpoint A). Platform Auto Backup took over, with no rules file: what the
+app keeps is DataStore preferences, every one of them a setting the user's next phone should have.
+The one exception is the tip ask's answer, which is judged at the read against
+`PackageInfo.firstInstallTime` rather than trusted from a restore (ADR-0007's amendment). Live state
+added later, such as Listening in phase 2, is judged the same way.

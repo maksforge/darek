@@ -14,8 +14,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable data object Settings : NavKey
 
-@Serializable data object Backup : NavKey
-
 /**
  * Help and feedback, and the licences below it — both pushed from Settings' *About* section.
  * Somewhere you go once, from the place you already go to look things up.

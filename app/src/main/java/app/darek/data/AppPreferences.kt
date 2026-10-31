@@ -45,7 +45,6 @@ class AppPreferences(
     internal object Keys {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val MATERIAL_YOU = booleanPreferencesKey("material_you")
-        val BACKUP_FOLDER_URI = stringPreferencesKey("backup_folder_uri")
         val TIP_ANSWERED_UNDER = longPreferencesKey("tip_answered_under")
 
         /** What *Restore to default* removes: everything the user chose, so each reads its default again. */
@@ -61,7 +60,6 @@ class AppPreferences(
          */
         val KEPT: List<Preferences.Key<*>> =
             listOf(
-                BACKUP_FOLDER_URI,
                 TIP_ANSWERED_UNDER,
             )
     }
@@ -88,16 +86,6 @@ class AppPreferences(
      * app's identity would be invisible on almost every device that runs it.
      */
     val materialYou: Flow<Boolean> = store.data.map { it[Keys.MATERIAL_YOU] ?: false }
-
-    /**
-     * The tree Uri the user picked for automatic backups, if any.
-     *
-     * Stored as a string because that is what `Uri.toString()`/`Uri.parse()` round-trip, and because
-     * the persisted permission grant it refers to is held by the system, not here. A stored Uri whose
-     * grant has been revoked reads back fine and fails at write time — so treat this as a *hint*, and
-     * handle the failure where the write happens.
-     */
-    val backupFolderUri: Flow<String?> = store.data.map { it[Keys.BACKUP_FOLDER_URI] }
 
     /**
      * The `firstInstallTime` the home screen's one tip ask was answered under, either way (ADR-0007).
@@ -129,12 +117,6 @@ class AppPreferences(
 
     suspend fun markTipAnswered(installedAt: Instant) {
         store.edit { it[Keys.TIP_ANSWERED_UNDER] = installedAt.toEpochMilli() }
-    }
-
-    suspend fun setBackupFolderUri(uri: String?) {
-        store.edit { prefs ->
-            if (uri == null) prefs.remove(Keys.BACKUP_FOLDER_URI) else prefs[Keys.BACKUP_FOLDER_URI] = uri
-        }
     }
 
     /**
