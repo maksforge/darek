@@ -1168,7 +1168,7 @@ def wipe() -> None:
             "data nothing here can restore. Run with --no-reseed, or point the driver at debug",
         )
     global _SEEDED
-    _SEEDED = None
+    _SEEDED = False
     shell(f"pm clear {PACKAGE}")
     settle(1.0)
     # Before the launch, not after: `pm clear` drops the per-app locale, and re-applying it to a
@@ -1193,40 +1193,12 @@ def reset_to_seeded() -> None:
         tap(label)
     settle(1.0)
     global _SEEDED
-    _SEEDED = ""
+    _SEEDED = True
 
 
-# Which seed the phone is currently carrying: "" for the plain sample data, a variant name for one
-# of [SeedVariantReceiver]'s, and None for "unknown" — which is what a wipe leaves and what the
-# start of every cell asserts, so the first scene of a cell always reseeds exactly as it always did.
-_SEEDED: "str | None" = None
-
-SEED_RECEIVER = f"{PACKAGE}/{project.NAMESPACE}.debug.SeedReceiver"
-
-
-def seed_variant(variant: str) -> None:
-    """Add a variant on top of the sample data, through the debug build's own receiver.
-
-    **The default seed is never changed, and that is the constraint rather than a nicety.** Sixty-one
-    scenes, the before/after comparison and the Play listing screenshots all rest on it, so a third
-    row or a repurposed series would move evidence that is already banked. A variant is additive
-    and asked for by name.
-
-    `-f 0x00000020` is `FLAG_INCLUDE_STOPPED_PACKAGES`: a package is in the stopped state after
-    `pm clear` until something launches it, and a broadcast to a stopped package is dropped in
-    silence — which would look exactly like a variant that seeded nothing.
-
-    The receiver reports through the broadcast result, so this can fail on what actually happened
-    rather than on a timeout: `result=0` and the data string it set, or a loud failure naming the
-    exception. See [SeedVariantReceiver] for why it is a broadcast at all.
-    """
-    global _SEEDED
-    output = shell(f"am broadcast -n {SEED_RECEIVER} -f 0x00000020 --es variant {variant}")
-    if "result=0" not in output:
-        raise StepFailed(f"seeding variant {variant!r} failed: {output.strip()[:200]}")
-    _SEEDED = variant
-    settle(1.0)
-
+# Whether the phone carries a fresh seed. A wipe clears it, and so does the start of every cell, so
+# the first scene of a cell always reseeds.
+_SEEDED = False
 
 # Whether every scene runs with a notification trying to post over it. Off unless `--live-notice`
 # asks for it, because it changes what every screenshot contains.
@@ -1238,7 +1210,7 @@ def seed_variant(variant: str) -> None:
 # flag is what makes a clean run mean anything, because DND suppressing a banner nobody posted is
 # not evidence of DND.
 #
-# Wire it to whatever your debug build can make post on demand, the way `seed_variant` is wired.
+# Wire it to whatever your debug build can make post on demand.
 _LIVE_NOTICE = False
 
 
@@ -1246,7 +1218,7 @@ def arm_live_notice() -> None:
     """Make one notification post over the scene about to be captured. **Unwired in the template.**
 
     There is nothing generic to put here: what can be made to post on demand is whatever your debug
-    build exposes, so this is a seam rather than an implementation. Wire it like [seed_variant] — a
+    build exposes, so this is a seam rather than an implementation. Wire it as a
     broadcast to a receiver in `app/src/debug/` that re-arms a slot just behind `now`, checked on
     the broadcast result so a silent no-op cannot pass for an armed one.
 
@@ -1261,24 +1233,21 @@ def arm_live_notice() -> None:
 
 
 def invalidate_seed() -> None:
-    """Forget what the phone is carrying, so the next [ensure_seed] reseeds whatever it asks for."""
+    """Forget what the phone is carrying, so the next [ensure_seed] reseeds."""
     global _SEEDED
-    _SEEDED = None
+    _SEEDED = False
 
 
-def ensure_seed(variant: str) -> None:
-    """Put the phone on the seed this scene asked for, reseeding only when it is not already there.
+def ensure_seed() -> None:
+    """Reseed unless the phone already carries a fresh seed.
 
-    Reseeding costs a wipe, a wizard and the sample data — the better part of a minute — so scenes
-    are sorted by the seed they want and this is a no-op for every scene but the first of each
-    group. Variant scenes therefore cost one reseed each per cell rather than one per scene.
+    Reseeding costs a wipe and the seed walk, so this is a no-op for every scene but the first of a
+    cell and any scene after one that wiped.
     """
-    if _SEEDED == variant:
+    if _SEEDED:
         return
-    print(f"  -- seeding{f' + {variant}' if variant else ''}")
+    print("  -- seeding")
     reset_to_seeded()
-    if variant:
-        seed_variant(variant)
 
 
 DATABASE = f"/data/data/{PACKAGE}/databases/{project.DATABASE_FILE}"
@@ -1361,11 +1330,6 @@ class Scene:
     # prompt sets this: it runs first in each cell, is never backed out of or retried, and every
     # other scene dismisses the prompt with [PROMPT_DISMISS] before walking. The template stages none.
     keeps_seeded_prompt: bool = False
-    # The seed this scene needs, "" being the plain sample data. Anything else is a variant name the
-    # debug build's SeedVariantReceiver knows, added *on top of* the sample data — the default seed
-    # is never edited, because every scene and the listing screenshots rest on it. Scenes are grouped
-    # by this, so a variant costs one reseed per cell rather than one per scene.
-    seed: str = ""
 
 
 # ---------------------------------------------------------------------------------------------
@@ -1965,11 +1929,7 @@ def run_matrix(
     # declared order a scene twenty places ahead of the prompt's own would consume it, and the shot
     # would be a plain screen under a dialog's name. Sorting is stable, so every other scene keeps
     # the order it is written in — which the inset findings are read against.
-    #
-    # Grouped by seed first, so a variant costs one reseed per cell instead of one per scene, and
-    # every default-seed scene runs before any variant touches the install. "" sorts before every
-    # variant name, which is what puts them in that order.
-    scenes = sorted(scenes, key=lambda scene: (scene.seed, not scene.keeps_seeded_prompt))
+    scenes = sorted(scenes, key=lambda scene: not scene.keeps_seeded_prompt)
     for config in configs:
         # Seed *before* pinning the config, never after. Sorting fixes a seeded prompt in the first
         # cell only — answering it is permanent, so cell 1 consumes it and cells 2-4 would shoot a
@@ -1978,12 +1938,10 @@ def run_matrix(
         # `apply_config` silently unpins every landscape cell. `full` only: `empty` wipes on purpose
         # to reach the wizard, and `mismatch` manages its own database surgery.
         if suite == "full":
-            # Invalidated rather than compared: a cell must reseed even when the last one left the
-            # right variant on the phone, because answering a seeded prompt is permanent and only a
-            # fresh seed brings it back. [ensure_seed] then does the work, and asking for the
-            # first scene's seed rather than the plain one keeps a variant-only run to one reseed.
+            # Invalidated rather than trusted: answering a seeded prompt is permanent, and only a
+            # fresh seed brings it back.
             invalidate_seed()
-            ensure_seed(scenes[0].seed if scenes else "")
+            ensure_seed()
         apply_config(config)
         out_dir = out / config.name
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -1996,12 +1954,12 @@ def run_matrix(
         print(f"\n=== {config.name}  insets={ {k: v.as_list() for k, v in insets.items()} }")
         results = []
         for scene in scenes:
-            # A no-op for every scene but the first of each seed group — see [ensure_seed]. A wipe
+            # A no-op unless a scene before this one wiped — see [ensure_seed]. A wipe
             # costs the rotation, which is why it may run here at all: [wipe] re-pins what
             # `apply_config` set, so a mid-cell reseed cannot silently turn a landscape cell into a
             # second portrait one.
             if suite == "full":
-                ensure_seed(scene.seed)
+                ensure_seed()
             result = run_scene(scene, config, out_dir, retries)
             results.append(result)
             again = f"  (attempt {result['attempts']})" if result.get("attempts", 1) > 1 else ""

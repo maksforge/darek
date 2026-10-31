@@ -19,7 +19,7 @@ enum class ThemeMode {
 }
 
 /**
- * Everything the app remembers that is not a row in the database.
+ * Everything the app remembers.
  *
  * **DataStore, not SharedPreferences.** SharedPreferences' `commit()` blocks and its `apply()` can
  * still write on the main thread at the wrong moment; DataStore is `suspend`-only and transactional,
@@ -69,8 +69,6 @@ class AppPreferences(
      *
      * Unknown stored values fall back to [ThemeMode.SYSTEM] rather than throwing: a preference file
      * survives a downgrade, and a crash loop at startup is a far worse outcome than the wrong theme.
-     * This is the opposite of the rule for enums stored in the *database*, where an unknown value
-     * means the schema gate missed something and should be loud.
      */
     val themeMode: Flow<ThemeMode> =
         store.data.map { prefs ->

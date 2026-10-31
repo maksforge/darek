@@ -30,10 +30,10 @@ applicationId instead of `.debug`. The developer-only Settings section lives in 
 only the shipped build is free of it. That install is somebody's real app, so the flag also implies
 `--no-reseed` and the wipe refuses outright: the shots show whatever is really set up on it.
 
-Filenames carry the locale they were taken in — `items-pl.png`, not `items.png` — because a PNG loses
+Filenames carry the locale they were taken in — `home-pl.png`, not `home.png` — because a PNG loses
 the directory that used to carry its language the moment anyone moves it. See [locale_tag].
 
-`--numbered` additionally prefixes each file with its position in the `--scene` list — `1_items-pl.png`.
+`--numbered` additionally prefixes each file with its position in the `--scene` list — `1_home-pl.png`.
 Play orders a listing's screenshots by the order they are uploaded, and a file manager sorts
 alphabetically, so without the prefix the set sorts by scene name rather than by intent. The number
 comes from the order **asked for**, not from [SCENES], which is why `--scene` preserves its argument
@@ -253,12 +253,10 @@ def run_cell(theme: str, locale: str | None, scenes: list, out: Path, reseed: bo
     tag = locale_tag(locale)
 
     if reseed:
-        # Invalidated first, so a cell always reseeds even when the previous one left the same seed
-        # on the phone — a consumed one-shot prompt is the reason (see above), and only a fresh
-        # seed brings it back. `min` picks the seed the *first* scene will want: scenes are sorted by
-        # seed, "" sorts first, so this is "" unless every scene here is a variant one.
+        # Invalidated first, so a cell always reseeds — a consumed one-shot prompt is the reason
+        # (see above), and only a fresh seed brings it back.
         e2e.invalidate_seed()
-        e2e.ensure_seed(min((scene.seed for scene in scenes if scene.suite == "full"), default=""))
+        e2e.ensure_seed()
     set_theme(theme)
 
     results = []
@@ -273,26 +271,15 @@ def run_cell(theme: str, locale: str | None, scenes: list, out: Path, reseed: bo
             wanted = [scene for scene in scenes if scene.suite == suite]
             if not wanted:
                 continue
-            # Seed group first, then any scene that photographs a seeded one-shot prompt — before
-            # every other scene dismisses it for good. The same order and the same reasons as
-            # `edge-to-edge.py`'s [run_matrix]; sorting is stable, so everything else keeps its
-            # declared order.
-            wanted.sort(key=lambda scene: (scene.seed, not scene.keeps_seeded_prompt))
+            # Any scene that photographs a seeded one-shot prompt first — before every other scene
+            # dismisses it for good. The same order and the same reasons as `edge-to-edge.py`'s
+            # [run_matrix]; sorting is stable, so everything else keeps its declared order.
+            wanted.sort(key=lambda scene: not scene.keeps_seeded_prompt)
             schema_dirty = schema_dirty or suite == "mismatch"
             print(f"  -- {suite} ({len(wanted)} scenes)")
             for scene in wanted:
                 if suite == "full" and reseed:
-                    e2e.ensure_seed(scene.seed)
-                elif scene.seed:
-                    # **Skipped rather than shot.** `--no-reseed` is the iterate-on-one-screen flag,
-                    # and a scene whose whole point is a state the default fixture hides would come
-                    # back as an ordinary screenshot under a name claiming otherwise. A cell that
-                    # cannot fail is not evidence; a scene that says it did not run is.
-                    results.append(
-                        {"scene": scene.name, "family": scene.family, "error": f"needs seed {scene.seed!r}; --no-reseed"},
-                    )
-                    print(f"     {scene.name:28s} SKIPPED  needs seed {scene.seed!r}")
-                    continue
+                    e2e.ensure_seed()
                 result = capture(scene, out_dir, tag)
                 results.append(result)
                 if "error" in result:

@@ -10,7 +10,7 @@
 <resources>
     <string name="home_listening_placeholder">Tu Darek będzie słuchał.</string>
     <string name="home_tip_ask_title">Ta aplikacja jest darmowa i taka zostanie</string>
-    <string name="home_tip_ask_body">Jeśli ci się przydaje, możesz zostawić twórcy napiwek. Niczego nie odblokowuje, a na tym telefonie aplikacja więcej o to nie zapyta.</string>
+    <string name="home_tip_ask_body">Jeśli ci się przydaje, możesz zostawić twórcy napiwek. Niczego nie odblokowuje, a aplikacja więcej o to nie zapyta.</string>
     <string name="home_tip_ask_accept">Zostaw napiwek</string>
     <string name="home_tip_ask_decline">Nie, dziękuję</string>
 
