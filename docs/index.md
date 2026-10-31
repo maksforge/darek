@@ -28,9 +28,9 @@ mobile operator like any call you make.
 
 ## Your data stays on your phone
 
-The numbers you enter and your settings are kept on your phone. They travel only in Android's own
-backup to your own Google account. Audio is processed on the phone as it is heard and is never
-stored or sent. The details are in the
+The numbers you enter and your settings are kept on your phone. They travel only with Android's own
+backup to your own Google account, and with its phone-to-phone transfer to your next phone. Audio is
+processed on the phone as it is heard and is never stored or sent. The details are in the
 
 **[Privacy Policy](privacy-policy.md)**.
 

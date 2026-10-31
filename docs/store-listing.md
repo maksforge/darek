@@ -29,7 +29,7 @@ Three scripts read this file, so its headings are load-bearing:
 | Contact email | `darek.support@maksforge.com` — the **per-app** support address, set in Store settings, and the one `SupportHandoff.kt` compiles in. Not the account-level developer email, which is public on every app you own |
 | Website | `https://maksforge.com/darek/` — [`index.md`](index.md). A release that adds something a user can see moves it in the same PR as the full description below |
 
-## English (default listing language)
+## English (translation)
 
 Play counts characters, not words, and rejects at the limit rather than truncating. Keep the count
 in the heading and update it when you edit: it is the only warning you get before the Console
@@ -70,7 +70,7 @@ renders no markup. The block below is what `play-metadata.py` uploads, so the ou
 ```
 ```
 
-## Polish
+## Polish (default listing language, pl-PL — ADR-0012)
 
 ### App name — 0/30
 

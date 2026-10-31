@@ -15,7 +15,9 @@ what the app does with information about you. It is short because the app does v
 ## The app collects nothing
 
 Darek has no account, no sign-in and no server. **The app has no permission to use the internet and
-never opens a network connection**, so nothing it hears or stores can be sent anywhere by it.
+never opens a network connection**, so nothing it hears ever leaves your phone. The one thing that
+does, at its request, is the call a Command places: to the number you typed for it, through your own
+mobile operator, from your own number, as described below.
 
 There is no advertising, no analytics, no crash reporting of its own, and no third-party SDK that
 phones home. The Google Play Billing library, which handles the optional tip, carries usage logging
@@ -94,8 +96,9 @@ Uninstalling the app removes everything it stored on the phone, including the nu
 copy can be in two other places:
 
 - **Android's backup in your Google account**, if backup is on. It outlives an uninstall, which is how
-  a reinstall gets your settings back. Delete it under Backups in Google Drive, or manage it in your
-  phone's backup settings.
+  a reinstall gets your settings back. Deleting it under Backups in Google Drive deletes your phone's
+  whole backup, not only Darek's settings; to remove only Darek's, clear the app's data in your
+  phone's settings. You can also turn backup off there.
 - **An email you sent the developer.** It is kept in the support mailbox, with your email address and
   what the draft carried, until you ask for it to be deleted. Write to the address below and it will
   be.
