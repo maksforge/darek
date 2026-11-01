@@ -48,11 +48,13 @@ object Roast {
     val phrases: List<String> =
         listOf(VERB) + NAMES.map { it.accusative } + NAMES.map { "darek $VERB ${it.accusative}" }
 
-    fun nameIn(tokens: List<String>): Name? =
-        NAMES.firstOrNull { name ->
-            val words = listOf("darek", VERB, name.accusative)
-            tokens.windowed(words.size).any { it == words }
-        }
+    fun nameIn(
+        tokens: List<String>,
+        likeness: Float,
+    ): Name? =
+        NAMES
+            .filter { LooseMatch.matches(tokens, listOf("darek", VERB, it.accusative), likeness) }
+            .maxByOrNull { name -> tokens.maxOf { LooseMatch.alike(it, name.accusative) } }
 
     private var last = -1
 

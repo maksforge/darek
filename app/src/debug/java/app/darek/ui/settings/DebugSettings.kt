@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.darek.R
+import app.darek.listen.LooseMatch
 import app.darek.speak.ReplyPlayer
 import app.darek.speak.Voice
 import app.darek.speak.VoiceVolume
@@ -37,6 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlin.math.roundToInt
 
 /**
  * The developer-only section of Settings. **This file exists only in the debug source set** — see
@@ -110,6 +112,24 @@ fun DebugSettings() {
         onClick = { context.startActivity(Intent(context, ProbeActivity::class.java)) },
         modifier = Modifier.padding(horizontal = Spacing.base),
     ) { Text(stringResource(R.string.debug_probe_open)) }
+    var likeness by remember { mutableStateOf(LooseMatch.likeness(context)) }
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.base)) {
+        Text(
+            stringResource(R.string.debug_probe_likeness, (likeness * 100).roundToInt()),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Slider(
+            value = likeness,
+            onValueChange = { likeness = (it * 20).roundToInt() / 20f },
+            onValueChangeFinished = { LooseMatch.setLikeness(context, likeness) },
+            valueRange = 0.5f..1f,
+        )
+        Text(
+            stringResource(R.string.debug_probe_likeness_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 }
 
 private val samples =
