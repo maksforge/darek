@@ -21,7 +21,8 @@ shows**:
   choice in the switcher, English or "follow the phone", sticks.
 - **Commands and Replies are Polish and are not translated.** They are speech, not UI: they live in
   the Command definitions, outside `strings.xml`, and the translation gate does not see them.
-- **The Reply is spoken in Darek's own Polish voice**, bundled in the app
+- **The Reply is spoken in the chosen Persona's own Polish voice**
+  ([ADR-0016](0016-daria-is-a-persona-the-user-switches-to.md)), bundled in the app
   ([ADR-0014](0014-darek-speaks-with-his-own-bundled-voice.md)), so every phone has it, whatever its
   text-to-speech engine. What happens when that voice fails is
   [ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)'s.

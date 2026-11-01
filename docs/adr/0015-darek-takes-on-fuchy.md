@@ -23,7 +23,9 @@ Three constraints shape it:
 ## Decision
 
 **A fucha is data, never code.** It is a JSON file (`.darek`) of Commands, each with its phrase,
-its Reply and the action it uses. From outside the fuchy page it arrives through Darek's own file
+its Reply and the action it uses. The phrase is written without the name: Darek puts the chosen
+Persona's in front ([ADR-0016](0016-daria-is-a-persona-the-user-switches-to.md)), and a Reply may
+carry a feminine form for Daria. From outside the fuchy page it arrives through Darek's own file
 picker (`ACTION_OPEN_DOCUMENT`), the dependable way in: file managers and messengers hand over a
 `content://` URI with no name to match and a generic MIME type, so an intent filter for `.darek` is
 a bonus, not the path. The actions are code inside Darek, each one written for its task (speak,
