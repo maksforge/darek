@@ -13,7 +13,10 @@ enum class PlaybackEnd { MARKER, WATCHDOG, NOTHING_TO_PLAY }
 
 /** Plays one rendered Reply through a static [AudioTrack] and reports what ended it. */
 object ReplyPlayer {
-    suspend fun play(samples: ShortArray): PlaybackEnd {
+    suspend fun play(
+        samples: ShortArray,
+        volume: Float = 1f,
+    ): PlaybackEnd {
         // One frame would put the end marker at 0, which may never fire.
         if (samples.size < 2) return PlaybackEnd.NOTHING_TO_PLAY
         val track =
@@ -38,6 +41,7 @@ object ReplyPlayer {
         val ended = CompletableDeferred<Unit>()
         try {
             track.write(samples, 0, samples.size)
+            track.setVolume(volume)
             // A marker at exactly the frame count never fires on some devices: the head stops on the last frame.
             track.notificationMarkerPosition = samples.size - 1
             track.setPlaybackPositionUpdateListener(
