@@ -53,6 +53,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      # The models FetchVerifiedAsset downloads, keyed on the build script that pins their hashes.
+      - name: Cache the fetched models
+        uses: actions/cache@v6
+        with:
+          path: ~/.gradle/caches/darek-assets
+          key: darek-assets-${{ hashFiles('app/build.gradle.kts') }}
+          restore-keys: darek-assets-
+
       # Fail fast on formatting before the expensive build/test steps.
       # Fix locally with `./gradlew spotlessApply`.
       - name: Formatting (Spotless)
@@ -169,6 +177,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      # The models FetchVerifiedAsset downloads, keyed on the build script that pins their hashes.
+      - name: Cache the fetched models
+        uses: actions/cache@v6
+        with:
+          path: ~/.gradle/caches/darek-assets
+          key: darek-assets-${{ hashFiles('app/build.gradle.kts') }}
+          restore-keys: darek-assets-
+
       # The hosted runner supports nested virtualisation, so the emulator is
       # hardware-accelerated. Without KVM this job would take hours.
       - name: Enable KVM
@@ -282,6 +298,14 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
+
+      # The models FetchVerifiedAsset downloads, keyed on the build script that pins their hashes.
+      - name: Cache the fetched models
+        uses: actions/cache@v6
+        with:
+          path: ~/.gradle/caches/darek-assets
+          key: darek-assets-${{ hashFiles('app/build.gradle.kts') }}
+          restore-keys: darek-assets-
 
       - name: Enable KVM
         run: |
