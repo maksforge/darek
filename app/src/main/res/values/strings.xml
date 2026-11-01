@@ -24,6 +24,7 @@
     <string name="home_listening">Darek is listening</string>
     <string name="home_stop">Stop</string>
     <string name="home_preparing">Getting ready…</string>
+    <string name="home_listen_failed">Darek couldn\'t start listening. Try again.</string>
     <string name="mic_disclosure_title">Darek needs the microphone</string>
     <string name="mic_disclosure_body">Darek listens only while the Listen button is on. What he hears is processed on this phone and is never recorded or sent anywhere.</string>
     <string name="mic_disclosure_continue">Continue</string>

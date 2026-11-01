@@ -56,7 +56,7 @@ import app.darek.ui.common.startActivitySafely
 
 /**
  * Darek's one screen: *Słuchaj* and the last Reply. In phase 1 the microphone belongs to the visible
- * screen, so Listening stops at `ON_STOP` and keeps the screen on while it runs.
+ * screen, so Listening stops when Home leaves the screen and keeps the screen on while it runs.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +73,7 @@ fun HomeScreen(
     var granted by remember { mutableStateOf(context.hasMicrophone()) }
     var deniedNow by rememberSaveable { mutableStateOf(false) }
     var disclosing by rememberSaveable { mutableStateOf(false) }
-    var rationaleBefore by remember { mutableStateOf(false) }
+    var rationaleBefore by rememberSaveable { mutableStateOf(false) }
 
     val ask =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
@@ -91,7 +91,14 @@ fun HomeScreen(
         if (granted) deniedNow = false
         viewModel.onMicGrantRead(granted)
     }
-    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.stopListening() }
+    // Listening lives in AppContainer, so a rotation or a theme switch can leave it running across
+    // the Activity's recreation. Nav3 entries have no lifecycle, so leaving for another screen is
+    // only seen as Home's disposal.
+    val stopUnlessRecreating = {
+        if (activity?.isChangingConfigurations != true) viewModel.stopListening()
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { stopUnlessRecreating() }
+    DisposableEffect(Unit) { onDispose { stopUnlessRecreating() } }
 
     val view = LocalView.current
     val listening = state.listening != Listening.Phase.OFF
@@ -133,6 +140,7 @@ fun HomeScreen(
                 ) {
                     ListenControl(
                         phase = state.listening,
+                        failed = state.listenFailed,
                         onListen = {
                             when {
                                 granted -> viewModel.listen()
@@ -184,12 +192,26 @@ fun HomeScreen(
 @Composable
 private fun ListenControl(
     phase: Listening.Phase,
+    failed: Boolean,
     onListen: () -> Unit,
     onStop: () -> Unit,
 ) {
     when (phase) {
         Listening.Phase.OFF ->
-            Button(onClick = onListen) { Text(stringResource(R.string.home_listen)) }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(Spacing.tight),
+            ) {
+                Button(onClick = onListen) { Text(stringResource(R.string.home_listen)) }
+                if (failed) {
+                    Text(
+                        text = stringResource(R.string.home_listen_failed),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
         Listening.Phase.PREPARING ->
             Button(onClick = {}, enabled = false) { Text(stringResource(R.string.home_preparing)) }
         Listening.Phase.ON ->

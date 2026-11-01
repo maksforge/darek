@@ -331,6 +331,8 @@ The copy, in English, translated once at the merge:
 
 - `home_listen` *Listen* · `home_listening` *Darek is listening* · `home_stop` *Stop* ·
   `home_preparing` *Getting ready…*
+- `home_listen_failed` *Darek couldn't start listening. Try again.*, under the button after a start
+  that failed, until the next one
 - `mic_disclosure_title` *Darek needs the microphone*
 - `mic_disclosure_body` *Darek listens only while the Listen button is on. What he hears is processed
   on this phone and is never recorded or sent anywhere.*
