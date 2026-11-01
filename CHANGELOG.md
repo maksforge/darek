@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0](https://github.com/maksforge/darek/compare/v0.2.1...v0.3.0) (2026-11-01)
+
+
+### Features
+
+* ask to be set up first when Darek hears his name and nothing is configured ([460985a](https://github.com/maksforge/darek/commit/460985aa8661ee16d36ffdb01b1a459db649e79e))
+* let Darek listen on Home and answer „Hej Darek, powiedz coś" out loud ([469d012](https://github.com/maksforge/darek/commit/469d0123e765253c2317b05747f42ad6e7802eb6))
+* show when Darek hears his name, and say „Stary, nie rozumiem cię" when no Command follows ([71406b9](https://github.com/maksforge/darek/commit/71406b9a3d5ddbb9c3189143020e443a66674491))
+* vary Darek's „nie rozumiem" answers, and bring the debug roast to Home ([e564ed9](https://github.com/maksforge/darek/commit/e564ed94e97b57a348dd6478c479dc8d46d97e84))
+
+
+### Bug Fixes
+
+* stop Listening when Home leaves, keep it through a rotation, and say when a start fails ([1794017](https://github.com/maksforge/darek/commit/1794017f9cfa11826ff6d2b3bc88c2aac22f9958))
+
 ## [0.2.1](https://github.com/maksforge/darek/compare/v0.2.0...v0.2.1) (2026-10-31)
 
 
