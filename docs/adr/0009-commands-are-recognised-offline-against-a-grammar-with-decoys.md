@@ -41,7 +41,9 @@ confidence 1.00. That is the failure this ADR exists to prevent.
 - **The grammar is the Commands, the cancel words (*"Darek, stop"*, *"anuluj"*,
   [ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)) and Decoys**: names and
   words close to the Commands' (*marek, jarek, janek, darka, darku, dawid, otwórz, zamknij, brama*)
-  and `[unk]`, so near-misses have somewhere to land. A Command that cannot act (one that
+  and `[unk]`, so near-misses have somewhere to land. The name is the chosen Persona's
+  ([ADR-0016](0016-daria-is-a-persona-the-user-switches-to.md)): with Daria chosen, *darek* is a Decoy
+  and *maria, marii, dario* join the names. A Command that cannot act (one that
   calls, with no Number) is left out, and the cancel words are in only while a Command that calls is
   enabled. **Its JSON
   carries Polish letters as UTF-8**: Vosk does not decode `\u` escapes, takes `co\u015b` as an

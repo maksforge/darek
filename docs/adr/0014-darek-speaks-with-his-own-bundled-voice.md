@@ -80,6 +80,8 @@ mc_speech (below). Meta's MMS-TTS and Coqui's XTTS are non-commercial.
 
 ## Consequences
 
+- Daria's voice, Piper's *gosia*, is a second model of the same kind, run the same way
+  ([ADR-0016](0016-daria-is-a-persona-the-user-switches-to.md)).
 - **The licence has a grey area, accepted knowingly.** mc_speech's recordings are CC0 and Piper's
   voices are published under MIT. But the voice was fine-tuned from Piper's English *lessac* voice,
   whose recordings (Blizzard 2013) are licensed for research only and exclude voice products.

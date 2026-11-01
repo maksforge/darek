@@ -8,7 +8,8 @@ user-facing word genuinely differ, both are written here with the difference sta
 
 | Term | Means | Not |
 | --- | --- | --- |
-| **Darek** | the assistant: the name users speak and the voice that answers. Also the app's name | the bot, the AI, JARVIS |
+| **Darek** | the assistant: the name users speak and the voice that answers, and the default Persona. Also the app's name, whichever Persona is chosen | the bot, the AI, JARVIS |
+| **Persona** | who answers: Darek or Daria, chosen in Settings. It sets the name every Command starts with, the voice and the grammatical gender of the Replies and of the UI that names it (ADR-0016). Built into the app, never a Fucha. In Polish UI: *kto odpowiada* | character, profile, assistant, voice pack |
 | **Command** | one fixed Polish phrase Darek acts on, with its **Reply** — *"Darek, otwórz bramę"*. A Command either **calls** its Gate's **Number** or **only replies** — *"Darek, powiedz coś"* (ADR-0013). Commands come in fuchy (ADR-0015): Darek's own (*brama*, *garaż*, *furtka*, *powiedz coś*), each with Decoys tuned for it, and the ones the user installs. The user gives each one that calls a Number and switches it on or off, but never types a phrase into Darek (ADR-0009). Spoken, never translated (ADR-0012). In Polish UI: *komenda* | wake word, hotword, skill, intent, trigger |
 | **Gate** | what a Command opens by being called: a GSM gate opener's SIM. A Command for a garage or a wicket is still a Gate in code; the UI uses the Command's own word for it. In Polish UI: *brama* | device, relay, contact |
 | **Number** | the phone number a Command calls, typed in by the user | contact, recipient |
