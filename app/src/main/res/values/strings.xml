@@ -21,6 +21,7 @@
 
     <string name="home_listen">Listen</string>
     <string name="home_listening">Darek is listening</string>
+    <string name="home_hearing">Darek hears you…</string>
     <string name="home_stop">Stop</string>
     <string name="home_preparing">Getting ready…</string>
     <string name="home_listen_failed">Darek couldn\'t start listening. Try again.</string>

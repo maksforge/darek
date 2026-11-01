@@ -67,4 +67,14 @@ class CommandMatchTest {
     fun tokens_split_on_any_whitespace() {
         assertEquals(listOf("darek", "powiedz", "coś"), tokensOf(" darek  powiedz\tcoś\n"))
     }
+
+    @Test
+    fun his_name_without_a_command_is_not_understood_and_talk_without_it_is_ignored() {
+        val sayOnly = listOf(Command.SAY_SOMETHING)
+        assertEquals(Reaction.Fires(Command.SAY_SOMETHING), reactionTo(tokensOf("darek powiedz coś"), sayOnly))
+        listOf("darek", "darek [unk]", "[unk] darek", "darek powiedz", "darek powiedz [unk] coś", "darek otwórz bramę")
+            .forEach { assertEquals(it, Reaction.NotUnderstood, reactionTo(tokensOf(it), sayOnly)) }
+        listOf("marek powiedz coś", "darka", "darku powiedz coś", "powiedz coś", "[unk]", "")
+            .forEach { assertEquals(it, null, reactionTo(tokensOf(it), sayOnly)) }
+    }
 }

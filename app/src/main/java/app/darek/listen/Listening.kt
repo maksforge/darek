@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,6 +46,8 @@ class Listening(
         val phase: Phase = Phase.OFF,
         val lastReply: String? = null,
         val failed: Boolean = false,
+        /** A partial result holds his name: he shows he is hearing before the Command is finished. */
+        val hearingName: Boolean = false,
     )
 
     private val appContext = context.applicationContext
@@ -53,7 +56,7 @@ class Listening(
 
     @Volatile private var model: Model? = null
 
-    @Volatile private var replies: Map<Command, ShortArray>? = null
+    @Volatile private var replies: Map<String, ShortArray>? = null
 
     @Volatile private var job: Job? = null
 
@@ -77,16 +80,24 @@ class Listening(
                     val grammar = Grammar.json(enabled)
                     mutableState.update { it.copy(phase = Phase.ON) }
                     while (true) {
-                        val command =
+                        val reaction =
                             Recogniser(loaded)
                                 .heard(grammar)
-                                .filterIsInstance<Heard.Final>()
-                                .mapNotNull { commandIn(it.tokens, enabled) }
+                                .onEach { heard ->
+                                    mutableState.update {
+                                        it.copy(
+                                            hearingName =
+                                                heard is Heard.Partial && NAME in heard.tokens,
+                                        )
+                                    }
+                                }.filterIsInstance<Heard.Final>()
+                                .mapNotNull { reactionTo(it.tokens, enabled) }
                                 .first()
-                        Log.i(TAG, "command=${command.name}")
-                        mutableState.update { it.copy(lastReply = command.reply) }
-                        val end = rendered[command]?.let { ReplyPlayer.play(it, volume()) } ?: PlaybackEnd.FAILED
-                        Log.i(VOICE_TAG, "reply command=${command.name} end=$end")
+                        val label = (reaction as? Reaction.Fires)?.command?.name ?: "NOT_UNDERSTOOD"
+                        Log.i(TAG, "reaction=$label")
+                        mutableState.update { it.copy(hearingName = false, lastReply = reaction.reply) }
+                        val end = rendered[reaction.reply]?.let { ReplyPlayer.play(it, volume()) } ?: PlaybackEnd.FAILED
+                        Log.i(VOICE_TAG, "reply reaction=$label end=$end")
                     }
                 } catch (e: CancellationException) {
                     throw e
@@ -94,7 +105,7 @@ class Listening(
                     Log.e(TAG, "listening failed", e)
                     mutableState.update { it.copy(failed = true) }
                 } finally {
-                    mutableState.update { it.copy(phase = Phase.OFF) }
+                    mutableState.update { it.copy(phase = Phase.OFF, hearingName = false) }
                     if (job === currentCoroutineContext()[Job]) job = null
                 }
             }
@@ -116,10 +127,11 @@ class Listening(
     }
 
     // A voice that fails to load leaves the Replies shown but silent; Listening goes on.
-    private fun renderReplies(): Map<Command, ShortArray> =
+    private fun renderReplies(): Map<String, ShortArray> =
         runCatching {
             val started = SystemClock.elapsedRealtime()
-            Voice.load(appContext).use { voice -> Command.entries.associateWith { voice.synthesize(it.reply) } }.also {
+            val texts = Command.entries.map { it.reply } + NOT_UNDERSTOOD
+            Voice.load(appContext).use { voice -> texts.associateWith { voice.synthesize(it) } }.also {
                 Log.i(VOICE_TAG, "ready=${SystemClock.elapsedRealtime() - started}ms")
             }
         }.getOrElse {
