@@ -27,7 +27,7 @@ class Voice private constructor(
     private val idMap: Map<String, List<Long>>,
     private val scales: FloatArray,
 ) : AutoCloseable {
-    /** The voice's own `noise_scale`, `length_scale` and `noise_w`, from its config. */
+    /** What [synthesize] uses when given no scales: the overrides [load] was given, else the config's. */
     val defaultScales: FloatArray get() = scales.copyOf()
 
     fun synthesize(
