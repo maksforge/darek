@@ -306,11 +306,13 @@ and the shown Reply is seen. With the phone in a pocket it is neither heard nor 
 Command that calls may dial on a failed voice there is left open for phase 2 (ADR-0011).
 
 **His name without a Command** (the owner's ask, 2026-11-01): a final result that holds *darek* and
-no enabled Command gets the Reply *„Stary, nie rozumiem cię."*, and one without *darek* gets nothing,
-so talk that never names him is never answered. While a partial result holds *darek*, Home shows
-*Darek cię słyszy…* in place of *Darek słucha*. `CommandMatchTest` pins which results answer. A room
-that says *„Darek mówił, że…"* hears *„nie rozumiem"*; phase 2 re-reads that before it listens in a
-pocket.
+no enabled Command gets *„Stary, musisz mnie najpierw skonfigurować."* while no Command the user sets
+up is enabled, and one of eight *„nie rozumiem"* answers once one is. The built-in *powiedz coś* (and
+the debug build's roast) answer but do not count as set up. A result without *darek* gets nothing, so
+talk that never names him is never answered. While a partial result holds *darek*, Home shows *Darek
+cię słyszy…* in place of *Darek słucha*. `CommandMatchTest` pins which results answer. In this
+phase's release nothing can be set up yet, so his name alone always asks for it until phase 3. A room
+that says *„Darek mówił, że…"* hears that answer; phase 2 re-reads it before he listens in a pocket.
 
 **Home** loses its placeholder line and gains, in the middle:
 - **The *Słuchaj* button.** Off, it says *Słuchaj*; on, *Darek słucha* with *Zatrzymaj*. It turns

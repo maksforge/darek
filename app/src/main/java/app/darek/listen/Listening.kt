@@ -125,9 +125,13 @@ class Listening(
         when (val reaction = reactionTo(tokens, enabled)) {
             null -> null
             is Reaction.Fires -> Answer(reaction.command.name, reaction.command.reply)
-            Reaction.NotUnderstood ->
+            Reaction.NotUnderstood, Reaction.NotConfigured ->
                 ListeningExtras.reply(appContext, tokens)?.let { Answer("EXTRA", it) }
-                    ?: Answer("NOT_UNDERSTOOD", pickNotUnderstood())
+                    ?: if (reaction == Reaction.NotUnderstood) {
+                        Answer("NOT_UNDERSTOOD", pickNotUnderstood())
+                    } else {
+                        Answer("NOT_CONFIGURED", NOT_CONFIGURED)
+                    }
         }
 
     private fun pickNotUnderstood(): String {
@@ -156,7 +160,7 @@ class Listening(
             runCatching { Voice.load(appContext) }
                 .onFailure { Log.e(VOICE_TAG, "voice failed to load", it) }
                 .getOrNull() ?: return
-        renderAhead(Command.entries.map { it.reply } + NOT_UNDERSTOOD.first())
+        renderAhead(Command.entries.map { it.reply } + NOT_CONFIGURED + NOT_UNDERSTOOD.first())
         Log.i(VOICE_TAG, "ready=${SystemClock.elapsedRealtime() - started}ms")
     }
 
