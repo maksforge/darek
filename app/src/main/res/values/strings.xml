@@ -19,7 +19,6 @@
 <resources>
     <string name="app_name" translatable="false">Darek</string>
 
-    <!-- Home -->
     <string name="home_listen">Listen</string>
     <string name="home_listening">Darek is listening</string>
     <string name="home_stop">Stop</string>
