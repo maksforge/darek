@@ -38,16 +38,16 @@ confidence 1.00. That is the failure this ADR exists to prevent.
   arrives in a fucha, every word of it is checked against the model's vocabulary when it is
   installed, because Vosk drops grammar words its model does not know, and the name Decoys below
   apply to every Command whichever fucha it came from.
-- **The grammar is the Commands, the cancel words (*"Darek, stop"*, *"anuluj"*,
+- **The grammar is the Commands, the cancel words (*"stop"*, *"anuluj"*, which carry no name,
   [ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)) and Decoys**: names and
   words close to the Commands' (*marek, jarek, janek, darka, darku, dawid, otwórz, zamknij, brama*)
-  and `[unk]`, so near-misses have somewhere to land. The name is the chosen Persona's
-  ([ADR-0016](0016-daria-is-a-persona-the-user-switches-to.md)): with Daria chosen, *darek* is a Decoy
-  and *maria, marii, dario* join the names. A Command that cannot act (one that
-  calls, with no Number) is left out, and the cancel words are in only while a Command that calls is
-  enabled. **Its JSON
-  carries Polish letters as UTF-8**: Vosk does not decode `\u` escapes, takes `co\u015b` as an
-  unknown word and drops it, so the Command could never fire (read on the host 2026-11-01).
+  and `[unk]`, so near-misses have somewhere to land. The name is the chosen Persona's, and the
+  name Decoys, the same under either, include the other Persona's name
+  ([ADR-0016](0016-daria-is-a-persona-the-user-switches-to.md) lists them). A Command that cannot
+  act (one that calls, with no Number) is left out, and the cancel words are in only while a Command
+  that calls is enabled. **Its JSON carries Polish letters as UTF-8**: Vosk does not decode `\u`
+  escapes, takes `co\u015b` as an unknown word and drops it, so the Command could never fire (read
+  on the host 2026-11-01).
 - **A Command fires when its words are adjacent in a single final result's raw tokens**, with
   nothing between them, not even `[unk]`. Anything before or after, Decoys or `[unk]`, is ignored,
   so *"darek otwórz bramę proszę"* and a Command joined to surrounding noise fire. A split Command

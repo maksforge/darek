@@ -29,6 +29,10 @@ was extracted from and the first app built from it settled on exactly this split
   microphone disclosure; the Gate call
   with its cancel window in the debug build only (ADR-0011). Readings: real voices at a distance and
   in a car, the offline Polish voice, the dial on the owner's phone
+- [ ] **Phase D** — Daria (ADR-0016), after 0.4.0 and before phase 2: the Persona in Settings,
+  *gosia* bundled, the name and its Decoys per Persona with the correction, the built-in Commands'
+  phrases without the name and every line in both genders, the UI strings that name the Persona as
+  pairs. Readings: her voice on the phone, her name and Decoys against real voices
 - [ ] **Phase 2** — Listening: the microphone service, its notification, the start paths (switch,
   notification after boot, Quick Settings tile), pausing during the Reply and the call, MIUI setup,
   a night's battery reading (ADR-0010). An updated microphone disclosure, shown once before the

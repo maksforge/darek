@@ -92,13 +92,14 @@ ADR-0009's match rule, which ignores anything said before or after a Command:
 - **A phrase holding a cancel word** (*stop*, *anuluj*,
   [ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)) is refused: cancel
   words act on partial results, so saying it would cancel any call in its window.
-- **Identical phrases, and two where one contains the other** (*„Darek, otwórz bramę dwa"* holds
-  *„Darek, otwórz bramę"*, which would fire and call the other Number), are never both on:
+- **Identical phrases, and two where one contains the other** (*„otwórz bramę dwa"* holds
+  *„otwórz bramę"*, which would fire and call the other Number), are never both on:
   switching one on switches the other off.
 - **A phrase that sounds like an enabled one**, within two letters of it in all (edit distance over
   the normalised phrase), installs switched off, behind a warning the user can override to keep both
-  on. So does a fucha with a Decoy or a Command word within two letters of *darek* (the name
-  Decoys are Darek's own) or of a word in another fucha's enabled Command: the grammar holds every
+  on. So does a fucha with a Decoy or a Command word within two letters of *darek* or *daria*,
+  whichever Persona is chosen, since the user can switch (the name Decoys are Darek's own), or of a
+  word in another fucha's enabled Command: the grammar holds every
   Command word as a token of its own too, so either would take that Command's utterances. A word
   equal to such a word is the same token and changes nothing.
 
@@ -116,8 +117,8 @@ stays off until the user picks a Number again. Every update passes the checks an
 (signature, vocabulary, clashes), and one that adds a permission, an address or a value sent waits
 for the user.
 
-**Personas stay in the app.** A persona (Daria) changes the name every Command starts with, the name
-Decoys and the grammatical gender of every Reply, so it is not one fucha among others.
+**Personas stay in the app.** A Persona (Daria) changes the name every Command starts with, the name
+Decoys and the grammatical gender of every line spoken, so it is not one fucha among others.
 
 ## Alternatives
 
