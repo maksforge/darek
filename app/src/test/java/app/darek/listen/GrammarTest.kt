@@ -8,8 +8,8 @@ import org.junit.Test
 
 /** A grammar Vosk cannot read drops its words without a sound, and the Command never fires. */
 class GrammarTest {
-    private val callOff = Grammar.json(setOf(Command.SAY_SOMETHING))
-    private val callOn = Grammar.json(Command.entries.toSet())
+    private val callOff = Grammar.json(setOf(Command.SAY_SOMETHING), Persona.DAREK)
+    private val callOn = Grammar.json(Command.entries.toSet(), Persona.DAREK)
 
     private fun phrases(json: String): List<String> = Json.decodeFromString(json)
 
@@ -41,9 +41,25 @@ class GrammarTest {
     @Test
     fun the_decoys_and_unk_are_always_in() {
         listOf(callOff, callOn).map(::phrases).forEach { phrases ->
-            assertTrue(phrases.containsAll(Grammar.DECOYS))
+            assertTrue(phrases.containsAll(Grammar.decoys(Persona.DAREK)))
             assertTrue(Grammar.UNKNOWN in phrases)
             assertEquals(phrases.distinct(), phrases)
+        }
+    }
+
+    @Test
+    fun the_chosen_persona_s_name_starts_every_command_and_the_other_name_is_a_decoy() {
+        val daria = phrases(Grammar.json(Command.entries.toSet(), Persona.DARIA))
+        assertTrue("daria powiedz coś" in daria)
+        assertTrue("daria otwórz bramę" in daria)
+        assertFalse(daria.any { it.startsWith("darek ") })
+        assertTrue("darek" in daria)
+        assertTrue("daria" in phrases(callOff))
+        Persona.entries.forEach { persona ->
+            val decoys = Grammar.decoys(persona)
+            assertFalse(persona.word in decoys)
+            assertTrue(persona.other.word in decoys)
+            assertTrue(decoys.containsAll(Grammar.NAME_DECOYS + Grammar.COMMAND_WORD_DECOYS))
         }
     }
 }

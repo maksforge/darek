@@ -5,13 +5,12 @@ import androidx.core.content.edit
 
 /**
  * Debug-only: lets a reply-only Command fire when each of its words is only *alike* what was heard,
- * letter by letter. „darek" stays exact, or a Marek would fire it; Commands that call never come
- * here (ADR-0009).
+ * letter by letter. The name, its first word, stays exact, or a Marek would fire it; Commands that
+ * call never come here (ADR-0009).
  */
 object LooseMatch {
     private const val FILE = "debug_probe"
     private const val KEY = "likeness"
-    private const val NAME = "darek"
 
     fun likeness(context: Context): Float = context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getFloat(KEY, 0.7f)
 
@@ -30,7 +29,10 @@ object LooseMatch {
         likeness: Float,
     ): Boolean =
         tokens.windowed(words.size).any { window ->
-            window.zip(words).all { (heard, word) -> heard == word || (word != NAME && alike(heard, word) >= likeness) }
+            window.zip(words).withIndex().all { (i, pair) ->
+                val (heard, word) = pair
+                heard == word || (i > 0 && alike(heard, word) >= likeness)
+            }
         }
 
     fun alike(

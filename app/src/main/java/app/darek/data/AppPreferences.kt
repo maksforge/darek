@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import app.darek.listen.Persona
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -48,12 +49,14 @@ class AppPreferences(
         val TIP_ANSWERED_UNDER = longPreferencesKey("tip_answered_under")
         val LANGUAGE_JUDGED_UNDER = longPreferencesKey("language_judged_under")
         val MIC_DENIED_UNDER = longPreferencesKey("mic_denied_under")
+        val PERSONA = stringPreferencesKey("persona")
 
         /** What *Restore to default* removes: everything the user chose, so each reads its default again. */
         val SETTINGS: List<Preferences.Key<*>> =
             listOf(
                 THEME_MODE,
                 MATERIAL_YOU,
+                PERSONA,
             )
 
         /**
@@ -88,6 +91,14 @@ class AppPreferences(
      * app's identity would be invisible on almost every device that runs it.
      */
     val materialYou: Flow<Boolean> = store.data.map { it[Keys.MATERIAL_YOU] ?: false }
+
+    /** Who answers (ADR-0016); an unknown stored name falls back to Darek, as [themeMode] does. */
+    val persona: Flow<Persona> =
+        store.data.map { prefs ->
+            prefs[Keys.PERSONA]?.let { name ->
+                runCatching { enumValueOf<Persona>(name) }.getOrNull()
+            } ?: Persona.DAREK
+        }
 
     /**
      * The `firstInstallTime` the home screen's one tip ask was answered under, either way (ADR-0007).
@@ -127,6 +138,10 @@ class AppPreferences(
 
     suspend fun setThemeMode(mode: ThemeMode) {
         store.edit { it[Keys.THEME_MODE] = mode.name }
+    }
+
+    suspend fun setPersona(persona: Persona) {
+        store.edit { it[Keys.PERSONA] = persona.name }
     }
 
     suspend fun setMaterialYou(enabled: Boolean) {

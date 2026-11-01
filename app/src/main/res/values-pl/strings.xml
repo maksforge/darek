@@ -10,10 +10,13 @@
 <resources>
     <string name="home_listen">Słuchaj</string>
     <string name="home_listening">Darek słucha</string>
+    <string name="home_listening_daria">Daria słucha</string>
     <string name="home_hearing">Darek cię słyszy…</string>
+    <string name="home_hearing_daria">Daria cię słyszy…</string>
     <string name="home_stop">Zatrzymaj</string>
     <string name="home_preparing">Przygotowuję…</string>
     <string name="home_listen_failed">Darek nie zaczął słuchać. Spróbuj ponownie.</string>
+    <string name="home_listen_failed_daria">Daria nie zaczęła słuchać. Spróbuj ponownie.</string>
     <string name="mic_disclosure_title">Darek potrzebuje mikrofonu</string>
     <string name="mic_disclosure_body">Darek słucha tylko wtedy, gdy przycisk Słuchaj jest włączony. To, co słyszy, jest przetwarzane na tym telefonie i nigdy nie jest nagrywane ani nigdzie wysyłane.</string>
     <string name="mic_disclosure_continue">Dalej</string>
@@ -29,6 +32,8 @@
     <string name="action_cancel">Anuluj</string>
 
     <string name="settings_title">Ustawienia</string>
+    <string name="settings_persona">Kto odpowiada</string>
+    <string name="settings_persona_hint">Imię, którym wołasz, i głos, który odpowiada. Na drugie imię usłyszysz poprawkę.</string>
     <string name="settings_appearance">Wygląd</string>
     <string name="settings_theme_system">Systemowy</string>
     <string name="settings_theme_light">Jasny</string>
@@ -41,7 +46,7 @@
     <string name="settings_language_report_hint">Napisz, jeśli jakieś słowo jest nie tak w twoim języku. Otwiera aplikację pocztową z już wpisanym językiem, w którym czytasz.</string>
     <string name="settings_data">Dane</string>
     <string name="settings_restore">Przywróć ustawienia domyślne</string>
-    <string name="settings_restore_hint">Motyw, kolory i język</string>
+    <string name="settings_restore_hint">Kto odpowiada, motyw, kolory i język</string>
     <string name="settings_restore_confirm_title">Przywrócić ustawienia domyślne?</string>
     <string name="settings_restore_confirm_body">Motyw i kolory wrócą do wartości początkowych, a język do polskiego. Tego nie można cofnąć.</string>
     <string name="settings_restore_confirm">Przywróć</string>

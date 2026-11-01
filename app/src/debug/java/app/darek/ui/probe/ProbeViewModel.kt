@@ -8,10 +8,12 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import app.darek.MainApplication
 import app.darek.listen.Command
 import app.darek.listen.Grammar
 import app.darek.listen.Heard
 import app.darek.listen.LooseMatch
+import app.darek.listen.Persona
 import app.darek.listen.Recogniser
 import app.darek.listen.RecogniserModel
 import app.darek.listen.Roast
@@ -25,6 +27,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -63,6 +66,8 @@ class ProbeViewModel(
     @Volatile private var voice: Voice? = null
 
     @Volatile private var replies: Map<Command, ShortArray>? = null
+
+    @Volatile private var persona: Persona = Persona.DAREK
     private var job: Job? = null
 
     fun setFree(free: Boolean) {
@@ -84,6 +89,16 @@ class ProbeViewModel(
             viewModelScope.launch {
                 mutableState.update { it.copy(phase = ProbePhase.PREPARING, error = null) }
                 try {
+                    val chosen =
+                        getApplication<MainApplication>()
+                            .container.preferences.persona
+                            .first()
+                    if (chosen != persona) {
+                        voice?.close()
+                        voice = null
+                        replies = null
+                        persona = chosen
+                    }
                     val loaded = withContext(Dispatchers.IO) { model ?: load().also { model = it } }
                     val free = state.value.free
                     val reading = state.value.reading
@@ -94,10 +109,15 @@ class ProbeViewModel(
                     val grammar =
                         when {
                             free -> null
-                            reading -> Grammar.json(Command.entries.toSet())
+                            reading -> Grammar.json(Command.entries.toSet(), persona)
                             else ->
                                 Json.encodeToString(
-                                    (Grammar.phrases(Command.entries.toSet()) + Roast.phrases).distinct(),
+                                    (
+                                        Grammar.phrases(
+                                            Command.entries.toSet(),
+                                            persona,
+                                        ) + Roast.phrases(persona)
+                                    ).distinct(),
                                 )
                         }
                     Recogniser(loaded).heard(grammar).collect { heard ->
@@ -135,19 +155,23 @@ class ProbeViewModel(
     ) {
         if (heard.tokens.isEmpty()) return
         val tokens = heard.tokens
-        val exact = commandIn(tokens, Command.entries)
+        val exact = commandIn(tokens, Command.entries, persona)
         val likeness = LooseMatch.likeness(getApplication())
         val command =
             when {
                 exact != null || reading -> exact
-                else -> Command.entries.firstOrNull { !it.calls && LooseMatch.matches(tokens, it.words, likeness) }
+                else ->
+                    Command.entries.firstOrNull {
+                        !it.calls &&
+                            LooseMatch.matches(tokens, it.words(persona), likeness)
+                    }
             }
-        val roasted = if (command == null && !reading) Roast.nameIn(tokens, likeness) else null
+        val roasted = if (command == null && !reading) Roast.nameIn(tokens, likeness, persona) else null
         val fired = command?.name ?: roasted?.let { "ROAST ${it.vocative}" }
         val match =
             when {
                 fired == null -> "-"
-                exact != null || (roasted != null && Roast.nameIn(tokens, EXACT) != null) -> "exact"
+                exact != null || (roasted != null && Roast.nameIn(tokens, EXACT, persona) != null) -> "exact"
                 else -> "loose"
             }
         val line = ProbeLine(tokens.joinToString(" "), fired?.let { if (match == "loose") "$it ~loose" else it })
@@ -171,9 +195,9 @@ class ProbeViewModel(
     private fun renderReplies(): Map<Command, ShortArray> =
         runCatching {
             val started = SystemClock.elapsedRealtime()
-            val loaded = voice ?: Voice.load(getApplication()).also { voice = it }
+            val loaded = voice ?: Voice.load(getApplication(), persona.voice).also { voice = it }
             Command.entries
-                .associateWith { loaded.synthesize(it.reply) }
+                .associateWith { loaded.synthesize(it.reply.by(persona)) }
                 .also { rendered ->
                     val peaks =
                         rendered.entries.joinToString(

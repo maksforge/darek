@@ -352,21 +352,31 @@ data class VerifiedAsset(
     val unzip: Boolean = false,
 )
 
-// Darek's voice (ADR-0014) is Piper's mc_speech model as published; the recogniser's model is
-// ADR-0009's, unzipped to `vosk/vosk-model-small-pl-0.22/`.
+// Each Persona's voice (ADR-0014, ADR-0016) is a Piper model as published, named after the
+// Persona; the recogniser's model is ADR-0009's, unzipped to `vosk/vosk-model-small-pl-0.22/`.
 private val piperCommit = "b4e358ffcb232591bf73a540e70f7de528e4174a"
-private val piperVoice = "https://huggingface.co/rhasspy/piper-voices/resolve/$piperCommit/pl/pl_PL/mc_speech/medium"
+private val piperVoices = "https://huggingface.co/rhasspy/piper-voices/resolve/$piperCommit/pl/pl_PL"
 private val shippedAssets =
     listOf(
         VerifiedAsset(
-            "$piperVoice/pl_PL-mc_speech-medium.onnx",
+            "$piperVoices/mc_speech/medium/pl_PL-mc_speech-medium.onnx",
             "a6b043358bc81e6c111a5140606a21959ce7f34969b8b7207f62869787cc3907",
-            "voice/voice.onnx",
+            "voice/darek.onnx",
         ),
         VerifiedAsset(
-            "$piperVoice/pl_PL-mc_speech-medium.onnx.json",
+            "$piperVoices/mc_speech/medium/pl_PL-mc_speech-medium.onnx.json",
             "b8bb11228e15c505219846a88fdc129e93f57e774ed7f9bac263156d1aa3d324",
-            "voice/voice.onnx.json",
+            "voice/darek.onnx.json",
+        ),
+        VerifiedAsset(
+            "$piperVoices/gosia/medium/pl_PL-gosia-medium.onnx",
+            "38f66464240ed74f186e6b7dc13c6e3b22e023426299f25c2b3cc9dfa9373fbc",
+            "voice/daria.onnx",
+        ),
+        VerifiedAsset(
+            "$piperVoices/gosia/medium/pl_PL-gosia-medium.onnx.json",
+            "1aefb31a9d53ffe44a8163ff73ec833acb7a6253848f6bb0403d8a66f9c7510d",
+            "voice/daria.onnx.json",
         ),
         VerifiedAsset(
             "https://alphacephei.com/vosk/models/vosk-model-small-pl-0.22.zip",

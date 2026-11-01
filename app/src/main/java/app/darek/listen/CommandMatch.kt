@@ -7,26 +7,29 @@ package app.darek.listen
 fun commandIn(
     tokens: List<String>,
     enabled: Collection<Command>,
+    persona: Persona,
 ): Command? =
     tokens.indices.firstNotNullOfOrNull { start ->
-        enabled.firstOrNull { command -> tokens.hasAt(start, command.words) }
+        enabled.firstOrNull { command -> tokens.hasAt(start, command.words(persona)) }
     }
 
 /**
- * What one final result makes Darek do: fire a Command; when he heard his own name and nothing he
- * knows, say he does not understand, or, while no Command the user sets up is enabled, ask to be set
- * up; or stay silent, so talk that never names him never gets an answer. The built-in Command that
- * only replies does not count as set up (the owner's call, 2026-11-01).
+ * What one final result makes the Persona do: fire a Command; when it heard its own name and nothing
+ * it knows, say it does not understand, or, while no Command the user sets up is enabled, ask to be
+ * set up; failing that, correct a user who used the other Persona's name (ADR-0016); or stay silent,
+ * so talk that names neither never gets an answer. The built-in Command that only replies does not
+ * count as set up (the owner's call, 2026-11-01).
  */
 fun reactionTo(
     tokens: List<String>,
     enabled: Collection<Command>,
+    persona: Persona,
 ): Reaction? {
-    commandIn(tokens, enabled)?.let { return Reaction.Fires(it) }
+    commandIn(tokens, enabled, persona)?.let { return Reaction.Fires(it) }
     return when {
-        NAME !in tokens -> null
-        enabled.any { it.calls } -> Reaction.NotUnderstood
-        else -> Reaction.NotConfigured
+        persona.word in tokens -> if (enabled.any { it.calls }) Reaction.NotUnderstood else Reaction.NotConfigured
+        persona.other.word in tokens -> Reaction.Corrected
+        else -> null
     }
 }
 
@@ -38,23 +41,23 @@ sealed interface Reaction {
     data object NotUnderstood : Reaction
 
     data object NotConfigured : Reaction
+
+    data object Corrected : Reaction
 }
 
-const val NOT_CONFIGURED = "Stary, musisz mnie najpierw skonfigurować."
+val NOT_CONFIGURED = Line("Stary, musisz mnie najpierw skonfigurować.")
 
-const val NAME = "darek"
-
-/** Speech, not UI (ADR-0012): picked at random, never the same twice in a row. */
+/** Picked at random, never the same twice in a row. */
 val NOT_UNDERSTOOD =
     listOf(
-        "Stary, nie rozumiem cię.",
-        "Co? Nie kumam.",
-        "Sorry, nie załapałem.",
-        "Powtórz, bo nie zrozumiałem.",
-        "Mordo, nie wiem, o co ci chodzi.",
-        "Hę? Możesz jeszcze raz?",
-        "Nie ogarniam, powiedz to inaczej.",
-        "Słyszę cię, ale nie wiem, czego chcesz.",
+        Line("Stary, nie rozumiem cię."),
+        Line("Co? Nie kumam."),
+        Line("Sorry, nie załapałem.", "Sorry, nie załapałam."),
+        Line("Powtórz, bo nie zrozumiałem.", "Powtórz, bo nie zrozumiałam."),
+        Line("Mordo, nie wiem, o co ci chodzi."),
+        Line("Hę? Możesz jeszcze raz?"),
+        Line("Nie ogarniam, powiedz to inaczej."),
+        Line("Słyszę cię, ale nie wiem, czego chcesz."),
     )
 
 fun tokensOf(text: String): List<String> = text.split(' ', '\t', '\n').filter { it.isNotEmpty() }

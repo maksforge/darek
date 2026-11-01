@@ -21,10 +21,13 @@
 
     <string name="home_listen">Listen</string>
     <string name="home_listening">Darek is listening</string>
+    <string name="home_listening_daria">Daria is listening</string>
     <string name="home_hearing">Darek hears you…</string>
+    <string name="home_hearing_daria">Daria hears you…</string>
     <string name="home_stop">Stop</string>
     <string name="home_preparing">Getting ready…</string>
     <string name="home_listen_failed">Darek couldn\'t start listening. Try again.</string>
+    <string name="home_listen_failed_daria">Daria couldn\'t start listening. Try again.</string>
     <string name="mic_disclosure_title">Darek needs the microphone</string>
     <string name="mic_disclosure_body">Darek listens only while the Listen button is on. What he hears is processed on this phone and is never recorded or sent anywhere.</string>
     <string name="mic_disclosure_continue">Continue</string>
@@ -43,6 +46,10 @@
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
+    <string name="settings_persona">Who answers</string>
+    <string name="settings_persona_hint">The name you call and the voice that answers. The other name gets a correction.</string>
+    <string name="persona_darek" translatable="false">Darek</string>
+    <string name="persona_daria" translatable="false">Daria</string>
     <string name="settings_appearance">Appearance</string>
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Light</string>
@@ -58,7 +65,7 @@
     <string name="settings_data">Data</string>
     <!-- Settings → Data: every setting, the app language included, back to how the app came, after a confirmation. -->
     <string name="settings_restore">Restore default settings</string>
-    <string name="settings_restore_hint">Theme, colours and language</string>
+    <string name="settings_restore_hint">Who answers, theme, colours and language</string>
     <string name="settings_restore_confirm_title">Restore default settings?</string>
     <string name="settings_restore_confirm_body">The theme and colours go back to how the app came, and the language to Polish. This cannot be undone.</string>
     <string name="settings_restore_confirm">Restore</string>

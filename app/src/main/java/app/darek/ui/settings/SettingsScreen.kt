@@ -24,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.darek.R
 import app.darek.data.ThemeMode
+import app.darek.listen.Persona
 import app.darek.theme.Spacing
 import app.darek.ui.appViewModelExtras
 import app.darek.ui.common.DetailScaffold
@@ -55,6 +56,24 @@ fun SettingsScreen(
         modifier = modifier,
     ) { contentModifier ->
         Column(modifier = contentModifier.verticalScroll(rememberScrollState())) {
+            SectionHeader(stringResource(R.string.settings_persona))
+            Row(modifier = Modifier.padding(horizontal = Spacing.base)) {
+                for (persona in Persona.entries) {
+                    FilterChip(
+                        selected = state.persona == persona,
+                        onClick = { viewModel.setPersona(persona) },
+                        label = { Text(stringResource(persona.labelRes())) },
+                        modifier = Modifier.padding(end = Spacing.tight),
+                    )
+                }
+            }
+            Text(
+                stringResource(R.string.settings_persona_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = Spacing.base),
+            )
+
             SectionHeader(stringResource(R.string.settings_appearance))
 
             Row(modifier = Modifier.padding(horizontal = Spacing.base)) {
@@ -164,6 +183,12 @@ private fun RestoreDefaultsRow(onRestore: () -> Unit) {
         )
     }
 }
+
+private fun Persona.labelRes(): Int =
+    when (this) {
+        Persona.DAREK -> R.string.persona_darek
+        Persona.DARIA -> R.string.persona_daria
+    }
 
 private fun ThemeMode.labelRes(): Int =
     when (this) {

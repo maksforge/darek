@@ -10,11 +10,13 @@ import app.darek.MainApplication
 import app.darek.data.AppPreferences
 import app.darek.listen.Command
 import app.darek.listen.Listening
+import app.darek.listen.Persona
 import app.darek.tip.TipJar
 import app.darek.tip.tipAskDue
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -27,6 +29,7 @@ data class HomeUiState(
     val lastReply: String? = null,
     val listenFailed: Boolean = false,
     val hearingName: Boolean = false,
+    val persona: Persona = Persona.DAREK,
     /** The system will not show its dialog again, so Home sends the user to the app's settings. */
     val micDeniedForGood: Boolean = false,
 )
@@ -43,19 +46,25 @@ class HomeViewModel(
             tipJar.offers,
             listening.state,
             preferences.micDeniedUnder,
-        ) { answeredUnder, offers, heard, deniedUnder ->
+            preferences.persona,
+        ) { answeredUnder, offers, heard, deniedUnder, persona ->
             HomeUiState(
                 showTipAsk = offers.isNotEmpty() && tipAskDue(answeredUnder, installedAt, Instant.now()),
                 listening = heard.phase,
                 lastReply = heard.lastReply,
                 listenFailed = heard.failed,
                 hearingName = heard.hearingName,
+                persona = persona,
                 micDeniedForGood = deniedUnder == installedAt,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
 
     /** In phase 1 only the Commands that reply can act; one that calls has no Number until phase 3. */
-    fun listen() = listening.start(Command.entries.filterNot { it.calls }.toSet())
+    private val enabled = Command.entries.filterNot { it.calls }.toSet()
+
+    fun listen() {
+        viewModelScope.launch { listening.start(enabled, preferences.persona.first()) }
+    }
 
     fun stopListening() = listening.stop()
 
@@ -82,6 +91,12 @@ class HomeViewModel(
     }
 
     init {
+        // A Persona switched while Listening restarts it under the new one (ADR-0016).
+        viewModelScope.launch {
+            preferences.persona.drop(1).collect { persona ->
+                if (listening.state.value.phase != Listening.Phase.OFF) listening.start(enabled, persona)
+            }
+        }
         // Prices are asked for only once the ask could be due, which saves a product query on every
         // other visit. The binding itself happens on every foreground anyway, to settle tips.
         viewModelScope.launch {

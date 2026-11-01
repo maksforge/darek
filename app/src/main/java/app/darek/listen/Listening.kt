@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,7 +49,7 @@ class Listening(
         val phase: Phase = Phase.OFF,
         val lastReply: String? = null,
         val failed: Boolean = false,
-        /** A partial result holds his name: he shows he is hearing before the Command is finished. */
+        /** A partial result holds the Persona's name: it shows it is hearing before the Command is finished. */
         val hearingName: Boolean = false,
     )
 
@@ -58,21 +59,37 @@ class Listening(
 
     @Volatile private var model: Model? = null
 
-    @Volatile private var voice: Voice? = null
+    @Volatile private var voice: Pair<Persona, Voice>? = null
 
-    private val rendered = ConcurrentHashMap<String, ShortArray>()
+    private val rendered = ConcurrentHashMap<Pair<Persona, String>, ShortArray>()
 
-    @Volatile private var lastNotUnderstood: String? = null
+    @Volatile private var lastNotUnderstood: Line? = null
 
     @Volatile private var job: Job? = null
+
+    @Volatile private var jobPersona: Persona? = null
 
     private data class Answer(
         val label: String,
         val text: String,
     )
 
-    fun start(enabled: Set<Command>) {
-        if (job != null || enabled.isEmpty()) return
+    /** Started again under another Persona, a running Listening restarts (ADR-0016). */
+    fun start(
+        enabled: Set<Command>,
+        persona: Persona,
+    ) {
+        val running = job
+        if (running != null) {
+            if (jobPersona != persona) {
+                scope.launch {
+                    running.cancelAndJoin()
+                    start(enabled, persona)
+                }
+            }
+            return
+        }
+        if (enabled.isEmpty()) return
         if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.RECORD_AUDIO) !=
             PackageManager.PERMISSION_GRANTED
         ) {
@@ -83,26 +100,26 @@ class Listening(
                 mutableState.update { it.copy(phase = Phase.PREPARING, failed = false) }
                 try {
                     val loaded = withContext(Dispatchers.IO) { model ?: loadModel().also { model = it } }
-                    withContext(Dispatchers.Default) { prepareVoice() }
+                    withContext(Dispatchers.Default) { prepareVoice(persona) }
                     if (enabled.any { it.calls }) {
-                        withContext(Dispatchers.Default) { renderAhead(NOT_UNDERSTOOD.take(1)) }
-                        launch(Dispatchers.Default) { renderAhead(NOT_UNDERSTOOD.drop(1)) }
+                        withContext(Dispatchers.Default) { renderAhead(persona, NOT_UNDERSTOOD.take(1)) }
+                        launch(Dispatchers.Default) { renderAhead(persona, NOT_UNDERSTOOD.drop(1)) }
                     }
-                    val grammar = Grammar.json(enabled, ListeningExtras.phrases())
+                    val grammar = Grammar.json(enabled, persona, ListeningExtras.phrases(persona))
                     mutableState.update { it.copy(phase = Phase.ON) }
                     while (true) {
                         val answer =
                             Recogniser(loaded)
                                 .heard(grammar)
                                 .onEach { heard ->
-                                    val hearing = heard is Heard.Partial && NAME in heard.tokens
+                                    val hearing = heard is Heard.Partial && persona.word in heard.tokens
                                     mutableState.update { it.copy(hearingName = hearing) }
                                 }.filterIsInstance<Heard.Final>()
-                                .mapNotNull { answerTo(it.tokens, enabled) }
+                                .mapNotNull { answerTo(it.tokens, enabled, persona) }
                                 .first()
                         Log.i(TAG, "reaction=${answer.label}")
                         mutableState.update { it.copy(hearingName = false, lastReply = answer.text) }
-                        Log.i(VOICE_TAG, "reply reaction=${answer.label} end=${speak(answer.text)}")
+                        Log.i(VOICE_TAG, "reply reaction=${answer.label} end=${speak(persona, answer.text)}")
                     }
                 } catch (e: CancellationException) {
                     throw e
@@ -115,6 +132,7 @@ class Listening(
                 }
             }
         job = launched
+        jobPersona = persona
         launched.start()
     }
 
@@ -125,55 +143,74 @@ class Listening(
     private fun answerTo(
         tokens: List<String>,
         enabled: Set<Command>,
+        persona: Persona,
     ): Answer? =
-        when (val reaction = reactionTo(tokens, enabled)) {
+        when (val reaction = reactionTo(tokens, enabled, persona)) {
             null -> null
-            is Reaction.Fires -> Answer(reaction.command.name, reaction.command.reply)
+            is Reaction.Fires -> Answer(reaction.command.name, reaction.command.reply.by(persona))
+            Reaction.Corrected -> Answer("CORRECTED", persona.correction)
             Reaction.NotUnderstood, Reaction.NotConfigured ->
-                ListeningExtras.reply(appContext, tokens)?.let { Answer("EXTRA", it) }
+                ListeningExtras.reply(appContext, tokens, persona)?.let { Answer("EXTRA", it) }
                     ?: if (reaction == Reaction.NotUnderstood) {
-                        Answer("NOT_UNDERSTOOD", pickNotUnderstood())
+                        Answer("NOT_UNDERSTOOD", pickNotUnderstood(persona))
                     } else {
-                        Answer("NOT_CONFIGURED", NOT_CONFIGURED)
+                        Answer("NOT_CONFIGURED", NOT_CONFIGURED.by(persona))
                     }
         }
 
-    private fun pickNotUnderstood(): String {
-        val ready = NOT_UNDERSTOOD.filter(rendered::containsKey).ifEmpty { NOT_UNDERSTOOD.take(1) }
+    private fun pickNotUnderstood(persona: Persona): String {
+        val ready =
+            NOT_UNDERSTOOD
+                .filter { rendered.containsKey(persona to it.by(persona)) }
+                .ifEmpty { NOT_UNDERSTOOD.take(1) }
         return ready
             .filter { it != lastNotUnderstood }
             .ifEmpty { ready }
             .random()
             .also { lastNotUnderstood = it }
+            .by(persona)
     }
 
-    private suspend fun speak(text: String): PlaybackEnd {
+    private suspend fun speak(
+        persona: Persona,
+        text: String,
+    ): PlaybackEnd {
         val samples =
-            rendered[text]
-                ?: voice?.let { loaded -> withContext(Dispatchers.Default) { synthesized(loaded, text) } }
+            rendered[persona to text]
+                ?: voice
+                    ?.takeIf { it.first == persona }
+                    ?.let { (_, loaded) -> withContext(Dispatchers.Default) { synthesized(loaded, text) } }
                 ?: return PlaybackEnd.FAILED
         return ReplyPlayer.play(samples, volume())
     }
 
     // A voice that fails to load or to synthesize leaves the Replies shown but silent; Listening
-    // goes on, and the next start tries again.
-    private suspend fun prepareVoice() {
-        if (voice != null) return
+    // goes on, and the next start tries again. Only the chosen Persona's voice is held (ADR-0016).
+    private suspend fun prepareVoice(persona: Persona) {
+        if (voice?.first == persona) return
+        voice?.second?.close()
+        voice = null
         val started = SystemClock.elapsedRealtime()
         voice =
-            runCatching { Voice.load(appContext) }
+            runCatching { Voice.load(appContext, persona.voice) }
                 .onFailure { Log.e(VOICE_TAG, "voice failed to load", it) }
-                .getOrNull() ?: return
-        renderAhead(Command.entries.map { it.reply } + NOT_CONFIGURED)
-        Log.i(VOICE_TAG, "ready=${SystemClock.elapsedRealtime() - started}ms")
+                .getOrNull()
+                ?.let { persona to it } ?: return
+        renderAhead(persona, Command.entries.map { it.reply } + NOT_CONFIGURED + Line(persona.correction))
+        Log.i(VOICE_TAG, "persona=$persona ready=${SystemClock.elapsedRealtime() - started}ms")
     }
 
-    private suspend fun renderAhead(texts: List<String>) {
-        val loaded = voice ?: return
-        for (text in texts) {
+    private suspend fun renderAhead(
+        persona: Persona,
+        lines: List<Line>,
+    ) {
+        val (owner, loaded) = voice ?: return
+        if (owner != persona) return
+        for (line in lines) {
             currentCoroutineContext().ensureActive()
-            if (rendered.containsKey(text)) continue
-            synthesized(loaded, text)?.let { rendered[text] = it }
+            val key = persona to line.by(persona)
+            if (rendered.containsKey(key)) continue
+            synthesized(loaded, key.second)?.let { rendered[key] = it }
         }
     }
 
