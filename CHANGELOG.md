@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/maksforge/darek/compare/v0.3.0...v0.4.0) (2026-11-01)
+
+
+### Features
+
+* speak with the full-quality voice instead of its int8 quantisation ([532b6a1](https://github.com/maksforge/darek/commit/532b6a13985c8164595eb9decd260ee0ad669908))
+
+
+### Bug Fixes
+
+* put a clock hour in the case its preposition takes, o siódmej, na siódmą ([73f438e](https://github.com/maksforge/darek/commit/73f438e49f3d00435ef9062744e5f02d4a40ded2))
+* read the hour after a form of godzina and in the second half of a range, and treat a no-break space as a space ([7301660](https://github.com/maksforge/darek/commit/7301660e55f1e38d15c3ca61ea7254f9aec88b89))
+
 ## [0.3.0](https://github.com/maksforge/darek/compare/v0.2.1...v0.3.0) (2026-11-01)
 
 
