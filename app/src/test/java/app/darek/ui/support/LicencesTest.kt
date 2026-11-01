@@ -71,4 +71,29 @@ class LicencesTest {
         val apache = groups.single { it.spdxId == "Apache-2.0" }
         assertTrue(apache.artifacts.any { it.artifactId == "vosk-model-small-pl" })
     }
+
+    @Test
+    fun `each bundled model lists its source and SHA-256 under its coordinates`() {
+        BUNDLED_MODELS.forEach { model ->
+            assertTrue(model.listing.startsWith("${model.coordinates}\nhttps://"))
+            assertTrue(Regex("SHA-256 [0-9a-f]{64}$").containsMatchIn(model.listing))
+        }
+    }
+
+    @Test
+    fun `an artifact from the report has no source and lists only its coordinates`() {
+        val report =
+            """
+            [{"groupId":"a","artifactId":"one","version":"1.0",
+              "spdxLicenses":[{"identifier":"MIT","name":"MIT License"}]}]
+            """.trimIndent()
+        assertEquals(
+            "a:one:1.0",
+            groupLicences(report)
+                .single()
+                .artifacts
+                .single()
+                .listing,
+        )
+    }
 }

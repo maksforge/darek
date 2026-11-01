@@ -36,9 +36,14 @@ data class LicensedArtifact(
     val name: String? = null,
     val spdxLicenses: List<SpdxLicence> = emptyList(),
     val unknownLicenses: List<UnknownLicence> = emptyList(),
+    /** Where a bundled file was fetched from and its SHA-256; licensee never writes it. */
+    val source: String? = null,
 ) {
     /** `androidx.room:room-runtime:2.8.4` — the identity a reader can actually look up. */
     val coordinates: String get() = "$groupId:$artifactId:$version"
+
+    /** What the screen lists for this artifact: its coordinates, and its source under them when known. */
+    val listing: String get() = source?.let { "$coordinates\n$it" } ?: coordinates
 
     /** The POM's own name where there is one; the artifact id is a better fallback than nothing. */
     val displayName: String get() = name?.takeIf(String::isNotBlank) ?: artifactId
@@ -94,6 +99,9 @@ val BUNDLED_MODELS =
             artifactId = "vosk-model-small-pl",
             version = "0.22",
             name = "Vosk Polish speech model",
+            source =
+                "https://alphacephei.com/vosk/models/vosk-model-small-pl-0.22.zip · " +
+                    "SHA-256 c4cd16498ea544f446f9e9a55cbd602b71cfe5a2b6f2b0834d81e1b6fce15f0d",
             spdxLicenses =
                 listOf(
                     SpdxLicence("Apache-2.0", "Apache License 2.0", "https://alphacephei.com/vosk/models"),
@@ -104,6 +112,10 @@ val BUNDLED_MODELS =
             artifactId = "pl_PL-mc_speech-medium",
             version = "int8-1",
             name = "Darek's voice: Piper pl_PL mc_speech",
+            source =
+                "https://github.com/maksforge/darek/releases/download/voice-pl-mc_speech-int8-1/" +
+                    "pl_PL-mc_speech-medium-int8.onnx · " +
+                    "SHA-256 4bca76cb9d30784bbfc06dcb7ced07fa67a2db1ea0c4a2d17bf5e06a06596e79",
             spdxLicenses =
                 listOf(
                     SpdxLicence(

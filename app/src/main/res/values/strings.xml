@@ -19,7 +19,7 @@
 <resources>
     <string name="app_name" translatable="false">Darek</string>
 
-    <!-- Home. The placeholder holds the place of the Listening switch until phase 2. -->
+    <!-- Home -->
     <string name="home_listen">Listen</string>
     <string name="home_listening">Darek is listening</string>
     <string name="home_stop">Stop</string>
