@@ -30,7 +30,9 @@ was extracted from and the first app built from it settled on exactly this split
   in a car, the offline Polish voice, the dial on the owner's phone
 - [ ] **Phase 2** — Listening: the microphone service, its notification, the start paths (switch,
   notification after boot, Quick Settings tile), pausing during the Reply and the call, MIUI setup,
-  a night's battery reading (ADR-0010)
+  a night's battery reading (ADR-0010). An updated microphone disclosure, shown once before the
+  first service start whether or not `RECORD_AUDIO` is already granted: phase 1's promised
+  listening only with Home on screen
 - [ ] **Phase 3** — Safe for a stranger: the user's Numbers for the built-in Commands, which brings
   `CALL_PHONE` and the call into the release, and the first-run path. It freezes `CALL_PHONE` and the
   `microphone` service type. *The door is already open*: closed testing started with phase 0's
