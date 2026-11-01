@@ -41,6 +41,7 @@ class CommandMatchTest {
             "darek otwórz brama",
             "darek zamknij bramę",
             "darek powiedz [unk] coś",
+            "darek powiedz mi coś",
             "powiedz coś darek",
             "otwórz bramę darek",
             "darek [unk] otwórz bramę",
