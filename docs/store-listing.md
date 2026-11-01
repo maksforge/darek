@@ -52,7 +52,7 @@ The line that appears under the name in search results, and the most-read text i
 Say "Darek, otwórz bramę" and he calls your gate opener. Offline, in Polish.
 ```
 
-### Full description — 2869/4000
+### Full description — 3013/4000
 
 **No health or safety claims**, here or on any page the listing links to — Play's enforcement reads a
 linked page as part of the listing. Say what the app cannot do instead.
@@ -74,7 +74,7 @@ release that ships the call (phase 3) deletes it, in both languages.
 ```
 Darek is a Polish voice assistant for your gate. Say "Darek, otwórz bramę" and he answers out loud and calls your gate's GSM opener, so you do not have to reach for your phone. Recognition, speech and the call all happen on your phone, with no internet at all.
 
-This test build answers one Command, "Hej Darek, powiedz coś", while the app is open on screen. Listening with the screen off and the call arrive in the next test builds.
+This test build answers one Command, "Hej Darek, powiedz coś", while the app is open on screen. Say his name with anything else, "Darek, otwórz bramę" included, and he answers "musisz mnie najpierw skonfigurować". Setting him up, Listening with the screen off and the call arrive in the next test builds.
 
 HOW IT WORKS
 
@@ -84,7 +84,7 @@ You start Listening yourself, in the app, from its notification or from a Quick 
 
 When he hears a Command, Darek says what he is about to do ("Otwieram bramę") and gives you about two seconds to cancel: say "Darek, stop" or "anuluj", or tap Cancel in the notification. Then he calls the number you entered. An opener that knows your number opens the gate.
 
-He listens for the whole Command, not just his name. "Darek" in ordinary conversation does nothing, and neither does "Marek, otwórz bramę".
+He acts only on a whole Command. His name in ordinary conversation can get a spoken answer, but never a call, and "Marek, otwórz bramę" does nothing.
 
 FREE, AND NOTHING LEAVES YOUR PHONE
 
@@ -127,12 +127,12 @@ Darek
 Powiedz „Darek, otwórz bramę”, a on odpowie i zadzwoni do bramy. Bez internetu.
 ```
 
-### Full description — 2921/4000
+### Full description — 3096/4000
 
 ```
 Darek to głosowy asystent do twojej bramy. Powiedz „Darek, otwórz bramę”, a on odpowie na głos i zadzwoni do sterownika GSM bramy, więc nie musisz sięgać po telefon. Rozpoznawanie mowy, odpowiedź i połączenie odbywają się w telefonie, zupełnie bez internetu.
 
-Ta wersja testowa odpowiada na jedną komendę, „Hej Darek, powiedz coś”, gdy aplikacja jest otwarta na ekranie. Słuchanie przy wyłączonym ekranie i dzwonienie pojawią się w kolejnych wersjach testowych.
+Ta wersja testowa odpowiada na jedną komendę, „Hej Darek, powiedz coś”, gdy aplikacja jest otwarta na ekranie. Gdy usłyszy swoje imię z czymkolwiek innym, także „Darek, otwórz bramę”, odpowie „musisz mnie najpierw skonfigurować”. Konfiguracja, słuchanie przy wyłączonym ekranie i dzwonienie pojawią się w kolejnych wersjach testowych.
 
 JAK TO DZIAŁA
 
@@ -142,7 +142,7 @@ Słuchanie włączasz w aplikacji, w jej powiadomieniu albo kafelkiem w szybkich
 
 Gdy usłyszy komendę, Darek mówi, co zrobi („Otwieram bramę”), i daje ci około dwóch sekund na anulowanie: powiedz „Darek, stop” albo „anuluj” lub dotknij Anuluj w powiadomieniu. Potem dzwoni pod numer wpisany dla tej komendy. Sterownik, który zna twój numer, otwiera bramę.
 
-Darek słucha całej komendy, nie samego imienia. „Darek” w zwykłej rozmowie nic nie robi, tak samo jak „Marek, otwórz bramę”.
+Darek wykonuje tylko całą komendę. Gdy usłyszy swoje imię w zwykłej rozmowie, może odpowiedzieć na głos, ale nigdy nie zadzwoni, a „Marek, otwórz bramę” nic nie robi.
 
 ZA DARMO I NIC NIE OPUSZCZA TELEFONU
 
