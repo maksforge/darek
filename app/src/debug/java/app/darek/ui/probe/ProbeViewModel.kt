@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import app.darek.listen.Command
 import app.darek.listen.Grammar
 import app.darek.listen.Heard
+import app.darek.listen.LooseMatch
 import app.darek.listen.Recogniser
 import app.darek.listen.RecogniserModel
 import app.darek.listen.Roast
@@ -128,8 +129,11 @@ class ProbeViewModel(
         mode: String,
     ) {
         if (heard.tokens.isEmpty()) return
-        val command = commandIn(heard.tokens, Command.entries)
-        val roasted = if (command == null) Roast.nameIn(heard.tokens) else null
+        val likeness = LooseMatch.likeness(getApplication())
+        val command =
+            commandIn(heard.tokens, Command.entries)
+                ?: Command.entries.firstOrNull { !it.calls && LooseMatch.matches(heard.tokens, it.words, likeness) }
+        val roasted = if (command == null) Roast.nameIn(heard.tokens, likeness) else null
         val fired = command?.name ?: roasted?.let { "ROAST ${it.vocative}" }
         val line = ProbeLine(heard.tokens.joinToString(" "), fired)
         Log.i(TAG, "final mode=$mode command=${fired ?: "-"} tokens=\"${line.tokens}\"")
