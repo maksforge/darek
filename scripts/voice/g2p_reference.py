@@ -24,6 +24,7 @@ PLAIN = {"a": "a", "e": "ɛ", "i": "i", "o": "ɔ", "u": "u", "ó": "u", "y": "ɨ
          "d": "d", "f": "f", "g": "ɡ", "h": "x", "j": "j", "k": "k", "l": "l", "ł": "w", "m": "m", "n": "n",
          "ń": "ɲ", "p": "p", "r": "r", "s": "s", "ś": "ɕ", "t": "t", "w": "v", "z": "z", "ź": "ʑ", "ż": "ʒ",
          "x": "ks", "q": "k", "v": "v", "ą": "ą", "ę": "ę"}
+# dz is spoken as dʑ because eSpeak writes it so, and the voice learned eSpeak's phonemes.
 DIGRAPHS = {"ch": "x", "cz": "tʃ", "sz": "ʃ", "rz": "Ʒ", "dż": "dʒ", "dź": "dʑ", "dz": "ʣ"}
 SOFT_BEFORE_I = {"dz": "dʑ", "c": "tɕ", "s": "ɕ", "z": "ʑ", "n": "ɲ"}
 SOFT_GLIDE = {"ɲ"}
