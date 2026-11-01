@@ -42,6 +42,7 @@ data class ProbeLine(
 data class ProbeState(
     val phase: ProbePhase = ProbePhase.IDLE,
     val free: Boolean = false,
+    val reading: Boolean = false,
     val partial: String = "",
     val finals: List<ProbeLine> = emptyList(),
     val error: String? = null,
@@ -49,7 +50,7 @@ data class ProbeState(
 
 /**
  * Phase 1's R1/R2 apparatus: every final result goes to `adb logcat -s DarekProbe`, and a matched
- * Command speaks its Reply.
+ * Command speaks its Reply unless Reading mode is on.
  */
 class ProbeViewModel(
     application: Application,
@@ -68,6 +69,10 @@ class ProbeViewModel(
         if (state.value.phase == ProbePhase.IDLE) mutableState.update { it.copy(free = free) }
     }
 
+    fun setReading(reading: Boolean) {
+        if (state.value.phase == ProbePhase.IDLE) mutableState.update { it.copy(reading = reading) }
+    }
+
     fun start() {
         if (job != null) return
         if (ContextCompat.checkSelfPermission(getApplication(), Manifest.permission.RECORD_AUDIO) !=
@@ -80,21 +85,20 @@ class ProbeViewModel(
                 mutableState.update { it.copy(phase = ProbePhase.PREPARING, error = null) }
                 try {
                     val loaded = withContext(Dispatchers.IO) { model ?: load().also { model = it } }
-                    withContext(Dispatchers.Default) { if (replies == null) replies = renderReplies() }
                     val free = state.value.free
+                    val reading = state.value.reading
+                    if (!reading) withContext(Dispatchers.Default) { if (replies == null) replies = renderReplies() }
                     val mode = if (free) "free" else "grammar"
                     mutableState.update { it.copy(phase = ProbePhase.LISTENING) }
-                    Log.i(TAG, "start mode=$mode")
+                    Log.i(TAG, "start mode=$mode reading=$reading")
                     val grammar =
-                        if (free) {
-                            null
-                        } else {
-                            Json.encodeToString(
-                                (
-                                    Grammar.phrases(Command.entries.toSet()) +
-                                        Roast.phrases
-                                ).distinct(),
-                            )
+                        when {
+                            free -> null
+                            reading -> Grammar.json(Command.entries.toSet())
+                            else ->
+                                Json.encodeToString(
+                                    (Grammar.phrases(Command.entries.toSet()) + Roast.phrases).distinct(),
+                                )
                         }
                     Recogniser(loaded).heard(grammar).collect { heard ->
                         when (heard) {
@@ -104,7 +108,7 @@ class ProbeViewModel(
                                         partial = heard.tokens.joinToString(" "),
                                     )
                                 }
-                            is Heard.Final -> onFinal(heard, mode)
+                            is Heard.Final -> onFinal(heard, mode, reading)
                         }
                     }
                 } catch (e: CancellationException) {
@@ -127,17 +131,29 @@ class ProbeViewModel(
     private suspend fun onFinal(
         heard: Heard.Final,
         mode: String,
+        reading: Boolean,
     ) {
         if (heard.tokens.isEmpty()) return
+        val tokens = heard.tokens
+        val exact = commandIn(tokens, Command.entries)
         val likeness = LooseMatch.likeness(getApplication())
         val command =
-            commandIn(heard.tokens, Command.entries)
-                ?: Command.entries.firstOrNull { !it.calls && LooseMatch.matches(heard.tokens, it.words, likeness) }
-        val roasted = if (command == null) Roast.nameIn(heard.tokens, likeness) else null
+            when {
+                exact != null || reading -> exact
+                else -> Command.entries.firstOrNull { !it.calls && LooseMatch.matches(tokens, it.words, likeness) }
+            }
+        val roasted = if (command == null && !reading) Roast.nameIn(tokens, likeness) else null
         val fired = command?.name ?: roasted?.let { "ROAST ${it.vocative}" }
-        val line = ProbeLine(heard.tokens.joinToString(" "), fired)
-        Log.i(TAG, "final mode=$mode command=${fired ?: "-"} tokens=\"${line.tokens}\"")
+        val match =
+            when {
+                fired == null -> "-"
+                exact != null || (roasted != null && Roast.nameIn(tokens, EXACT) != null) -> "exact"
+                else -> "loose"
+            }
+        val line = ProbeLine(tokens.joinToString(" "), fired?.let { if (match == "loose") "$it ~loose" else it })
+        Log.i(TAG, "final mode=$mode command=${fired ?: "-"} match=$match tokens=\"${line.tokens}\"")
         mutableState.update { it.copy(partial = "", finals = (listOf(line) + it.finals).take(MAX_LINES)) }
+        if (reading) return
         val reply =
             when {
                 command != null -> replies?.get(command)
@@ -191,5 +207,6 @@ class ProbeViewModel(
     private companion object {
         const val TAG = "DarekProbe"
         const val MAX_LINES = 100
+        const val EXACT = 1f
     }
 }

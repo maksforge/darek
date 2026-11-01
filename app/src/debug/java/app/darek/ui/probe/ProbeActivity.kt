@@ -90,6 +90,13 @@ private fun ProbeScreen(
                 Switch(checked = state.free, enabled = idle, onCheckedChange = viewModel::setFree)
                 Text(stringResource(R.string.debug_probe_free))
             }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.tight),
+            ) {
+                Switch(checked = state.reading, enabled = idle, onCheckedChange = viewModel::setReading)
+                Text(stringResource(R.string.debug_probe_reading))
+            }
             Text(
                 when (state.phase) {
                     ProbePhase.IDLE -> state.error.orEmpty()
