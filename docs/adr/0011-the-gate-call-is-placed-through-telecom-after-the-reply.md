@@ -22,13 +22,21 @@ premium-rate fraud, and `CALL_PHONE` is otherwise unrestricted.
   ([ADR-0013](0013-a-command-may-only-reply.md)) speaks and stops: no cancel window, no call. The
   pause while Darek speaks applies to both.
 - **A Command is acknowledged before it acts**: Darek speaks the Reply (*"Otwieram bramę"*) and waits
-  for the engine's `onDone`. A **cancel window** of about 2 s follows, in which *"Darek, stop"*,
-  *"anuluj"* or the notification's *Anuluj* action cancels; only then does he dial. Cancel words act
-  on **partial** results: one containing *"stop"* or *"anuluj"* cancels at once, because a final
-  result comes only after a pause and could land after the dial.
+  until it is **finished**: the engine's `onDone`, `onStop` or `onError`, or a watchdog of about
+  10 s, so an engine that never calls back cannot leave him deaf. The Reply is also shown, on screen
+  in phase 1 and in the notification from phase 2. **Without an offline voice**
+  ([ADR-0012](0012-darek-speaks-polish-and-opens-in-polish.md)) it is only shown, and is finished as
+  soon as it is shown.
+- A **cancel window** of about 2 s follows, in which *"Darek, stop"*, *"anuluj"* or the
+  notification's *Anuluj* action cancels; only then does he dial. Cancel words act on **partial**
+  results: one containing *"stop"* or *"anuluj"* cancels at once, because a final result comes only
+  after a pause and could land after the dial. They are heard only from the end of the Reply:
+  recognition is paused while he speaks, so an *"anuluj"* said over the Reply is not heard.
+- **If Listening stops before the dial**, by the user or, in phase 1, by Darek's screen leaving the
+  foreground, the dial is cancelled: nobody could cancel it by voice any more.
 - **Consent** is the Number the user typed for that Command and the user's own start of Listening:
-  that is what Play's malware policy asks for. A false match therefore costs a spoken Reply the user
-  can cancel, not a silent dial.
+  that is what Play's malware policy asks for. A false match therefore costs a Reply the user hears
+  or sees and can cancel, not a silent dial.
 - **Recognition is paused while he speaks and from the dial until the call ends**, so he cannot hear
   himself or the call; it runs through the cancel window. The end of the call is read from
   `AudioManager`'s mode (`OnModeChangedListener` on API 31+, `getMode()` below). Because `placeCall`
@@ -59,4 +67,6 @@ appears.
   reading on the owner's phone. Phase 1 dials only with the app open, and only in the debug build:
   `CALL_PHONE` reaches the release with phase 3's Number editor.
 - The cancel window adds about 2 s between the Reply and the gate.
+- In phase 1 the in-call screen takes the foreground from Darek's, so Listening ends with every
+  dial; the wait for the audio mode to return starts mattering in phase 2.
 - Dual-SIM phones dial on the default SIM; choosing a SIM per Command waits for someone who needs it.
