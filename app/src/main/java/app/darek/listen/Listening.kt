@@ -11,8 +11,10 @@ import app.darek.speak.ReplyPlayer
 import app.darek.speak.Voice
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,6 +44,7 @@ class Listening(
     data class State(
         val phase: Phase = Phase.OFF,
         val lastReply: String? = null,
+        val failed: Boolean = false,
     )
 
     private val appContext = context.applicationContext
@@ -52,7 +55,7 @@ class Listening(
 
     @Volatile private var replies: Map<Command, ShortArray>? = null
 
-    private var job: Job? = null
+    @Volatile private var job: Job? = null
 
     fun start(enabled: Set<Command>) {
         if (job != null || enabled.isEmpty()) return
@@ -61,9 +64,9 @@ class Listening(
         ) {
             return
         }
-        job =
-            scope.launch {
-                mutableState.update { it.copy(phase = Phase.PREPARING) }
+        val launched =
+            scope.launch(start = CoroutineStart.LAZY) {
+                mutableState.update { it.copy(phase = Phase.PREPARING, failed = false) }
                 try {
                     val loaded = withContext(Dispatchers.IO) { model ?: loadModel().also { model = it } }
                     val rendered =
@@ -87,13 +90,16 @@ class Listening(
                     }
                 } catch (e: CancellationException) {
                     throw e
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     Log.e(TAG, "listening failed", e)
+                    mutableState.update { it.copy(failed = true) }
                 } finally {
                     mutableState.update { it.copy(phase = Phase.OFF) }
-                    job = null
+                    if (job === currentCoroutineContext()[Job]) job = null
                 }
             }
+        job = launched
+        launched.start()
     }
 
     fun stop() {

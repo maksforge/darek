@@ -12,6 +12,7 @@
     <string name="home_listening">Darek słucha</string>
     <string name="home_stop">Zatrzymaj</string>
     <string name="home_preparing">Przygotowuję…</string>
+    <string name="home_listen_failed">Darek nie zaczął słuchać. Spróbuj ponownie.</string>
     <string name="mic_disclosure_title">Darek potrzebuje mikrofonu</string>
     <string name="mic_disclosure_body">Darek słucha tylko wtedy, gdy przycisk Słuchaj jest włączony. To, co słyszy, jest przetwarzane na tym telefonie i nigdy nie jest nagrywane ani nigdzie wysyłane.</string>
     <string name="mic_disclosure_continue">Dalej</string>
