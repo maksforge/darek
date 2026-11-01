@@ -162,6 +162,7 @@ fun HomeScreen(
                     }
                     if (!granted && (deniedNow || state.micDeniedForGood)) {
                         MicDenied(
+                            persona = state.persona,
                             forGood = state.micDeniedForGood,
                             onAllow = request,
                             onOpenSettings = context::openAppSettings,
@@ -236,13 +237,14 @@ private fun ListenControl(
 
 @Composable
 private fun MicDenied(
+    persona: Persona,
     forGood: Boolean,
     onAllow: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = stringResource(R.string.mic_denied),
+            text = stringResource(persona.micDeniedRes()),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center,
@@ -285,4 +287,10 @@ private fun Persona.listenFailedRes(): Int =
     when (this) {
         Persona.DAREK -> R.string.home_listen_failed
         Persona.DARIA -> R.string.home_listen_failed_daria
+    }
+
+private fun Persona.micDeniedRes(): Int =
+    when (this) {
+        Persona.DAREK -> R.string.mic_denied
+        Persona.DARIA -> R.string.mic_denied_daria
     }
