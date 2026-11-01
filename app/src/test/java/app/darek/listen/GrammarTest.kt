@@ -55,11 +55,29 @@ class GrammarTest {
         assertFalse(daria.any { it.startsWith("darek ") })
         assertTrue("darek" in daria)
         assertTrue("daria" in phrases(callOff))
-        Persona.entries.forEach { persona ->
-            val decoys = Grammar.decoys(persona)
-            assertFalse(persona.word in decoys)
-            assertTrue(persona.other.word in decoys)
-            assertTrue(decoys.containsAll(Grammar.NAME_DECOYS + Grammar.COMMAND_WORD_DECOYS))
-        }
+    }
+
+    @Test
+    fun the_decoys_are_adr_0016_s_list_and_the_other_persona_s_name() {
+        val adr0016 =
+            setOf(
+                "marek",
+                "jarek",
+                "janek",
+                "dawid",
+                "maria",
+                "marii",
+                "darka",
+                "darku",
+                "darii",
+                "darię",
+                "dario",
+                "otwórz",
+                "zamknij",
+                "brama",
+            )
+        assertEquals(adr0016 + "daria", Grammar.decoys(Persona.DAREK).toSet())
+        assertEquals(adr0016 + "darek", Grammar.decoys(Persona.DARIA).toSet())
+        Persona.entries.forEach { assertEquals(Grammar.decoys(it).distinct(), Grammar.decoys(it)) }
     }
 }

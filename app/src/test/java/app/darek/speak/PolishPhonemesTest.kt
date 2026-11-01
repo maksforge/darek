@@ -1,5 +1,6 @@
 package app.darek.speak
 
+import app.darek.listen.Persona
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -8,6 +9,7 @@ import kotlinx.serialization.json.long
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.text.Normalizer
 
 class PolishPhonemesTest {
     private data class Row(
@@ -25,13 +27,15 @@ class PolishPhonemesTest {
                 Row(cells[0], cells[1], cells.getOrNull(2)?.split(' ')?.map(String::toLong))
             }.toList()
 
-    private val idMap: Map<String, List<Long>> =
+    private fun idMap(persona: Persona): Map<String, List<Long>> =
         Json
-            .parseToJsonElement(resource("voice.onnx.json"))
+            .parseToJsonElement(resource("${persona.voice}.onnx.json"))
             .jsonObject
             .getValue("phoneme_id_map")
             .jsonObject
             .mapValues { (_, ids) -> ids.jsonArray.map { it.jsonPrimitive.long } }
+
+    private val idMap = idMap(Persona.DAREK)
 
     @Test
     fun `every word and Reply is phonemised as the host reference does`() {
@@ -48,6 +52,20 @@ class PolishPhonemesTest {
         val replies = rows.filter { it.ids != null }
         assertTrue(replies.any { "ą" in it.text })
         replies.forEach { assertEquals(it.text, it.ids, PolishPhonemes.ids(it.phonemes, idMap).toList()) }
+    }
+
+    // ids() skips a symbol its voice's map lacks, so a sound missing from one voice is dropped silently.
+    @Test
+    fun `every symbol the rules emit is in each Persona's voice`() {
+        val symbols =
+            rows
+                .flatMap { row ->
+                    val decomposed = Normalizer.normalize(PolishPhonemes.phonemize(row.text), Normalizer.Form.NFD)
+                    decomposed.codePoints().toArray().map { String(Character.toChars(it)) }
+                }.toSet()
+        Persona.entries.forEach { persona ->
+            assertEquals(persona.name, emptySet<String>(), symbols - idMap(persona).keys)
+        }
     }
 
     @Test
