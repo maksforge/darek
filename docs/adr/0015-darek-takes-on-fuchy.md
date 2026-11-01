@@ -30,9 +30,12 @@ a bonus, not the path. The actions are code inside Darek, each one written for i
 call a Number, weather, later more): one general "fetch" cannot make sense of every service's answer
 without AI, and Darek is meant to grow into tasks harder than reading one field. A new kind of
 action is a Darek release, and **so is every permission: each lands in the release that adds the
-action using it**, with its Play declaration, never ahead of it. Darek is meant to do everything on
-the phone in the end, so he may come to hold most of Android's permissions, one action at a time;
-Play rejects a sensitive permission no shipped feature uses.
+feature using it**, an action or Darek's own (Słuchaj, the fuchy page), never ahead of it.
+`EXPECTED` in `scripts/aab-permissions.py` names each one's user. It comes with what Play asks of
+it: a Data safety answer, the listing naming the feature, and a Play Console declaration where Play
+has one. Darek is meant to do everything on the phone in the end, so he may come to hold most of the
+permissions Play lets an assistant like him hold, one feature at a time; Play allows only
+permissions a shipped feature promoted in the listing uses.
 
 **Darek's own Commands are fuchy too**, bundled in the app in the same format, so there is one loader
 and one path into the grammar. A bundled fucha can be switched off, never removed. One that needs a
