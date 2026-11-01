@@ -79,15 +79,16 @@ object Roast {
             "%s? Szkoda kurwa gadać, ja pierdolę.",
         )
 
-    val phrases: List<String> = listOf(VERB) + KNOWN + KNOWN.map { "darek $VERB $it" }
+    fun phrases(persona: Persona): List<String> = listOf(VERB) + KNOWN + KNOWN.map { "${persona.word} $VERB $it" }
 
     fun nameIn(
         tokens: List<String>,
         likeness: Float,
+        persona: Persona,
     ): Name? {
         val start =
             tokens.indices.firstOrNull { i ->
-                tokens[i] == "darek" && i + 2 < tokens.size && LooseMatch.alike(tokens[i + 1], VERB) >= likeness
+                tokens[i] == persona.word && i + 2 < tokens.size && LooseMatch.alike(tokens[i + 1], VERB) >= likeness
             } ?: return null
         val word = tokens.drop(start + 2).lastOrNull { it != Grammar.UNKNOWN } ?: return null
         return vocative(word)

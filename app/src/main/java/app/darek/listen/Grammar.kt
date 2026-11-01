@@ -10,23 +10,33 @@ import kotlinx.serialization.json.Json
  * drops it, and the Command could never fire.
  */
 object Grammar {
-    val DECOYS = listOf("marek", "jarek", "janek", "darka", "darku", "dawid", "otwórz", "zamknij", "brama")
+    /** The same under either Persona; the other Persona's name joins them (ADR-0016). */
+    val NAME_DECOYS =
+        listOf("marek", "jarek", "janek", "dawid", "maria", "marii", "darka", "darku", "darii", "darię", "dario")
+    val COMMAND_WORD_DECOYS = listOf("otwórz", "zamknij", "brama")
     val CANCEL_WORDS = listOf("stop", "anuluj")
     const val UNKNOWN = "[unk]"
 
-    fun phrases(enabled: Set<Command>): List<String> =
+    fun decoys(persona: Persona): List<String> = NAME_DECOYS + persona.other.word + COMMAND_WORD_DECOYS
+
+    fun phrases(
+        enabled: Set<Command>,
+        persona: Persona,
+    ): List<String> =
         buildList {
             enabled.forEach { command ->
-                add(command.words.joinToString(" "))
-                addAll(command.words)
+                val words = command.words(persona)
+                add(words.joinToString(" "))
+                addAll(words)
             }
-            addAll(DECOYS)
+            addAll(decoys(persona))
             if (enabled.any { it.calls }) addAll(CANCEL_WORDS)
             add(UNKNOWN)
         }.distinct()
 
     fun json(
         enabled: Set<Command>,
+        persona: Persona,
         extra: List<String> = emptyList(),
-    ): String = Json.encodeToString((phrases(enabled) + extra).distinct())
+    ): String = Json.encodeToString((phrases(enabled, persona) + extra).distinct())
 }

@@ -50,6 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.darek.R
 import app.darek.listen.Listening
+import app.darek.listen.Persona
 import app.darek.theme.Spacing
 import app.darek.ui.appViewModelExtras
 import app.darek.ui.common.startActivitySafely
@@ -140,6 +141,7 @@ fun HomeScreen(
                 ) {
                     ListenControl(
                         phase = state.listening,
+                        persona = state.persona,
                         hearingName = state.hearingName,
                         failed = state.listenFailed,
                         onListen = {
@@ -193,6 +195,7 @@ fun HomeScreen(
 @Composable
 private fun ListenControl(
     phase: Listening.Phase,
+    persona: Persona,
     hearingName: Boolean,
     failed: Boolean,
     onListen: () -> Unit,
@@ -207,7 +210,7 @@ private fun ListenControl(
                 Button(onClick = onListen) { Text(stringResource(R.string.home_listen)) }
                 if (failed) {
                     Text(
-                        text = stringResource(R.string.home_listen_failed),
+                        text = stringResource(persona.listenFailedRes()),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center,
@@ -222,7 +225,7 @@ private fun ListenControl(
                 verticalArrangement = Arrangement.spacedBy(Spacing.tight),
             ) {
                 Text(
-                    stringResource(if (hearingName) R.string.home_hearing else R.string.home_listening),
+                    stringResource(if (hearingName) persona.hearingRes() else persona.listeningRes()),
                     style = MaterialTheme.typography.titleMedium,
                     color = if (hearingName) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                 )
@@ -263,3 +266,23 @@ private fun Context.openAppSettings() {
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)),
     )
 }
+
+// Two resources per line, not one with the name as an argument: Polish declines the name and its
+// verbs agree with it (ADR-0016).
+private fun Persona.listeningRes(): Int =
+    when (this) {
+        Persona.DAREK -> R.string.home_listening
+        Persona.DARIA -> R.string.home_listening_daria
+    }
+
+private fun Persona.hearingRes(): Int =
+    when (this) {
+        Persona.DAREK -> R.string.home_hearing
+        Persona.DARIA -> R.string.home_hearing_daria
+    }
+
+private fun Persona.listenFailedRes(): Int =
+    when (this) {
+        Persona.DAREK -> R.string.home_listen_failed
+        Persona.DARIA -> R.string.home_listen_failed_daria
+    }

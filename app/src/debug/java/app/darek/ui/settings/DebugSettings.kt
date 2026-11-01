@@ -23,8 +23,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import app.darek.MainApplication
 import app.darek.R
 import app.darek.listen.LooseMatch
+import app.darek.listen.Persona
 import app.darek.speak.ReplyPlayer
 import app.darek.speak.Voice
 import app.darek.speak.VoiceVolume
@@ -32,6 +34,7 @@ import app.darek.theme.Spacing
 import app.darek.ui.common.SectionHeader
 import app.darek.ui.probe.ProbeActivity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -136,7 +139,7 @@ private val samples =
 private object DebugVoice {
     private const val TAG = "DarekVoice"
     private val lock = Mutex()
-    private var loaded: Voice? = null
+    private var loaded: Pair<Persona, Voice>? = null
 
     suspend fun say(
         context: Context,
@@ -144,21 +147,29 @@ private object DebugVoice {
         volume: Float,
     ): String =
         lock.withLock {
-            val (voice, loadMs) = withContext(Dispatchers.Default) { voiceFor(context) }
+            val persona =
+                (context.applicationContext as MainApplication)
+                    .container.preferences.persona
+                    .first()
+            val (voice, loadMs) = withContext(Dispatchers.Default) { voiceFor(context, persona) }
             val started = SystemClock.elapsedRealtime()
             val samples = withContext(Dispatchers.Default) { voice.synthesize(text) }
             val synthMs = SystemClock.elapsedRealtime() - started
             val end = ReplyPlayer.play(samples, volume)
             val audioMs = samples.size * 1000L / Voice.SAMPLE_RATE
-            "load=${loadMs}ms synth=${synthMs}ms audio=${audioMs}ms end=$end"
+            "persona=$persona load=${loadMs}ms synth=${synthMs}ms audio=${audioMs}ms end=$end"
                 .also { Log.i(TAG, "$it text=\"$text\"") }
         }
 
-    private fun voiceFor(context: Context): Pair<Voice, Long> {
-        loaded?.let { return it to 0L }
+    private fun voiceFor(
+        context: Context,
+        persona: Persona,
+    ): Pair<Voice, Long> {
+        loaded?.takeIf { it.first == persona }?.let { return it.second to 0L }
+        loaded?.second?.close()
         val started = SystemClock.elapsedRealtime()
-        val voice = Voice.load(context)
-        loaded = voice
+        val voice = Voice.load(context, persona.voice)
+        loaded = persona to voice
         return voice to SystemClock.elapsedRealtime() - started
     }
 }

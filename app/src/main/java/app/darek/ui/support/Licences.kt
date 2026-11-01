@@ -135,6 +135,34 @@ val BUNDLED_MODELS =
                     ),
                 ),
         ),
+        LicensedArtifact(
+            groupId = "rhasspy.piper-voices",
+            artifactId = "pl_PL-gosia-medium",
+            version = "medium",
+            name = "Daria's voice: Piper pl_PL gosia",
+            source =
+                "https://huggingface.co/rhasspy/piper-voices/resolve/b4e358ffcb232591bf73a540e70f7de528e4174a/" +
+                    "pl/pl_PL/gosia/medium/" +
+                    "pl_PL-gosia-medium.onnx · " +
+                    "SHA-256 38f66464240ed74f186e6b7dc13c6e3b22e023426299f25c2b3cc9dfa9373fbc",
+            spdxLicenses =
+                listOf(
+                    SpdxLicence(
+                        "MIT",
+                        "MIT License",
+                        "https://huggingface.co/rhasspy/piper-voices/blob/b4e358ffcb232591bf73a540e70f7de528e4174a/" +
+                            "pl/pl_PL/gosia/medium/MODEL_CARD",
+                    ),
+                    SpdxLicence("CC0-1.0", "Creative Commons Zero v1.0 Universal (OHF-Voice gosia recordings)"),
+                ),
+            unknownLicenses =
+                listOf(
+                    UnknownLicence(
+                        "Blizzard 2013 lessac recordings, the base voice it was fine-tuned from: research use only",
+                        "https://www.cstr.ed.ac.uk/projects/blizzard/2013/lessac_blizzard2013/license.html",
+                    ),
+                ),
+        ),
     )
 
 /**

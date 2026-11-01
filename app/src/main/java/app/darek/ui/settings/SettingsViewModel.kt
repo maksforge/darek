@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import app.darek.MainApplication
 import app.darek.data.AppPreferences
 import app.darek.data.ThemeMode
+import app.darek.listen.Persona
 import app.darek.theme.applyThemeMode
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,14 +20,15 @@ import kotlinx.coroutines.launch
 data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val materialYou: Boolean = false,
+    val persona: Persona = Persona.DAREK,
 )
 
 class SettingsViewModel(
     private val preferences: AppPreferences,
 ) : ViewModel() {
     val state: StateFlow<SettingsUiState> =
-        combine(preferences.themeMode, preferences.materialYou) { theme, materialYou ->
-            SettingsUiState(theme, materialYou)
+        combine(preferences.themeMode, preferences.materialYou, preferences.persona) { theme, materialYou, persona ->
+            SettingsUiState(theme, materialYou, persona)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
 
     /**
@@ -40,6 +42,10 @@ class SettingsViewModel(
     fun setThemeMode(mode: ThemeMode) {
         applyThemeMode(mode)
         viewModelScope.launch { preferences.setThemeMode(mode) }
+    }
+
+    fun setPersona(persona: Persona) {
+        viewModelScope.launch { preferences.setPersona(persona) }
     }
 
     fun setMaterialYou(enabled: Boolean) {
