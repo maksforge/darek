@@ -268,16 +268,11 @@ The Reply text is speech, not UI: it lives in the enum, outside `strings.xml` (A
     loads when *Słuchaj* is turned on and it is not yet loaded, alongside the recogniser's unpack.
     *Przygotowuję…* covers both, and Listening starts only once the model is unpacked **and** the
     voice is loaded with the fixed Replies rendered. A Command never waits on a load in progress.
-- **The model file** is the int8 quantisation of `pl_PL-mc_speech-medium.onnx`, made by
-  `scripts/voice/quantize.py` with ONNX Runtime's `quantize_dynamic` (`QUInt8` weights). The script
-  pins the source's URL and SHA-256, its Python packages and the output's SHA-256, so the asset, the
-  full-model fallback or ADR-0014's CC0 retrain can be remade. V publishes the output, with its
-  `.onnx.json`, as assets of a GitHub release of this repo tagged `voice-pl-mc_speech-int8-1`,
-  marked pre-release and outside release-please's `v*` tags. The build fetches and SHA-256-checks it
-  as it does the recogniser's model (section 2).
-- **The full model, for R3 only.** `./gradlew installDebug -PfullVoice` also fetches the 63 MB
-  original from Hugging Face, at the URL and SHA-256 `quantize.py` pins, into the debug assets, and
-  the *say this* field gets a toggle between the two. No other build carries it.
+- **The model file** is `pl_PL-mc_speech-medium.onnx` (63 MB) and its `.onnx.json` as Piper
+  publishes them on Hugging Face. The build fetches and SHA-256-checks them as it does the
+  recogniser's model (section 2). V first shipped an int8 quantisation (19 MB, from a
+  `voice-pl-mc_speech-int8-1` release of this repo), with a debug toggle to the full model for R3;
+  R3 chose the full model, and the quantisation, its script and the toggle are gone.
 - **Playback** through `AudioTrack` in static mode. The fixed Replies are rendered once and kept in
   memory, so a Command does not wait on synthesis.
   - The end marker is set at the clip's frame count **minus one**: on some devices a static track's
@@ -505,7 +500,7 @@ The copy, in English, translated once at the merge:
 | --- | --- | --- | --- |
 | R1 | The gate script (section 1) on the test phone, debug build, probe | `adb logcat -s DarekProbe` while the owner reads the script | |
 | R2 | The same on the owner's phone | as R1, `-s 132bc856` | |
-| R3 | Darek's voice on each phone: model load time, synthesis time for each fixed Reply, what finished each Reply, and the owner's ear on int8 against the full model | the `DarekVoice` log lines from V's *say this* field, both models (`-PfullVoice`) | **Test phone, int8, 2026-11-01:** load 3.5–3.7 s cold; *„Co tam, mordo?"* 1.3 s of speech in 0.6 s, longer sentences at ~0.45× real time (5.5 s in 2.5 s); every Reply ended on the marker. The owner heard it, and asked for formal clock times, now in. **Owner's phone, int8, 2026-11-01:** load 1.9 s; ~0.25× real time (8.5 s of speech in 2.0 s); all four samples ended on the marker. **Owed:** the owner's int8-against-full ear check |
+| R3 | Darek's voice on each phone: model load time, synthesis time for each fixed Reply, what finished each Reply, and the owner's ear on int8 against the full model | the `DarekVoice` log lines from V's *say this* field, both models (`-PfullVoice`) | **Test phone, int8, 2026-11-01:** load 3.5–3.7 s cold; *„Co tam, mordo?"* 1.3 s of speech in 0.6 s, longer sentences at ~0.45× real time (5.5 s in 2.5 s); every Reply ended on the marker. The owner heard it, and asked for formal clock times, now in. **Owner's phone, int8, 2026-11-01:** load 1.9 s; ~0.25× real time (8.5 s of speech in 2.0 s); all four samples ended on the marker. **Owner's phone, int8 against full, 2026-11-01:** the owner heard "a big difference" and chose the full model. **Test phone, full model, 2026-11-01:** load 2.4 s cold; *„Co tam, mordo?"* 1.2 s of speech in 0.27 s, longer sentences at ~0.18–0.2× real time (8.6 s in 1.6 s); all seven samples ended on the marker. The full model is faster than int8 on this phone as well as better |
 | R4 | End to end on `-PreleaseShapedDebug`: *Słuchaj* → *"Hej Darek, powiedz coś"* → *„Co tam, mordo?"* heard and shown, and finished by the marker, on both phones | `./gradlew installDebug -PreleaseShapedDebug`, then the screen, `screencap` and `adb logcat -s DarekVoice` | |
 | R5 | Denial: deny once → *Zezwól*; deny again → *Otwórz ustawienia* opens the app's details screen; a first dialog dismissed with Back → still *Zezwól* | *Deny* tapped in the real system dialog, then the screen; `adb uninstall` and reinstall between runs (`pm revoke` sets neither the user-set nor the user-fixed flag, so it reproduces no denial) | |
 | R6 | First unpack time on the test phone, and that a killed half-unpack is redone | `DarekModel` log line; `adb shell am force-stop` mid-unpack, relaunch, `run-as … ls no_backup` | **Probe, test phone, `-PreleaseShapedDebug`, 2026-11-01:** unpack 755 ms, model load 893 ms (`DarekProbe`'s `model` line, after `pm clear`). Owed: the same from *Słuchaj*, and the killed half-unpack |

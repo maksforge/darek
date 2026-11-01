@@ -13,7 +13,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -51,10 +49,8 @@ import kotlin.math.roundToInt
 fun DebugSettings() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val hasFullModel = remember { Voice.hasAsset(context, Voice.FULL_MODEL) }
     var sample by remember { mutableStateOf(0) }
     var text by remember { mutableStateOf(samples[0]) }
-    var fullModel by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var volume by remember { mutableStateOf(VoiceVolume.get(context)) }
@@ -71,7 +67,7 @@ fun DebugSettings() {
                     busy = true
                     scope.launch {
                         status =
-                            runCatching { DebugVoice.say(context, text, fullModel, volume) }.getOrElse { "failed: $it" }
+                            runCatching { DebugVoice.say(context, text, volume) }.getOrElse { "failed: $it" }
                         busy = false
                     }
                 },
@@ -87,12 +83,6 @@ fun DebugSettings() {
             label = { Text(stringResource(R.string.debug_voice_text)) },
             modifier = Modifier.fillMaxWidth(),
         )
-        if (hasFullModel) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Switch(checked = fullModel, onCheckedChange = { fullModel = it })
-                Text(stringResource(R.string.debug_voice_full), modifier = Modifier.padding(start = Spacing.tight))
-            }
-        }
         Text(
             stringResource(R.string.debug_voice_volume, (volume * 100).toInt()),
             style = MaterialTheme.typography.bodyMedium,
@@ -146,35 +136,29 @@ private val samples =
 private object DebugVoice {
     private const val TAG = "DarekVoice"
     private val lock = Mutex()
-    private var loaded: Pair<String, Voice>? = null
+    private var loaded: Voice? = null
 
     suspend fun say(
         context: Context,
         text: String,
-        fullModel: Boolean,
         volume: Float,
     ): String =
         lock.withLock {
-            val model = if (fullModel) Voice.FULL_MODEL else Voice.MODEL
-            val (voice, loadMs) = withContext(Dispatchers.Default) { voiceFor(context, model) }
+            val (voice, loadMs) = withContext(Dispatchers.Default) { voiceFor(context) }
             val started = SystemClock.elapsedRealtime()
             val samples = withContext(Dispatchers.Default) { voice.synthesize(text) }
             val synthMs = SystemClock.elapsedRealtime() - started
             val end = ReplyPlayer.play(samples, volume)
             val audioMs = samples.size * 1000L / Voice.SAMPLE_RATE
-            "model=${model.substringAfterLast('/')} load=${loadMs}ms synth=${synthMs}ms audio=${audioMs}ms end=$end"
+            "load=${loadMs}ms synth=${synthMs}ms audio=${audioMs}ms end=$end"
                 .also { Log.i(TAG, "$it text=\"$text\"") }
         }
 
-    private fun voiceFor(
-        context: Context,
-        model: String,
-    ): Pair<Voice, Long> {
-        loaded?.takeIf { it.first == model }?.let { return it.second to 0L }
-        loaded?.second?.close()
+    private fun voiceFor(context: Context): Pair<Voice, Long> {
+        loaded?.let { return it to 0L }
         val started = SystemClock.elapsedRealtime()
-        val voice = Voice.load(context, model)
-        loaded = model to voice
+        val voice = Voice.load(context)
+        loaded = voice
         return voice to SystemClock.elapsedRealtime() - started
     }
 }

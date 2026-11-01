@@ -110,12 +110,12 @@ val BUNDLED_MODELS =
         LicensedArtifact(
             groupId = "rhasspy.piper-voices",
             artifactId = "pl_PL-mc_speech-medium",
-            version = "int8-1",
+            version = "medium",
             name = "Darek's voice: Piper pl_PL mc_speech",
             source =
-                "https://github.com/maksforge/darek/releases/download/voice-pl-mc_speech-int8-1/" +
-                    "pl_PL-mc_speech-medium-int8.onnx · " +
-                    "SHA-256 4bca76cb9d30784bbfc06dcb7ced07fa67a2db1ea0c4a2d17bf5e06a06596e79",
+                "https://huggingface.co/rhasspy/piper-voices/resolve/main/pl/pl_PL/mc_speech/medium/" +
+                    "pl_PL-mc_speech-medium.onnx · " +
+                    "SHA-256 a6b043358bc81e6c111a5140606a21959ce7f34969b8b7207f62869787cc3907",
             spdxLicenses =
                 listOf(
                     SpdxLicence(

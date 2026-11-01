@@ -79,19 +79,10 @@ class Voice private constructor(
         const val SAMPLE_RATE = 22_050
         private const val PEAK = 0.95f
         private const val MAX_GAIN = 8f
-        const val MODEL = "voice/voice.onnx"
-        const val FULL_MODEL = "voice/voice-full.onnx"
+        private const val MODEL = "voice/voice.onnx"
         private const val CONFIG = "voice/voice.onnx.json"
 
-        fun hasAsset(
-            context: Context,
-            path: String,
-        ): Boolean = runCatching { context.assets.open(path).close() }.isSuccess
-
-        fun load(
-            context: Context,
-            model: String = MODEL,
-        ): Voice {
+        fun load(context: Context): Voice {
             val config =
                 Json
                     .parseToJsonElement(
@@ -109,7 +100,7 @@ class Voice private constructor(
                     inference.getValue("noise_w").jsonPrimitive.float,
                 )
             val environment = OrtEnvironment.getEnvironment()
-            val session = OrtSession.SessionOptions().use { environment.createSession(mapAsset(context, model), it) }
+            val session = OrtSession.SessionOptions().use { environment.createSession(mapAsset(context, MODEL), it) }
             return Voice(environment, session, idMap, scales)
         }
 
