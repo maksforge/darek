@@ -354,7 +354,8 @@ data class VerifiedAsset(
 
 // Darek's voice (ADR-0014) is Piper's mc_speech model as published; the recogniser's model is
 // ADR-0009's, unzipped to `vosk/vosk-model-small-pl-0.22/`.
-private val piperVoice = "https://huggingface.co/rhasspy/piper-voices/resolve/main/pl/pl_PL/mc_speech/medium"
+private val piperCommit = "b4e358ffcb232591bf73a540e70f7de528e4174a"
+private val piperVoice = "https://huggingface.co/rhasspy/piper-voices/resolve/$piperCommit/pl/pl_PL/mc_speech/medium"
 private val shippedAssets =
     listOf(
         VerifiedAsset(
