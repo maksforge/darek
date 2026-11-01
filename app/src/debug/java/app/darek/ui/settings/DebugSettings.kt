@@ -58,10 +58,10 @@ fun DebugSettings() {
     var status by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var volume by remember { mutableStateOf(VoiceVolume.get(context)) }
-    var scales by remember { mutableStateOf<FloatArray?>(null) }
     val persona by (context.applicationContext as MainApplication)
         .container.preferences.persona
         .collectAsState(Persona.DAREK)
+    var scales by remember(persona) { mutableStateOf<FloatArray?>(null) }
 
     SectionHeader(stringResource(R.string.debug_voice))
     Column(
