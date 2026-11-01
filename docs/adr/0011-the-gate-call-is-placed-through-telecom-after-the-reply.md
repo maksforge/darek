@@ -23,8 +23,8 @@ premium-rate fraud, and `CALL_PHONE` is otherwise unrestricted.
   pause while Darek speaks applies to both.
 - **A Command is acknowledged before it acts**: Darek speaks the Reply (*"Otwieram bramę"*) in his
   own voice ([ADR-0014](0014-darek-speaks-with-his-own-bundled-voice.md)) and waits until it is
-  **finished**: playback ends, synthesis or playback fails, or a watchdog of about 10 s fires, so a
-  voice that never finishes cannot leave him deaf. The Reply is also shown, on screen in phase 1 and
+  **finished**: playback ends, synthesis or playback fails, or a watchdog of the clip's length plus
+  2 s fires, so a voice that never finishes cannot leave him deaf. The Reply is also shown, on screen in phase 1 and
   in the notification from phase 2.
 - **If his voice fails** (the model does not load, or playback errors), the Reply is only shown and
   is finished as soon as it is shown. **In phase 1** a Command that calls still dials after its

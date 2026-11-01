@@ -52,8 +52,9 @@ release AAB declares `RECORD_AUDIO` and not `CALL_PHONE`. Spoken to from 3 m, th
   19 MB, driven by our own Polish pronunciation rules. The rules agree with eSpeak on 92.4% of the
   3,000 most frequent Polish words (1.4% phoneme error rate), and the model renders 4.6 s of speech
   in 0.09 s on the PC. How fast it is on a 2019 phone, and whether int8 sounds as good as the full
-  model, are R3. The Python prototype of the rules is the reference the Kotlin port is tested
-  against (*Tests*).
+  model, are R3. The rules' Python prototype is committed as `scripts/voice/g2p_reference.py`, the
+  reference the Kotlin port is tested against (*Tests*). ONNX Runtime is pinned at 1.28.0, the last
+  version without a telemetry provider (ADR-0014).
 - **The release is minified** (`isMinifyEnabled = true`). JNA finds Vosk's native methods by
   reflection. Without keep rules for `com.sun.jna.**` and `org.vosk.**`, JNA's native side aborts
   the process (`UnsatisfiedLinkError`, *Can't obtain peer field ID*). B adds vosk-android's
@@ -104,7 +105,7 @@ only through verdict 4 below, by a new ADR.
 | | Checkpoint | Merges | Depends on |
 | --- | --- | --- | --- |
 | **A** | **The gate**: the probe, debug-only, and the reading with a real voice on both phones | `chore:` | — |
-| **V** | **Darek's voice**, debug-only: ONNX Runtime, the model, the Polish rules, a *say this* field | `chore:` | — |
+| **V** | **Darek's voice**, debug-only: ONNX Runtime 1.28.0, the model, the Polish rules, a *say this* field | `chore:` | — |
 | **B** | The reply-only Command in the release: *Słuchaj*, disclosure, voice, *powiedz coś* | `feat:` | A, V |
 | **C** | The Gate call, debug-only: Number, `CALL_PHONE`, cancel window, `placeCall` | `chore:` | B |
 | **D1** | Listing, privacy policy and App content for B's release | `docs:` | B |
@@ -118,12 +119,16 @@ cut a release with no change a user can see. B moves the dependency and the mode
 **Why V is separate from A, and also a `chore:`.** V touches nothing A does, so the two run in
 either order. Like A it is debug-only until B moves it to `main`. It is its own checkpoint because
 it has its own risk: the phone's speed and the int8 sound (R3). If either fails, the fallback (the
-full model, or a smaller voice) is chosen before B builds on it.
+full model, or a smaller voice) is chosen before B builds on it. V's manifest removes
+`ai.onnxruntime.TelemetryInitializer` with `tools:node="remove"` beside `INTERNET`'s removal, and
+pins `onnxruntime-android` at 1.28.0 (ADR-0014); a bump past it re-reads the AAR's manifest.
 
-**Licences are A's first check, not B's.** Licensee runs per variant inside `assembleDebug`, so
-adding Vosk and JNA as `debugImplementation` is when an allowlist failure shows. JNA's POM lists
-LGPL-2.1-or-later and Apache-2.0; A reads whether licensee accepts it on the existing
-`allow("Apache-2.0")` before anything else is built on it.
+**Licences are A's and V's first check, not B's.** Licensee runs per variant inside
+`assembleDebug`, so adding Vosk and JNA, or ONNX Runtime, as `debugImplementation` is when an
+allowlist failure shows. JNA's POM lists LGPL-2.1-or-later and Apache-2.0; A reads whether licensee
+accepts it on the existing `allow("Apache-2.0")` before anything else is built on it. ONNX
+Runtime's POM declares MIT, which the allowlist does not have, so V's first build fails until it
+adds `allow("MIT")` and `src/main/assets/licences/MIT.txt`, as `app/build.gradle.kts` says.
 
 **Why C is a `chore:` after B.** C's code in `main/` does nothing in a release, which has no Number
 and no `CALL_PHONE`. B's release must not wait on it. C comes after B because it reuses B's Reply
@@ -204,7 +209,8 @@ count is given:
 - A directory with the final name is therefore complete. A half-finished copy is deleted and
   redone, never loaded.
 - A new model is a new directory name; the old one is deleted on the next unpack.
-- While it runs, the button shows *Przygotowuję…*. R6 reads how long it takes on the test phone.
+- While it runs, the button shows *Przygotowuję…*, which also waits for the voice (section 3). R6
+  reads how long the unpack takes on the test phone.
 
 **The recogniser** is one class in `listen/`.
 - It runs `AudioRecord` at 16 kHz mono, 16-bit, `VOICE_RECOGNITION` source, on its own thread.
@@ -239,27 +245,52 @@ them:
 
 The Reply text is speech, not UI: it lives in the enum, outside `strings.xml` (ADR-0012).
 
-**The voice** (ADR-0014) is three pieces in `speak/`:
+**The voice** (ADR-0014) lives in `speak/`:
 - **`PolishPhonemes.kt`**: text to the model's phonemes. It lower-cases, writes numbers as words,
   then handles digraphs, soft *i*, nasal vowels by what follows them, voicing assimilation (with
   *w* and *rz* assimilating to what precedes them), final devoicing and penultimate stress. It is a
-  port of the host prototype, pure Kotlin, and tested against it.
-- **`Voice.kt`**: phoneme ids into the model through ONNX Runtime, 22.05 kHz 16-bit samples out. The
-  model loads straight from the APK's assets into the session, with nothing unpacked. It loads on
-  the first *Słuchaj*, alongside the recogniser's unpack.
-- **The model file** is the int8 quantisation of `pl_PL-mc_speech-medium.onnx`, made once on the host
-  with ONNX Runtime's `quantize_dynamic` (`QUInt8` weights). V publishes it, with its `.onnx.json`,
-  as assets of a GitHub release of this repo tagged `voice-pl-mc_speech-int8-1`, marked pre-release
-  and outside release-please's `v*` tags. The build fetches and SHA-256-checks it as it does the
-  recogniser's model (section 2).
+  port of `scripts/voice/g2p_reference.py`, pure Kotlin, and tested against it.
+- **`Voice.kt`**: phonemes into the model through ONNX Runtime, 22.05 kHz 16-bit samples out.
+  - The input is Piper's: `^`, then the id of each codepoint (NFD) followed by the pad `_` (id 0),
+    then `$`; for mc_speech `[1, 0, p1, 0, p2, 0, …, 2]`. The nasal tilde is a codepoint of its own
+    with its own id; a lookup of *ɔ̃* as one unit finds nothing. Without the pads the model speaks
+    garbage.
+  - Beside it go `input_lengths` and `scales`: `noise_scale`, `length_scale` and `noise_w` from the
+    `.onnx.json` (0.667, 1, 0.8).
+  - The output is float32. It is clipped to ±1 and scaled to 16-bit, as the host prototype's WAVs
+    were.
+  - The model loads straight from the APK's assets into the session, with nothing unpacked. It
+    loads when *Słuchaj* is turned on and it is not yet loaded, alongside the recogniser's unpack.
+    *Przygotowuję…* covers both, and Listening starts only once the model is unpacked **and** the
+    voice is loaded with the fixed Replies rendered. A Command never waits on a load in progress.
+- **The model file** is the int8 quantisation of `pl_PL-mc_speech-medium.onnx`, made by
+  `scripts/voice/quantize.py` with ONNX Runtime's `quantize_dynamic` (`QUInt8` weights). The script
+  pins the source's URL and SHA-256, its Python packages and the output's SHA-256, so the asset, the
+  full-model fallback or ADR-0014's CC0 retrain can be remade. V publishes the output, with its
+  `.onnx.json`, as assets of a GitHub release of this repo tagged `voice-pl-mc_speech-int8-1`,
+  marked pre-release and outside release-please's `v*` tags. The build fetches and SHA-256-checks it
+  as it does the recogniser's model (section 2).
+- **The full model, for R3 only.** `./gradlew installDebug -PfullVoice` also fetches the 63 MB
+  original from Hugging Face, at the URL and SHA-256 `quantize.py` pins, into the debug assets, and
+  the *say this* field gets a toggle between the two. No other build carries it.
 - **Playback** through `AudioTrack` in static mode. The fixed Replies are rendered once and kept in
   memory, so a Command does not wait on synthesis.
+  - The end marker is set at the clip's frame count **minus one**: on some devices a static track's
+    head stops on the last frame and a marker at exactly the count never fires. The listener gets
+    an explicit `Handler`, not the creating thread's looper.
+  - The marker fires when the mixer has taken the last frame, not when the speaker falls silent.
+    With output latency, more over Bluetooth, recognition resumes under the Reply's tail. That is
+    harmless while no Reply ends in a Command's or a cancel word's sound.
+  - Each Reply logs one `DarekVoice` line naming what finished it: the marker, the watchdog or a
+    failure. R3 and R4 read it on both phones, because a marker that never fires looks like a pass
+    behind the watchdog.
 
 **The Reply is finished** (ADR-0011) on the first of:
 - playback reaching its last frame (`AudioTrack`'s marker);
-- synthesis or playback failing, or the model not loading, as soon as the Reply is shown;
-- a watchdog 10 s after playback starts, so a stalled `AudioTrack` cannot leave recognition paused
-  while Home says Darek is listening.
+- synthesis or playback failing, or the model having failed to load, as soon as the Reply is shown;
+- a watchdog at the clip's length plus 2 s after playback starts (`frames / 22,050 s + 2 s`), so a
+  stalled `AudioTrack` cannot leave recognition paused while Home says Darek is listening, and
+  phase 3's longer Replies are not cut off.
 
 Recognition resumes then and, for a Command that calls, the cancel window starts then. The Reply is
 on screen from the moment the Command fires, so a user with the sound off sees what is about to
@@ -349,9 +380,10 @@ The copy, in English, translated once at the merge:
     follows.
 
   It fails toward a **dial the user cancelled**.
-- **`ReplyEndTest`**: playback's last frame, a synthesis or playback error, a model that does not
-  load, and 10 s with no marker each finish the Reply. It fails toward **a Darek that
-  shows he is listening and hears nothing**.
+- **`ReplyEndTest`**: playback's last frame, a synthesis or playback error, a model that failed to
+  load, and the clip's length plus 2 s with no marker each finish the Reply. A 12 s clip is not
+  finished at 10 s. It fails toward **a Darek that shows he is listening and hears nothing**, and
+  toward one that listens while he is still talking.
 - **`GrammarTest`**, on the JVM against `listen/Grammar.kt` and the kotlinx.serialization encoder it
   uses:
   - With the call off, `coś` is written as UTF-8, never `\u015b`, and there is no `GATE` phrase, no
@@ -361,10 +393,18 @@ The copy, in English, translated once at the merge:
 
   It fails toward **Commands that can never fire**, silently.
 - **`PolishPhonemesTest`**: the 3,000 most frequent Polish words and section 3's Replies, each with
-  the host prototype's phonemes, as a fixture in `app/src/test/resources/`. The fixture is generated
-  once from the prototype, and from then on the Kotlin rules are the source and the fixture is
-  edited with them. Not a safety value, but the only check that a port of ~200 lines of rules says
-  what was heard on the host. It fails toward **a Darek who mispronounces his own Replies**.
+  the phonemes of `scripts/voice/g2p_reference.py`, and the Replies also with their model ids
+  (`g2p_reference.py --ids`), as a fixture in `app/src/test/resources/`. The ids catch a missing pad
+  or a dropped tilde, which a phoneme check passes. eSpeak's output is not in it.
+  - The fixture is generated once from the reference, and from then on the Kotlin rules are the
+    source and the fixture is edited with them. V commits it.
+  - The words are the first 3,000 of hermitdave/FrequencyWords' `content/2018/pl/pl_50k.txt`
+    (OpenSubtitles 2018, commit `f8a65e6`), whose content is **CC BY-SA 4.0**. The fixture derives
+    from it, so it carries that licence, with the attribution beside it and in `LICENSE`'s paragraph
+    for data under its own licence. It is a test resource and never ships in the app.
+
+  Not a safety value, but the only check that a port of ~200 lines of rules says what was heard on
+  the host. It fails toward **a Darek who mispronounces his own Replies**.
 
 ## Documents this phase amends
 
@@ -374,7 +414,8 @@ The copy, in English, translated once at the merge:
   a voice; stopping Listening cancels a pending dial; cancel words only after the Reply) and
   **ADR-0012** (the Reply's voice is Darek's own) edited in place. In this PR.
 - **New [ADR-0014](adr/0014-darek-speaks-with-his-own-bundled-voice.md)**, and **ADR-0008** (the
-  Reply never leaves the app) edited in place. In the own-voice PR.
+  Reply never leaves the app; ONNX Runtime's telemetry) and **ADR-0011** (the watchdog follows the
+  clip's length) edited in place. In the own-voice PR, with `scripts/voice/`.
 - **`CONTEXT.md`**: *Command*, *Reply* and *Listening*. In this PR.
 - **`PLAN.md`**: phase 1's and phase 3's lines, and the asks table rule 4 asks for. In this PR.
 - **In the release that ships B** (`DOD.md`, *Before the next upload*):
@@ -385,6 +426,10 @@ The copy, in English, translated once at the merge:
     listening"* becomes *"the app's screen, or later its notification, says…"*. Its
     *Text-to-speech* paragraph is replaced: Darek speaks with his own voice inside the app, and no
     other app is given the Reply.
+  - The listing's *What it cannot do* paragraph on the phone's text-to-speech engine, in both
+    languages (`store-listing.md`): he speaks with his own voice, on every phone.
+  - `play-app-content.md`'s point 4, *The call and the voice are other apps' work*: the voice is now
+    Darek's own, and only the call is another app's.
   - `play-app-content.md`: `RECORD_AUDIO` gets its row and leaves the *not in the artifact yet*
     list, and the Data safety answer is re-read (still *no data collected*: audio is processed on
     the phone). `CALL_PHONE` stays on that list.
@@ -394,7 +439,8 @@ The copy, in English, translated once at the merge:
     dual-licensed and taken as Apache), already checked in A. The model is a zip fetched by a Gradle
     task, not a Maven artifact, so licensee never sees it: B gives it its own entry in `Licences.kt`
     (source URL, Apache-2.0, SHA-256), a small code change. ONNX Runtime (MIT) arrives through
-    licensee too. The voice gets its own entry the same way: Piper `pl_PL-mc_speech`, MIT, MC Speech
+    licensee once V has allowed MIT and added its text. The voice gets its own entry the same way:
+    Piper `pl_PL-mc_speech`, MIT with its notice (*Copyright (c) 2022 Michael Hansen*), MC Speech
     recordings CC0, and the *lessac* base's research-only licence named as ADR-0014 states it.
 
 ## Known gaps, deliberately
@@ -439,10 +485,11 @@ The copy, in English, translated once at the merge:
 | --- | --- | --- | --- |
 | R1 | The gate script (section 1) on the test phone, debug build, probe | `adb logcat -s DarekProbe` while the owner reads the script | |
 | R2 | The same on the owner's phone | as R1, `-s 132bc856` | |
-| R3 | Darek's voice on each phone: model load time, synthesis time for each fixed Reply, and the owner's ear on int8 against the full model | the `DarekVoice` log lines from V's *say this* field, both models | |
-| R4 | End to end on `-PreleaseShapedDebug`: *Słuchaj* → *"Hej Darek, powiedz coś"* → *„Co tam, mordo?"* heard and shown, on both phones | `./gradlew installDebug -PreleaseShapedDebug`, then the screen and `screencap` | |
+| R3 | Darek's voice on each phone: model load time, synthesis time for each fixed Reply, what finished each Reply, and the owner's ear on int8 against the full model | the `DarekVoice` log lines from V's *say this* field, both models (`-PfullVoice`) | |
+| R4 | End to end on `-PreleaseShapedDebug`: *Słuchaj* → *"Hej Darek, powiedz coś"* → *„Co tam, mordo?"* heard and shown, and finished by the marker, on both phones | `./gradlew installDebug -PreleaseShapedDebug`, then the screen, `screencap` and `adb logcat -s DarekVoice` | |
 | R5 | Denial: deny once → *Zezwól*; deny again → *Otwórz ustawienia* opens the app's details screen; a first dialog dismissed with Back → still *Zezwól* | *Deny* tapped in the real system dialog, then the screen; `adb uninstall` and reinstall between runs (`pm revoke` sets neither the user-set nor the user-fixed flag, so it reproduces no denial) | |
 | R6 | First unpack time on the test phone, and that a killed half-unpack is redone | `DarekModel` log line; `adb shell am force-stop` mid-unpack, relaunch, `run-as … ls no_backup` | |
 | R7 | The Gate call on the owner's phone, with the owner's go-ahead: Reply, ~2 s, dial; then once with *"anuluj"* said as soon as the Reply ends, no dial; then once with the Home key in the window, no dial | the screen, `adb shell dumpsys telecom` call list | |
 | R8 | The owner's phone in a parked car, engine running, Commands at arm's length | `adb logcat -s DarekProbe` | |
 | R9 | The release AAB declares `RECORD_AUDIO` and not `CALL_PHONE`; the debug APK declares both | `python3 scripts/aab-permissions.py` on `bundleRelease`; `aapt2 dump permissions` on the debug APK | |
+| R10 | Download and installed size for arm64-v8a before B and with it: the voice's model and ONNX Runtime 1.28.0's 28.6 MB `libonnxruntime.so`, stored uncompressed (ADR-0014) | `bundletool build-apks` on `bundleRelease`, then `bundletool get-size total --dimensions=ABI` | |
