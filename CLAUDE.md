@@ -4,7 +4,8 @@ A Polish voice assistant for Android. It listens in the background for a short, 
 Commands — *"Darek, otwórz bramę"* — answers out loud, and calls the number the user gave it, which is
 how a GSM gate opener is driven. Polish is the language users speak to it and hear from it. The
 constraint that shapes everything: **recognition, speech and the call all happen on the phone, and
-nothing Darek hears ever leaves the phone.**
+audio never leaves it; of what Darek hears, only a slot's value a fucha showed before install is
+ever sent (ADR-0008).**
 
 - **Vocabulary:** [`CONTEXT.md`](CONTEXT.md) — use these terms in code and UI.
 - **Decisions and why:** [`docs/adr/`](docs/adr/) — read before changing anything they cover.
@@ -43,7 +44,7 @@ let us do otherwise".">
 | Kotlin, Jetpack Compose, Material 3 | Android only, `minSdk` 26 |
 | **Navigation 3** (`androidx.navigation3`) | Replaces Navigation Compose 2.x — don't reintroduce the old one |
 | Manual DI via `AppContainer`, **not Hilt** | Constructor injection is clearer at this size and easy to migrate later |
-| Play Billing (`tip/`), for the tip only | Unlocks nothing; adds `BILLING`, and its merged `INTERNET` is removed — ADR-0007 |
+| Play Billing (`tip/`), for the tip only | Unlocks nothing; adds `BILLING`, and its merged `INTERNET` is removed until phase F declares it — ADR-0007, ADR-0008 |
 | On-device storage only | No backend. Platform Auto Backup, no custom agent — ADR-0005 |
 
 ## House rules

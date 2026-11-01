@@ -36,7 +36,8 @@ worth as much to a user as to the developer.
 
 **Let the user type their own reply-only phrases.** No Decoys would be chosen for them, and Vosk
 drops words outside its model. New phrases arrive in fuchy instead
-([ADR-0015](0015-darek-takes-on-fuchy.md)), where both are checked.
+([ADR-0015](0015-darek-takes-on-fuchy.md)): the vocabulary is checked at install, and an approved
+fucha's Decoys by the owner's review.
 
 ## Consequences
 
@@ -45,4 +46,4 @@ drops words outside its model. New phrases arrive in fuchy instead
   and calls nothing.
 - *„Co tam, mordo?"* is colloquial. It is the owner's choice of voice for Darek, and the listing's
   screenshots will show it.
-- A second reply-only Command is a fucha: bundled with a release, or installed from the Gigs page.
+- A second reply-only Command is a fucha: bundled with a release, or installed from the fuchy page.
