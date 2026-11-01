@@ -16,7 +16,7 @@ import app.darek.tip.tipAskDue
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -91,12 +91,7 @@ class HomeViewModel(
     }
 
     init {
-        // A Persona switched while Listening restarts it under the new one (ADR-0016).
-        viewModelScope.launch {
-            preferences.persona.drop(1).collect { persona ->
-                if (listening.state.value.phase != Listening.Phase.OFF) listening.start(enabled, persona)
-            }
-        }
+        viewModelScope.launch { preferences.persona.distinctUntilChanged().collect { listening.switchTo(it) } }
         // Prices are asked for only once the ask could be due, which saves a product query on every
         // other visit. The binding itself happens on every foreground anyway, to settle tips.
         viewModelScope.launch {

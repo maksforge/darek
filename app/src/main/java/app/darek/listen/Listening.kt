@@ -11,10 +11,8 @@ import app.darek.speak.ReplyPlayer
 import app.darek.speak.Voice
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class Listening(
     context: Context,
-    private val scope: CoroutineScope,
+    scope: CoroutineScope,
     private val volume: () -> Float,
 ) {
     enum class Phase { OFF, PREPARING, ON }
@@ -65,9 +63,15 @@ class Listening(
 
     @Volatile private var lastNotUnderstood: Line? = null
 
-    @Volatile private var job: Job? = null
+    private data class Wanted(
+        val enabled: Set<Command>,
+        val persona: Persona,
+    )
 
-    @Volatile private var jobPersona: Persona? = null
+    private val runs =
+        LatestRun<Wanted>(scope, { listen(it.enabled, it.persona) }) {
+            mutableState.update { it.copy(phase = Phase.OFF, hearingName = false) }
+        }
 
     private data class Answer(
         val label: String,
@@ -79,65 +83,56 @@ class Listening(
         enabled: Set<Command>,
         persona: Persona,
     ) {
-        val running = job
-        if (running != null) {
-            if (jobPersona != persona) {
-                scope.launch {
-                    running.cancelAndJoin()
-                    start(enabled, persona)
-                }
-            }
-            return
-        }
         if (enabled.isEmpty()) return
+        runs.run(Wanted(enabled, persona))
+    }
+
+    /** A running Listening restarts under [persona]; a stopped one stays stopped (ADR-0016). */
+    fun switchTo(persona: Persona) = runs.change { it.copy(persona = persona) }
+
+    fun stop() = runs.stop()
+
+    private suspend fun listen(
+        enabled: Set<Command>,
+        persona: Persona,
+    ) {
         if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.RECORD_AUDIO) !=
             PackageManager.PERMISSION_GRANTED
         ) {
             return
         }
-        val launched =
-            scope.launch(start = CoroutineStart.LAZY) {
-                mutableState.update { it.copy(phase = Phase.PREPARING, failed = false) }
-                try {
-                    val loaded = withContext(Dispatchers.IO) { model ?: loadModel().also { model = it } }
-                    withContext(Dispatchers.Default) { prepareVoice(persona) }
-                    if (enabled.any { it.calls }) {
-                        withContext(Dispatchers.Default) { renderAhead(persona, NOT_UNDERSTOOD.take(1)) }
-                        launch(Dispatchers.Default) { renderAhead(persona, NOT_UNDERSTOOD.drop(1)) }
-                    }
-                    val grammar = Grammar.json(enabled, persona, ListeningExtras.phrases(persona))
-                    mutableState.update { it.copy(phase = Phase.ON) }
-                    while (true) {
-                        val answer =
-                            Recogniser(loaded)
-                                .heard(grammar)
-                                .onEach { heard ->
-                                    val hearing = heard is Heard.Partial && persona.word in heard.tokens
-                                    mutableState.update { it.copy(hearingName = hearing) }
-                                }.filterIsInstance<Heard.Final>()
-                                .mapNotNull { answerTo(it.tokens, enabled, persona) }
-                                .first()
-                        Log.i(TAG, "reaction=${answer.label}")
-                        mutableState.update { it.copy(hearingName = false, lastReply = answer.text) }
-                        Log.i(VOICE_TAG, "reply reaction=${answer.label} end=${speak(persona, answer.text)}")
-                    }
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Throwable) {
-                    Log.e(TAG, "listening failed", e)
-                    mutableState.update { it.copy(failed = true) }
-                } finally {
-                    mutableState.update { it.copy(phase = Phase.OFF, hearingName = false) }
-                    if (job === currentCoroutineContext()[Job]) job = null
+        mutableState.update { it.copy(phase = Phase.PREPARING, failed = false) }
+        try {
+            coroutineScope {
+                val loaded = withContext(Dispatchers.IO) { model ?: loadModel().also { model = it } }
+                withContext(Dispatchers.Default) { prepareVoice(persona) }
+                if (enabled.any { it.calls }) {
+                    withContext(Dispatchers.Default) { renderAhead(persona, NOT_UNDERSTOOD.take(1)) }
+                    launch(Dispatchers.Default) { renderAhead(persona, NOT_UNDERSTOOD.drop(1)) }
+                }
+                val grammar = Grammar.json(enabled, persona, ListeningExtras.phrases(persona))
+                mutableState.update { it.copy(phase = Phase.ON) }
+                while (true) {
+                    val answer =
+                        Recogniser(loaded)
+                            .heard(grammar)
+                            .onEach { heard ->
+                                val hearing = heard is Heard.Partial && persona.word in heard.tokens
+                                mutableState.update { it.copy(hearingName = hearing) }
+                            }.filterIsInstance<Heard.Final>()
+                            .mapNotNull { answerTo(it.tokens, enabled, persona) }
+                            .first()
+                    Log.i(TAG, "reaction=${answer.label}")
+                    mutableState.update { it.copy(hearingName = false, lastReply = answer.text) }
+                    Log.i(VOICE_TAG, "reply reaction=${answer.label} end=${speak(persona, answer.text)}")
                 }
             }
-        job = launched
-        jobPersona = persona
-        launched.start()
-    }
-
-    fun stop() {
-        job?.cancel()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            Log.e(TAG, "listening failed", e)
+            mutableState.update { it.copy(failed = true) }
+        }
     }
 
     private fun answerTo(
