@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.0](https://github.com/maksforge/darek/compare/v0.4.0...v0.5.0) (2026-11-01)
+
+
+### Features
+
+* give Daria's voice the noise settings that keep her from lisping ([5ecec1c](https://github.com/maksforge/darek/commit/5ecec1ca07cd65b23614921c4df20ab9ec3f6446))
+* let the last of start, Persona switch and stop decide what Listening runs ([79c2771](https://github.com/maksforge/darek/commit/79c277123187b794424c76b3322cd005325610b6))
+* let the user switch to Daria, with her own name, voice and feminine lines ([8ad3f76](https://github.com/maksforge/darek/commit/8ad3f763d5bd455e58632f31276a1df345f66f44))
+* name the chosen Persona when the microphone is denied, and say Restore brings back Darek ([5c4a97a](https://github.com/maksforge/darek/commit/5c4a97aa77e3c4ee4b01b442caeaecfc96e935de))
+
 ## [0.4.0](https://github.com/maksforge/darek/compare/v0.3.0...v0.4.0) (2026-11-01)
 
 
