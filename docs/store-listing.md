@@ -260,3 +260,17 @@ Darek now speaks more clearly and naturally, in the full-quality version of his 
 ```
 Darek mówi teraz wyraźniej i bardziej naturalnie, swoim głosem w pełnej jakości, więc aplikacja zajmuje więcej miejsca. Wszystko nadal dzieje się na telefonie, bez internetu.
 ```
+
+### 0.5.0 — Daria
+
+**English** — 238/500:
+
+```
+Meet Daria: in Settings, under Who answers, you can now switch to her. Call her by name, "Hej Daria, powiedz coś", and she answers in her own woman's voice. Darek stays the default. Everything still happens on the phone, with no internet.
+```
+
+**Polish** — 251/500:
+
+```
+Poznaj Darię: w Ustawieniach, w sekcji Kto odpowiada, możesz teraz przełączyć się na nią. Wołaj ją po imieniu, „Hej Daria, powiedz coś”, a odpowie własnym, kobiecym głosem. Darek zostaje domyślny. Wszystko nadal dzieje się na telefonie, bez internetu.
+```
