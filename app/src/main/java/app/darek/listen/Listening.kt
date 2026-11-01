@@ -192,7 +192,7 @@ class Listening(
         voice = null
         val started = SystemClock.elapsedRealtime()
         voice =
-            runCatching { Voice.load(appContext, persona.voice) }
+            runCatching { Voice.load(appContext, persona.voice, persona.voiceScales) }
                 .onFailure { Log.e(VOICE_TAG, "voice failed to load", it) }
                 .getOrNull()
                 ?.let { persona to it } ?: return

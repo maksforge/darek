@@ -15,6 +15,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,6 +59,9 @@ fun DebugSettings() {
     var busy by remember { mutableStateOf(false) }
     var volume by remember { mutableStateOf(VoiceVolume.get(context)) }
     var scales by remember { mutableStateOf<FloatArray?>(null) }
+    val persona by (context.applicationContext as MainApplication)
+        .container.preferences.persona
+        .collectAsState(Persona.DAREK)
 
     SectionHeader(stringResource(R.string.debug_voice))
     Column(
@@ -96,7 +100,7 @@ fun DebugSettings() {
             onValueChange = { volume = it },
             onValueChangeFinished = { VoiceVolume.set(context, volume) },
         )
-        val shown = scales ?: DEFAULT_SCALES
+        val shown = scales ?: persona.voiceScales ?: DEFAULT_SCALES
         SCALE_NAMES.forEachIndexed { i, name ->
             Text("$name ${"%.2f".format(shown[i])}", style = MaterialTheme.typography.bodyMedium)
             Slider(
@@ -141,6 +145,8 @@ fun DebugSettings() {
 // Piper's inference settings in the order its `scales` input takes them; null means the voice's own.
 private val SCALE_NAMES = listOf("noise_scale", "length_scale", "noise_w")
 private val SCALE_RANGES = listOf(0f..1f, 0.6f..1.6f, 0f..1f)
+
+// Both voices' configs carry these; a Persona's own `voiceScales` take their place.
 private val DEFAULT_SCALES = floatArrayOf(0.667f, 1f, 0.8f)
 
 private val samples =
@@ -190,7 +196,7 @@ private object DebugVoice {
         loaded?.takeIf { it.first == persona }?.let { return it.second to 0L }
         loaded?.second?.close()
         val started = SystemClock.elapsedRealtime()
-        val voice = Voice.load(context, persona.voice)
+        val voice = Voice.load(context, persona.voice, persona.voiceScales)
         loaded = persona to voice
         return voice to SystemClock.elapsedRealtime() - started
     }

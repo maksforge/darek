@@ -195,7 +195,7 @@ class ProbeViewModel(
     private fun renderReplies(): Map<Command, ShortArray> =
         runCatching {
             val started = SystemClock.elapsedRealtime()
-            val loaded = voice ?: Voice.load(getApplication(), persona.voice).also { voice = it }
+            val loaded = voice ?: Voice.load(getApplication(), persona.voice, persona.voiceScales).also { voice = it }
             Command.entries
                 .associateWith { loaded.synthesize(it.reply.by(persona)) }
                 .also { rendered ->
