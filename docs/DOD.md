@@ -145,9 +145,11 @@ Re-declarations a change owes Play, written down the day the change merges and t
 Console matches. A new permission, foreground service or data type is a Console change that waits in
 *Publishing overview* for *Send for review* with the upload that needs it. Empty most of the time.
 
-- [ ] **In the release that ships phase 1, rewrite the listing's test-build paragraph and re-shoot
-      the screenshots.** Recognition and the call make "only Home and Settings" false, in both
-      languages of `store-listing.md`; re-shoot again when Listening has a screen.
+- [ ] **In the release that ships phase 1's checkpoint B** (`phase-1.md`, *Documents this phase
+      amends*): the listing's test-build paragraph in both languages, the screenshots with *Słuchaj*,
+      the privacy policy's microphone bullet, `RECORD_AUDIO`'s row in `play-app-content.md` with the
+      Data safety re-read, `aab-permissions.py`'s EXPECTED, and the licences of Vosk, its model and
+      JNA. `CALL_PHONE` stays out of the release until phase 3.
 
 ## After the closed test
 

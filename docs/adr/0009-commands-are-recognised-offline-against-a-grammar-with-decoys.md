@@ -7,7 +7,7 @@ car, for hours, without the network, and must **not** act on anything else. A fa
 than a miss: it opens a gate. Free speech around the phone is noise to be ignored, not input.
 
 Offline Polish recognisers that run continuously on a phone come down to one: **Vosk** (Kaldi), with
-its `vosk-model-small-pl-0.22` model (Apache 2.0, ~53 MB unpacked to ~50 MB of files). Small Vosk
+its `vosk-model-small-pl-0.22` model (Apache 2.0, 53 MB zipped, 92 MB unpacked). Small Vosk
 models accept a **runtime grammar**: a list of phrases that restricts the search.
 
 A host reading on 2026-10-31 (vosk 0.3.75, the model above, 104 clips of synthetic Polish speech from
@@ -27,16 +27,22 @@ confidence 1.00. That is the failure this ADR exists to prevent.
 
 - **Vosk** (`com.alphacephei:vosk-android`, with JNA) recognises 16 kHz mono audio from `AudioRecord`.
   Both libraries' 64-bit `.so` files are 16 KB page-aligned, which Play requires.
-- **The model ships inside the app** and is unpacked to `noBackupFilesDir` on first launch, never into
+- **The model ships inside the app**, fetched at build time and checked against its SHA-256 rather
+  than committed, and is unpacked to `noBackupFilesDir` on first use, never into
   Auto Backup: it is re-derivable from the APK and alone exceeds Auto Backup's 25 MB quota. No
   download step, no network ([ADR-0008](0008-darek-never-opens-a-network-connection.md)).
-- **The Commands are a fixed catalogue shipped with the app** (*brama*, *garaż*, *furtka*), each with
-  Decoys tuned for it. The user cannot type a phrase: nothing would choose its Decoys, and Vosk drops
+- **The Commands are a fixed catalogue shipped with the app** (*brama*, *garaż*, *furtka*, and
+  *powiedz coś*, which only replies: [ADR-0013](0013-a-command-may-only-reply.md)), each with Decoys
+  tuned for it. The user cannot type a phrase: nothing would choose its Decoys, and Vosk drops
   grammar words its model does not know.
 - **The grammar is the Commands, the cancel words (*"Darek, stop"*, *"anuluj"*,
   [ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)) and Decoys**: names and
   words close to the Commands' (*marek, jarek, janek, darka, darku, dawid, otwórz, zamknij, brama*)
-  and `[unk]`, so near-misses have somewhere to land.
+  and `[unk]`, so near-misses have somewhere to land. A Command that cannot act (one that
+  calls, with no Number) is left out, and the cancel words are in only while a Command that calls is
+  enabled. **Its JSON
+  carries Polish letters as UTF-8**: Vosk does not decode `\u` escapes, takes `co\u015b` as an
+  unknown word and drops it, so the Command could never fire (read on the host 2026-11-01).
 - **A Command fires when its words are adjacent in a single final result's raw tokens**, with
   nothing between them, not even `[unk]`. Anything before or after, Decoys or `[unk]`, is ignored,
   so *"darek otwórz bramę proszę"* and a Command joined to surrounding noise fire. A split Command
@@ -61,8 +67,8 @@ launch without signal. Rejected with ADR-0008.
 
 ## Consequences
 
-- The install is ~50 MB larger, and the model takes the same again in `noBackupFilesDir` once
-  unpacked.
+- The download is ~53 MB larger, and the unpacked model takes 92 MB more in `noBackupFilesDir`:
+  ~145 MB on the phone in all.
 - The Apache 2.0 licences of Vosk, its model and JNA's join `assets/licences/`.
 - The reading is synthetic speech of isolated phrases. **Phase 1 owes the real one**: real voices,
   the phone's own microphone, at a distance and in a car, and Commands embedded in speech (*"…,
