@@ -79,6 +79,6 @@ launch without signal. Rejected with ADR-0008.
 - A new bundled Command is an app release, with its Decoys read like the first one's. A fucha's
   Command is not: its Decoys are its author's. Only an approved fucha's are checked by the owner's
   review; an unapproved one's Decoys and vocabulary meet nothing but Darek's install checks, the
-  vocabulary check and ADR-0015's clash rules, which also catch a Decoy that would take another
-  fucha's Command.
+  vocabulary check and ADR-0015's clash rules, which also catch a Decoy or a Command word that
+  would take another fucha's Command.
 - Recognition pauses while Darek speaks, so he does not answer himself (ADR-0011).
