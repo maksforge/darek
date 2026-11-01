@@ -83,8 +83,35 @@ def fraction_words(digits):
     return " ".join(["zero"] * (len(digits) - len(significant)) + [spoken_number(significant)])
 
 
-def time_words(hour, minute):
-    words = [HOURS[hour]]
+HOUR_IN_GENITIVE_OR_LOCATIVE = {"o", "po", "do", "od", "około", "koło", "w"}
+HOUR_IN_ACCUSATIVE_OR_INSTRUMENTAL = {"na", "przed", "między", "pomiędzy"}
+
+
+def hour_after(preposition, hour):
+    if preposition in HOUR_IN_GENITIVE_OR_LOCATIVE:
+        ending = "ej"
+    elif preposition in HOUR_IN_ACCUSATIVE_OR_INSTRUMENTAL:
+        ending = "ą"
+    else:
+        return HOURS[hour]
+
+    def inflect(ordinal):
+        if not ordinal.endswith("a"):
+            return ordinal
+        if ending == "ej" and ordinal[-2] in "gk":
+            return ordinal[:-1] + "iej"
+        return ordinal[:-1] + ending
+
+    return " ".join(inflect(o) for o in HOURS[hour].split(" "))
+
+
+def word_before(text, end):
+    m = re.search(r"([a-ząćęłńóśźż]+)\s*$", text[:end])
+    return m.group(1) if m else ""
+
+
+def time_words(hour, minute, preposition=""):
+    words = [hour_after(preposition, hour)]
     if 0 < minute < 10:
         words += ["zero", number_words(minute)]
     elif minute or hour == 0:
@@ -231,8 +258,10 @@ def phonemize(text):
     text = re.sub(r"(?<=\d)(?<!:\d\d)(?:[\-–−]|\s+[\-–−]\s+)(?=\d+(?:[.,]\d+)?\s*°)", ", ", text.lower())
     text = re.sub(r"((?:(?<![\w])|(?<=:\d\d))[+\-−])?(\d+)(?:[.,](\d+))?\s*°\s*([cf](?![a-ząćęłńóśźż]))?",
                   lambda m: " " + temperature_words(m) + " ", text)
+    before_times = text
     text = re.sub(r"(?<![\w.,:])([01]?\d|2[0-4]):([0-5]\d)(?![\w]|[.,:]\d)",
-                  lambda m: " " + time_words(int(m.group(1)), int(m.group(2))) + " ", text)
+                  lambda m: " " + time_words(int(m.group(1)), int(m.group(2)),
+                                             word_before(before_times, m.start())) + " ", before_times)
     text = re.sub(r"(?<![\w])[\-−](?=\d)", " minus ", text)
     text = re.sub(r"(?<![\w])\+(?=\d)", " plus ", text)
     text = re.sub(r"\d+", lambda m: " " + spoken_number(m.group()) + " ", text)
