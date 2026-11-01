@@ -6,6 +6,7 @@ import android.media.AudioTrack
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeoutOrNull
@@ -23,6 +24,7 @@ object ReplyPlayer {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            Log.w(TAG, "playback failed", e)
             PlaybackEnd.FAILED
         }
     }
@@ -75,4 +77,6 @@ object ReplyPlayer {
             track.release()
         }
     }
+
+    private const val TAG = "DarekVoice"
 }
