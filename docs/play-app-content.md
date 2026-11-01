@@ -22,16 +22,20 @@ Two rules keep this file honest:
 
 ## What the artifact carries
 
-Read at **versionCode 24, versionName 0.1.0** from a local debug bundle (`./gradlew bundleDebug`,
-commit `e78ae3e`) on 2026-10-31. The release bundle's reading, by `publish-play.yml`'s verify step,
-replaces this one at the first upload:
+Read at **versionCode 72** from a local release bundle (`./gradlew bundleRelease`, commit
+`10d15a1`, the code 0.3.0 ships) on 2026-11-01. `publish-play.yml`'s verify step reads the uploaded
+bundle again:
 
 ```text
-3 permissions, all accounted for; none of the 6 forbidden ones present; 0 <uses-feature> declared; 0 of the 6 activities lock their orientation, every one of them expected
+4 permissions, all accounted for; none of the 6 forbidden ones present; 0 <uses-feature> declared; 0 of the 4 activities lock their orientation, every one of them expected
 ```
+
+`RECORD_AUDIO` implies `android.hardware.microphone`, `required`, though nothing declares it: a phone
+without a microphone cannot use Darek, so Play filtering it out is correct.
 
 | Permission | Whose | What it is for | Console consequence |
 | --- | --- | --- | --- |
+| `RECORD_AUDIO` | Darek | *Słuchaj*: the bundled recogniser hears the Commands, only while Listening is on ([ADR-0009](adr/0009-commands-are-recognised-offline-against-a-grammar-with-decoys.md)) | a runtime permission, asked after the in-app disclosure; Data safety still *no data collected* (point 2). Not on Play's declaration list |
 | `ACCESS_NETWORK_STATE` | Play Billing's `datatransport` | read before its (blocked) log upload; opens nothing ([ADR-0008](adr/0008-darek-never-opens-a-network-connection.md) allows it as this merge only) | none, but a reviewer may ask why an app with no network reads it — this row is the answer |
 | `com.android.vending.BILLING` | Play Billing Library | the tip ([ADR-0007](adr/0007-the-tip-is-a-play-billing-consumable-that-unlocks-nothing.md)): IPC to the Play app's billing service | none: not on Play's declaration list. The listing shows *Contains in-app purchases* once products exist |
 | `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | AndroidX | its own non-exported receivers, signature-level | none: not user-visible |
@@ -50,8 +54,8 @@ the same, as any permission missing from `EXPECTED` does (ADR-0008).
 describes them, because it covers the app as it will ship; the Console is answered for the artifact
 in front of it.
 
-- **Phase 1:** `RECORD_AUDIO` (the recogniser, [ADR-0009](adr/0009-commands-are-recognised-offline-against-a-grammar-with-decoys.md))
-  and `CALL_PHONE` (the Gate call, [ADR-0011](adr/0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)).
+- **Phase 3:** `CALL_PHONE` (the Gate call, [ADR-0011](adr/0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)).
+  Phase 1's checkpoint C dials from the debug build only; the release gets it with the Commands.
 - **Phase 2:** the Listening service's `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_MICROPHONE`,
   `POST_NOTIFICATIONS` for its notification, and `RECEIVE_BOOT_COMPLETED` for the after-reboot
   notification ([ADR-0010](adr/0010-listening-is-a-microphone-service-the-user-starts.md)).
@@ -159,19 +163,21 @@ The answer rests on one fact per route data could take:
 
 1. **The app opens no network connection.** `INTERNET` is absent from the artifact (ADR-0008), and
    `aab-permissions.py` fails the upload if it ever appears. This one fact is most of the answer. From
-   phase 1, when `CALL_PHONE` arrives, one thing does leave the phone at the app's request: the Gate
-   call of point 4.
+   phase 3, when `CALL_PHONE` reaches the release, one thing does leave the phone at the app's
+   request: the Gate call of point 4.
 2. **Audio is processed on the device, and that is not collection.** The bundled recogniser consumes
    the microphone frame by frame; only the text of a matched Command is kept, in memory, and audio is
-   never stored or sent (ADR-0008, ADR-0009). From phase 1, when `RECORD_AUDIO` arrives; still no
-   data collected.
+   never stored or sent (ADR-0008, ADR-0009). `RECORD_AUDIO` is in the artifact from 0.3.0; re-read
+   2026-11-01 against Play's definitions above: still no data collected, so the Console answer stands
+   unchanged.
 3. **The Numbers stay on the device.** The user types each one in; it is kept in DataStore and used
    only to place that Command's call. **Auto Backup is still "no data collected"**: the platform moves
    the user's backup to the user's own Google account, and the developer never sees it. That is
    Android transmitting the user's backup, not the app transmitting to the developer. ⚠ Every setting
    the backup carries lands on the user's *next* phone too — ADR-0005's amendment says what that is.
-4. **The call and the voice are other apps' work.** The Reply is spoken by the phone's own
-   text-to-speech engine, which Darek hands only the fixed Reply. The Gate call is placed by the
+4. **The call is another app's work; the voice is Darek's own.** The Reply is rendered inside the
+   app by its bundled synthesiser and played by the app itself; no other app is handed it
+   ([ADR-0014](adr/0014-darek-speaks-with-his-own-bundled-voice.md)). The Gate call is placed by the
    phone's Telecom service on the user's SIM, to the Number the user typed for that Command
    (ADR-0011). The app opens no network connection, but the call does leave the phone at its request,
    with no tap at that moment: the user's operator carries the Number dialled and the user's own caller
@@ -232,7 +238,8 @@ answers to give then:
   with the link for as long as the declaration is on file. `adb screenrecord` captures no audio, so
   say so if the reviewer needs to hear a Command.
 
-The same build owes the **prominent disclosure** in the app right before the `RECORD_AUDIO` request.
+The **prominent disclosure** right before the `RECORD_AUDIO` request shipped with *Słuchaj* in 0.3.0
+(`mic_disclosure_body`); the service's build re-reads it against the notification it adds.
 
 ## Privacy policy
 

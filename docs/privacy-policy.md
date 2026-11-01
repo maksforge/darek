@@ -5,7 +5,7 @@ title: Privacy Policy
 
 # Privacy Policy
 
-_Effective date: 31 October 2026_
+_Effective date: 1 November 2026_
 
 Darek is a Polish voice assistant for Android. While you have him listening, he waits for one of a
 few fixed spoken Commands, such as *"Darek, otwórz bramę"*, answers out loud, and then calls the
@@ -28,8 +28,8 @@ out.
 
 - **The microphone, only while you have Listening on.** You start Listening yourself, in the app, from
   its notification or from its Quick Settings tile, and you stop it the same way; it never starts by
-  itself, not even after the phone restarts. While it is on, a notification says that Darek is
-  listening. The sound is processed **on your phone, frame by frame**, by an offline speech
+  itself, not even after the phone restarts. While it is on, the app's screen, or later its
+  notification, says that Darek is listening. The sound is processed **on your phone, frame by frame**, by an offline speech
   recogniser that comes inside the app, and the only thing kept is the text of a Command it
   recognised, in memory, long enough to act on it. **Audio is never recorded, never stored and never
   sent anywhere.** Listening pauses while Darek speaks and while his call is in progress.
@@ -43,9 +43,9 @@ out.
 - **Google Play billing**, which lets the app ask the Google Play app for the price of a tip and open
   its payment sheet. It gives the app nothing about you.
 
-**Text-to-speech.** Darek's spoken replies are read out by your phone's own text-to-speech engine,
-which is a separate app with its own terms. Darek gives it only the fixed reply it is about to say,
-and chooses a Polish voice that works without the internet.
+**Darek's voice.** Darek speaks his replies in his own voice, made by a speech synthesiser that
+comes inside the app and runs on your phone. No other app is given the reply, and what he says is
+never recorded or sent.
 
 On some phones, Xiaomi's among them, the app may also send you to two of your phone's own Settings
 screens, so that the phone does not stop Listening in the background: **battery use** and
