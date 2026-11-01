@@ -3,6 +3,7 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
 import java.util.Properties
+import java.util.zip.ZipFile
 
 plugins {
     alias(libs.plugins.android.application)
@@ -256,8 +257,8 @@ abstract class BundleLicences : DefaultTask() {
 
 /**
  * A large file the build needs but the repo does not hold: fetched once into Gradle's user cache,
- * checked against its SHA-256, and copied into the variant's generated assets. A changed file fails
- * the build rather than shipping.
+ * checked against its SHA-256, and copied into the variant's generated assets, or unzipped into the
+ * directory `assetPath` names. A changed file fails the build rather than shipping.
  */
 abstract class FetchVerifiedAsset : DefaultTask() {
     @get:Input
@@ -268,6 +269,9 @@ abstract class FetchVerifiedAsset : DefaultTask() {
 
     @get:Input
     abstract val assetPath: Property<String>
+
+    @get:Input
+    abstract val unzip: Property<Boolean>
 
     @get:Internal
     abstract val cacheDirectory: DirectoryProperty
@@ -301,8 +305,29 @@ abstract class FetchVerifiedAsset : DefaultTask() {
             }
         }
         val destination = outputDirectory.get().asFile.resolve(assetPath.get())
-        destination.parentFile.mkdirs()
-        cached.copyTo(destination, overwrite = true)
+        if (unzip.get()) {
+            destination.deleteRecursively()
+            cached.unzipInto(destination)
+        } else {
+            destination.parentFile.mkdirs()
+            cached.copyTo(destination, overwrite = true)
+        }
+    }
+
+    private fun File.unzipInto(destination: File) {
+        val root = destination.canonicalFile
+        ZipFile(this).use { zip ->
+            zip.entries().asSequence().forEach { entry ->
+                val target = root.resolve(entry.name).canonicalFile
+                if (!target.startsWith(root)) throw GradleException("$name: ${entry.name} escapes the archive")
+                if (entry.isDirectory) {
+                    target.mkdirs()
+                } else {
+                    target.parentFile.mkdirs()
+                    zip.getInputStream(entry).use { input -> target.outputStream().use { input.copyTo(it) } }
+                }
+            }
+        }
     }
 
     private fun File.sha256(): String {
@@ -319,21 +344,29 @@ abstract class FetchVerifiedAsset : DefaultTask() {
     }
 }
 
+data class VerifiedAsset(
+    val url: String,
+    val sha256: String,
+    val path: String,
+    val unzip: Boolean = false,
+)
+
 // Darek's voice (ADR-0014): the int8 model and its config, published by `scripts/voice/quantize.py`
 // as assets of this repo's `voice-pl-mc_speech-int8-1` release. `-PfullVoice` adds the 63 MB
-// original for phase 1's R3 comparison; no other build carries it.
+// original for phase 1's R3 comparison; no other build carries it. The recogniser's model is
+// ADR-0009's, unzipped to `vosk/vosk-model-small-pl-0.22/`.
 private val voiceRelease = "https://github.com/maksforge/darek/releases/download/voice-pl-mc_speech-int8-1"
-private val voiceAssets =
+private val debugAssets =
     buildList {
         add(
-            Triple(
+            VerifiedAsset(
                 "$voiceRelease/pl_PL-mc_speech-medium-int8.onnx",
                 "4bca76cb9d30784bbfc06dcb7ced07fa67a2db1ea0c4a2d17bf5e06a06596e79",
                 "voice/voice.onnx",
             ),
         )
         add(
-            Triple(
+            VerifiedAsset(
                 "$voiceRelease/pl_PL-mc_speech-medium-int8.onnx.json",
                 "b8bb11228e15c505219846a88fdc129e93f57e774ed7f9bac263156d1aa3d324",
                 "voice/voice.onnx.json",
@@ -341,25 +374,34 @@ private val voiceAssets =
         )
         if (providers.gradleProperty("fullVoice").isPresent) {
             add(
-                Triple(
+                VerifiedAsset(
                     "https://huggingface.co/rhasspy/piper-voices/resolve/main/pl/pl_PL/mc_speech/medium/pl_PL-mc_speech-medium.onnx",
                     "a6b043358bc81e6c111a5140606a21959ce7f34969b8b7207f62869787cc3907",
                     "voice/voice-full.onnx",
                 ),
             )
         }
+        add(
+            VerifiedAsset(
+                "https://alphacephei.com/vosk/models/vosk-model-small-pl-0.22.zip",
+                "c4cd16498ea544f446f9e9a55cbd602b71cfe5a2b6f2b0834d81e1b6fce15f0d",
+                "vosk",
+                unzip = true,
+            ),
+        )
     }
 
 androidComponents {
     onVariants(selector().withBuildType("debug")) { variant ->
         val suffix = variant.name.replaceFirstChar(Char::uppercase)
-        voiceAssets.forEach { (url, sha, path) ->
-            val name = path.substringAfterLast('/').replace(Regex("[^A-Za-z0-9]"), "")
+        debugAssets.forEach { asset ->
+            val name = asset.url.substringAfterLast('/').replace(Regex("[^A-Za-z0-9]"), "")
             val fetch =
-                tasks.register<FetchVerifiedAsset>("fetch${suffix}Voice$name") {
-                    this.url.set(url)
-                    sha256.set(sha)
-                    assetPath.set(path)
+                tasks.register<FetchVerifiedAsset>("fetch${suffix}Asset$name") {
+                    url.set(asset.url)
+                    sha256.set(asset.sha256)
+                    assetPath.set(asset.path)
+                    unzip.set(asset.unzip)
                     cacheDirectory.set(File(gradle.gradleUserHomeDir, "caches/darek-assets"))
                 }
             variant.sources.assets?.addGeneratedSourceDirectory(fetch, FetchVerifiedAsset::outputDirectory)
@@ -419,8 +461,9 @@ dependencies {
     // Reads licensee's report for the Licences screen.
     implementation(libs.kotlinx.serialization.json)
 
-    // Darek's voice (ADR-0014), debug-only until phase 1's checkpoint B.
+    // Darek's voice (ADR-0014) and his ears (ADR-0009), debug-only until phase 1's checkpoint B.
     debugImplementation(libs.onnxruntime.android)
+    debugImplementation(libs.vosk.android)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

@@ -1,6 +1,7 @@
 package app.darek.ui.settings
 
 import android.content.Context
+import android.content.Intent
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import app.darek.speak.ReplyPlayer
 import app.darek.speak.Voice
 import app.darek.theme.Spacing
 import app.darek.ui.common.SectionHeader
+import app.darek.ui.probe.ProbeActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -39,7 +41,7 @@ import kotlinx.coroutines.withContext
  * the release half for why that is a source set and not a `BuildConfig.DEBUG` branch.
  *
  * *Say this* speaks any text in Darek's voice and logs what phase 1's R3 reads:
- * `adb logcat -s DarekVoice`.
+ * `adb logcat -s DarekVoice`. The probe is R1/R2's: `adb logcat -s DarekProbe`.
  */
 @Composable
 fun DebugSettings() {
@@ -89,6 +91,12 @@ fun DebugSettings() {
             Text(status, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
+
+    SectionHeader(stringResource(R.string.debug_probe))
+    Button(
+        onClick = { context.startActivity(Intent(context, ProbeActivity::class.java)) },
+        modifier = Modifier.padding(horizontal = Spacing.base),
+    ) { Text(stringResource(R.string.debug_probe_open)) }
 }
 
 private val samples =

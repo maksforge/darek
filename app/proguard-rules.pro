@@ -1,6 +1,6 @@
 # R8 rules for the release build.
 #
-# It holds one keep rule, for ONNX Runtime below. Everything else reflection-shaped in this app is
+# It holds the keep rules for ONNX Runtime, JNA and Vosk below. Everything else reflection-shaped in this app is
 # already covered by a rule that some library ships, and the evidence is in the build's own output
 # rather than in a habit:
 #
@@ -32,6 +32,18 @@
 #     `JNI DETECTED ERROR: java_class == null` (test phone, `-PreleaseShapedDebug`, 2026-11-01).
 #
 -keep class ai.onnxruntime.** { *; }
+#
+#   * **JNA and Vosk** (the recogniser, ADR-0009). JNA's native half reads its own classes' fields by
+#     name, and Vosk's `LibVosk` binds its native methods through JNA by their Java names. Without
+#     these keeps the probe's first `Model` aborted with `UnsatisfiedLinkError: Can't obtain peer
+#     field ID for class com.sun.jna.Pointer` in `Native.initIDs` (test phone, `-PreleaseShapedDebug`,
+#     2026-11-01).
+#
+-keep class com.sun.jna.** { *; }
+-keep class * implements com.sun.jna.** { *; }
+-keep class org.vosk.** { *; }
+# Kept whole, JNA's desktop-only `Native$AWT` names AWT classes Android does not have.
+-dontwarn java.awt.**
 #
 # ---------------------------------------------------------------------------
 # The rule to follow when this file changes

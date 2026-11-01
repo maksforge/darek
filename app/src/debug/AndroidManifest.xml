@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Phase 1's probe only; checkpoint B moves it to main/ with Słuchaj. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <application>
+        <activity
+            android:name=".ui.probe.ProbeActivity"
+            android:exported="false" />
+    </application>
+
+</manifest>

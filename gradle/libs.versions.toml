@@ -30,8 +30,11 @@ billing = "9.1.0"
 # Darek's voice (ADR-0014). Pinned: from 1.29.0 the AAR merges INTERNET and a telemetry provider.
 # Re-read the AAR's manifest before any bump.
 onnxruntime = "1.28.0"
+# The recogniser (ADR-0009). Pulls JNA's AAR in on its own.
+vosk = "0.3.75"
 
 [libraries]
+vosk-android = { module = "com.alphacephei:vosk-android", version.ref = "vosk" }
 onnxruntime-android = { module = "com.microsoft.onnxruntime:onnxruntime-android", version.ref = "onnxruntime" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppCompat" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
