@@ -1,0 +1,127 @@
+# Darek takes on fuchy: Commands come as data files, reviewed and signed by MaksForge
+
+## Context
+
+Darek cannot ship a Command for everything people want from him: a second gate, a garage, the
+weather, a roast for a friend. Until now every Command was an app release
+([ADR-0009](0009-commands-are-recognised-offline-against-a-grammar-with-decoys.md)), and the user
+could not add a phrase, because nothing would choose its Decoys and Vosk silently drops words its
+model does not know.
+
+The owner decided on 2026-11-01 that Darek grows through **fuchy** (`CONTEXT.md`, *Gig*): files of
+Commands made by MaksForge and by the community, installed from a page in the app, the way a
+handyman takes on side jobs. Darek is a little meme, and the word is chosen to say so.
+
+Three constraints shape it:
+- **Play forbids an app from downloading executable code** (`.dex`, `.jar`, `.so`) from outside
+  Play. A fucha that ran code would be a policy breach and an app Play never reviewed.
+- **A false match on a Command that calls rings a gate.** Whatever a fucha adds must not loosen
+  that.
+- **A fucha can never add an Android permission.** Permissions come from the manifest, which Android
+  reads at install time. Darek can only ever do what its release declares.
+
+## Decision
+
+**A fucha is data, never code.** It is a JSON file (`.darek`) of Commands, each with its phrase,
+its Reply and the action it uses. The actions are code inside Darek, each one written for its task
+(speak, call a Number, weather, later more): one general "fetch" cannot make sense of every
+service's answer without AI, and Darek is meant to grow into tasks harder than reading one field. A
+new kind of action is a Darek release.
+
+**Darek's own Commands are fuchy too**, bundled in the app in the same format, so there is one loader
+and one path into the grammar. A bundled fucha can be switched off, never removed. One that needs a
+permission (a weather fucha needs the internet and the location) is off on a fresh install.
+
+**What a fucha declares, the user sees before installing:**
+- **its permissions**, from a fixed list Darek defines, mostly Android's own (location, calling)
+  plus Darek's (internet). A fucha that uses an action whose permission it did not declare is
+  refused;
+- **the exact addresses it contacts.** Darek refuses any other, including one found in an answer;
+- **each value it sends**, by name (*your approximate location*). **Audio and the words Darek heard
+  are never sent**, whatever a fucha declares;
+- **its language.** Only `pl` is accepted today ([ADR-0012](0012-darek-speaks-polish-and-opens-in-polish.md));
+  the field exists so a later Darek can refuse what it cannot speak.
+
+**A Command that calls never carries a number.** The user picks one of their own Numbers for it.
+
+**Slots are allowed** (*„obraź {imię}"*, *„pogoda w {mieście}"*), in Commands that call too: the
+fucha lists every value with its forms, and the cancel window
+([ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)) stands before every
+dial. The builder and the install screen warn that slots are less reliable, Polish inflection most
+of all.
+
+**Approved** fuchy are the ones the owner reviewed: community authors open a PR in
+`maksforge/darek-fuchy` under published rules, and merging is the decision that a fucha goes live.
+CI signs it with a key held in that repo's secrets; Darek ships the public half and checks the
+signature offline. An approved fucha carries the MaksForge badge. Any other `.darek` file still
+installs, after a strong warning that MaksForge has not reviewed it.
+
+**The install screen** shows what the fucha does, its permissions, addresses and values sent, the
+badge or the warning, and that even an approved fucha may contain a mistake and is installed at the
+user's own risk. Every fucha has *„Zgłoś fuchę"*, an email to the developer through the support
+hand-off with its ID and version.
+
+**Permissions can be granted per fucha or for all**, per permission: ask for each fucha (the
+default), allow for every fucha, or never, each with exceptions. "Allow for every fucha" covers
+approved ones only; extending it to unapproved ones is a separate option behind a dialog whose
+confirm button unlocks after ten seconds.
+
+**Phrases that clash:** a fucha whose Command sounds like an enabled one installs switched off,
+behind a warning the user can override to keep both on. Identical phrases are never both on:
+switching one on switches the other off.
+
+**The Gigs page is a native screen** drawn from the site's `fuchy.json`, not a web view. A fucha
+needing an action this Darek lacks is shown greyed out, *„Wymaga nowszej wersji Darka"*. Fuchy with
+profanity are marked *„Wulgaryzmy"* and hidden until the user turns them on in Settings.
+
+**Updates:** Darek checks for them while a fucha from the page is installed. Approved fuchy update
+automatically (a setting, on by default); others update on a tap; *„Darek, zaktualizuj fuchy"* does
+it by voice. An update that adds a permission, an address or a value sent waits for the user.
+
+**Personas stay in the app.** A persona (Daria) changes the name every Command starts with, the name
+Decoys and the grammatical gender of every Reply, so it is not one fucha among others.
+
+## Alternatives
+
+**Commands only as app releases** (ADR-0009 as it stood). Safe, and every Command tuned in house,
+but Darek would only ever do what one developer had time to ship.
+
+**Fuchy that run code** (scripts in an interpreter). Play allows sandboxed interpreters, but a
+review of every fucha would then be a code review, and a fucha could do whatever the interpreter
+reaches. Data choosing from fixed actions keeps the review to reading a file.
+
+**One general fetch action**, where a fucha writes its own request and picks a field from the
+answer. Any JSON API would work with no release, but it cannot handle services whose answers need
+real work to turn into a sentence, and every fucha would be a small program in disguise.
+
+**Reply-only fuchy, calling kept to the bundled ones.** Calling a Number the user chooses is most of
+why people want fuchy (a second gate, a garage), and a fucha never carrying a number already keeps a
+malicious one from dialling a premium line.
+
+**Only approved fuchy install.** It would stop people building their own on their own phones. The
+badge and the warning keep the review meaningful without that.
+
+**A badge for the owner's own fuchy only.** Three levels (own, reviewed, unknown) would make every
+permission rule ask which; the review is what makes a fucha safe, not who wrote it.
+
+**Signing on the owner's PC.** No one could sign if GitHub were broken into, but every fucha release
+would wait for the owner at the computer. The merge is already the decision; CI signing adds no
+trust, only removes the step.
+
+**The page as a web view.** Simpler to build, but it runs the site's JavaScript inside Darek, which
+is the code-from-the-internet question this ADR closes.
+
+## Consequences
+
+- Darek gets `INTERNET` ([ADR-0008](0008-darek-connects-only-where-the-user-can-see.md), rewritten).
+- Fuchy are user-generated content in Play's sense: published content rules for authors, the
+  owner's review as moderation, and *„Zgłoś fuchę"* as the in-app report. The content rating
+  questionnaire is answered for the profanity a fucha can carry.
+- ADR-0009's catalogue becomes the bundled fuchy, and a phrase can come from outside the app. The
+  vocabulary check moves to install time and to `darek-fuchy`'s CI, where it also helps the owner's
+  review.
+- *Configured* (`reactionTo` in `listen/CommandMatch.kt`) still means an enabled Command that
+  calls, from whichever fucha.
+- A leaked signing key lets anyone badge anything; the fix is a Darek release with a new public key.
+- The phase that builds fuchy comes after phase 2 (`docs/PLAN.md`). The `darek-fuchy` repo, its
+  rules and the builder on the site are a project of their own.

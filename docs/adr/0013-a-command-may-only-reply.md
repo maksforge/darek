@@ -35,8 +35,8 @@ phone and a real gate opening. Closed testers would get nothing until phase 3.
 worth as much to a user as to the developer.
 
 **Let the user type their own reply-only phrases.** No Decoys would be chosen for them, and Vosk
-drops words outside its model. This is ADR-0009's reason against custom phrases, and it holds the
-same way here.
+drops words outside its model. New phrases arrive in fuchy instead
+([ADR-0015](0015-darek-takes-on-fuchy.md)), where both are checked.
 
 ## Consequences
 
@@ -45,4 +45,4 @@ same way here.
   and calls nothing.
 - *„Co tam, mordo?"* is colloquial. It is the owner's choice of voice for Darek, and the listing's
   screenshots will show it.
-- A second reply-only Command is an app release, like any Command.
+- A second reply-only Command is a fucha: bundled with a release, or installed from the Gigs page.

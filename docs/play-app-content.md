@@ -36,7 +36,7 @@ without a microphone cannot use Darek, so Play filtering it out is correct.
 | Permission | Whose | What it is for | Console consequence |
 | --- | --- | --- | --- |
 | `RECORD_AUDIO` | Darek | *Słuchaj*: the bundled recogniser hears the Commands, only while Listening is on ([ADR-0009](adr/0009-commands-are-recognised-offline-against-a-grammar-with-decoys.md)) | a runtime permission, asked after the in-app disclosure; Data safety still *no data collected* (point 2). Not on Play's declaration list |
-| `ACCESS_NETWORK_STATE` | Play Billing's `datatransport` | read before its (blocked) log upload; opens nothing ([ADR-0008](adr/0008-darek-never-opens-a-network-connection.md) allows it as this merge only) | none, but a reviewer may ask why an app with no network reads it — this row is the answer |
+| `ACCESS_NETWORK_STATE` | Play Billing's `datatransport` | read before its (blocked) log upload; opens nothing ([ADR-0008](adr/0008-darek-connects-only-where-the-user-can-see.md) allows it as this merge only) | none, but a reviewer may ask why an app with no network reads it — this row is the answer |
 | `com.android.vending.BILLING` | Play Billing Library | the tip ([ADR-0007](adr/0007-the-tip-is-a-play-billing-consumable-that-unlocks-nothing.md)): IPC to the Play app's billing service | none: not on Play's declaration list. The listing shows *Contains in-app purchases* once products exist |
 | `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | AndroidX | its own non-exported receivers, signature-level | none: not user-visible |
 

@@ -4,7 +4,7 @@ A Polish voice assistant for Android. It listens in the background for a short, 
 Commands — *"Darek, otwórz bramę"* — answers out loud, and calls the number the user gave it, which is
 how a GSM gate opener is driven. Polish is the language users speak to it and hear from it. The
 constraint that shapes everything: **recognition, speech and the call all happen on the phone, and
-the app never opens a network connection.**
+nothing Darek hears ever leaves the phone.**
 
 - **Vocabulary:** [`CONTEXT.md`](CONTEXT.md) — use these terms in code and UI.
 - **Decisions and why:** [`docs/adr/`](docs/adr/) — read before changing anything they cover.
