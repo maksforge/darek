@@ -57,6 +57,7 @@ fun DebugSettings() {
     var status by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var volume by remember { mutableStateOf(VoiceVolume.get(context)) }
+    var scales by remember { mutableStateOf<FloatArray?>(null) }
 
     SectionHeader(stringResource(R.string.debug_voice))
     Column(
@@ -70,7 +71,7 @@ fun DebugSettings() {
                     busy = true
                     scope.launch {
                         status =
-                            runCatching { DebugVoice.say(context, text, volume) }.getOrElse { "failed: $it" }
+                            runCatching { DebugVoice.say(context, text, volume, scales) }.getOrElse { "failed: $it" }
                         busy = false
                     }
                 },
@@ -95,6 +96,18 @@ fun DebugSettings() {
             onValueChange = { volume = it },
             onValueChangeFinished = { VoiceVolume.set(context, volume) },
         )
+        val shown = scales ?: DEFAULT_SCALES
+        SCALE_NAMES.forEachIndexed { i, name ->
+            Text("$name ${"%.2f".format(shown[i])}", style = MaterialTheme.typography.bodyMedium)
+            Slider(
+                value = shown[i],
+                onValueChange = { value -> scales = shown.copyOf().also { it[i] = (value * 20).roundToInt() / 20f } },
+                valueRange = SCALE_RANGES[i],
+            )
+        }
+        if (scales != null) {
+            Button(onClick = { scales = null }) { Text(stringResource(R.string.debug_voice_scales_reset)) }
+        }
         if (status.isNotEmpty()) {
             Text(status, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -125,6 +138,11 @@ fun DebugSettings() {
     }
 }
 
+// Piper's inference settings in the order its `scales` input takes them; null means the voice's own.
+private val SCALE_NAMES = listOf("noise_scale", "length_scale", "noise_w")
+private val SCALE_RANGES = listOf(0f..1f, 0.6f..1.6f, 0f..1f)
+private val DEFAULT_SCALES = floatArrayOf(0.667f, 1f, 0.8f)
+
 private val samples =
     listOf(
         "Co tam, mordo?",
@@ -145,6 +163,7 @@ private object DebugVoice {
         context: Context,
         text: String,
         volume: Float,
+        scales: FloatArray?,
     ): String =
         lock.withLock {
             val persona =
@@ -153,11 +172,14 @@ private object DebugVoice {
                     .first()
             val (voice, loadMs) = withContext(Dispatchers.Default) { voiceFor(context, persona) }
             val started = SystemClock.elapsedRealtime()
-            val samples = withContext(Dispatchers.Default) { voice.synthesize(text) }
+            val used = scales ?: voice.defaultScales
+            val samples = withContext(Dispatchers.Default) { voice.synthesize(text, used) }
             val synthMs = SystemClock.elapsedRealtime() - started
             val end = ReplyPlayer.play(samples, volume)
             val audioMs = samples.size * 1000L / Voice.SAMPLE_RATE
-            "persona=$persona load=${loadMs}ms synth=${synthMs}ms audio=${audioMs}ms end=$end"
+            "persona=$persona scales=${used.joinToString(
+                "/",
+            )} load=${loadMs}ms synth=${synthMs}ms audio=${audioMs}ms end=$end"
                 .also { Log.i(TAG, "$it text=\"$text\"") }
         }
 

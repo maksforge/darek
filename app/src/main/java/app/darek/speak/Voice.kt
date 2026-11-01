@@ -27,7 +27,13 @@ class Voice private constructor(
     private val idMap: Map<String, List<Long>>,
     private val scales: FloatArray,
 ) : AutoCloseable {
-    fun synthesize(text: String): ShortArray {
+    /** The voice's own `noise_scale`, `length_scale` and `noise_w`, from its config. */
+    val defaultScales: FloatArray get() = scales.copyOf()
+
+    fun synthesize(
+        text: String,
+        scales: FloatArray = this.scales,
+    ): ShortArray {
         val phonemes = PolishPhonemes.phonemize(text)
         if (phonemes.isBlank()) return ShortArray(0)
         val ids = PolishPhonemes.ids(phonemes, idMap)
