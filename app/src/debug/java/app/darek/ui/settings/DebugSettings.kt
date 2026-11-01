@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import app.darek.R
 import app.darek.speak.ReplyPlayer
 import app.darek.speak.Voice
+import app.darek.speak.VoiceVolume
 import app.darek.theme.Spacing
 import app.darek.ui.common.SectionHeader
 import app.darek.ui.probe.ProbeActivity
@@ -53,6 +55,7 @@ fun DebugSettings() {
     var fullModel by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
+    var volume by remember { mutableStateOf(VoiceVolume.get(context)) }
 
     SectionHeader(stringResource(R.string.debug_voice))
     Column(
@@ -65,7 +68,8 @@ fun DebugSettings() {
                 onClick = {
                     busy = true
                     scope.launch {
-                        status = runCatching { DebugVoice.say(context, text, fullModel) }.getOrElse { "failed: $it" }
+                        status =
+                            runCatching { DebugVoice.say(context, text, fullModel, volume) }.getOrElse { "failed: $it" }
                         busy = false
                     }
                 },
@@ -87,6 +91,15 @@ fun DebugSettings() {
                 Text(stringResource(R.string.debug_voice_full), modifier = Modifier.padding(start = Spacing.tight))
             }
         }
+        Text(
+            stringResource(R.string.debug_voice_volume, (volume * 100).toInt()),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Slider(
+            value = volume,
+            onValueChange = { volume = it },
+            onValueChangeFinished = { VoiceVolume.set(context, volume) },
+        )
         if (status.isNotEmpty()) {
             Text(status, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -119,6 +132,7 @@ private object DebugVoice {
         context: Context,
         text: String,
         fullModel: Boolean,
+        volume: Float,
     ): String =
         lock.withLock {
             val model = if (fullModel) Voice.FULL_MODEL else Voice.MODEL
@@ -126,7 +140,7 @@ private object DebugVoice {
             val started = SystemClock.elapsedRealtime()
             val samples = withContext(Dispatchers.Default) { voice.synthesize(text) }
             val synthMs = SystemClock.elapsedRealtime() - started
-            val end = ReplyPlayer.play(samples)
+            val end = ReplyPlayer.play(samples, volume)
             val audioMs = samples.size * 1000L / Voice.SAMPLE_RATE
             "model=${model.substringAfterLast('/')} load=${loadMs}ms synth=${synthMs}ms audio=${audioMs}ms end=$end"
                 .also { Log.i(TAG, "$it text=\"$text\"") }

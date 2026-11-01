@@ -102,10 +102,10 @@ private fun ProbeScreen(
             LazyColumn(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.hair)) {
                 items(state.finals) { line ->
                     Text(
-                        "${line.command?.name ?: "—"}  ${line.tokens}",
+                        "${line.fired ?: "—"}  ${line.tokens}",
                         style = MaterialTheme.typography.bodyMedium,
                         color =
-                            if (line.command !=
+                            if (line.fired !=
                                 null
                             ) {
                                 MaterialTheme.colorScheme.primary

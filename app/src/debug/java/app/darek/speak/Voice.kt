@@ -15,6 +15,7 @@ import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.LongBuffer
 import java.nio.channels.FileChannel
+import kotlin.math.abs
 
 /**
  * Darek's own voice (ADR-0014): Polish text through [PolishPhonemes] into Piper's mc_speech model on
@@ -48,10 +49,18 @@ class Voice private constructor(
             )
         try {
             session.run(inputs).use { result ->
-                val samples = (result[0] as OnnxTensor).floatBuffer
+                val buffer = (result[0] as OnnxTensor).floatBuffer
+                val samples = FloatArray(buffer.remaining()).also { buffer.get(it) }
+                val gain = normalisingGain(samples)
                 return ShortArray(
-                    samples.remaining(),
-                ) { (samples.get().coerceIn(-1f, 1f) * Short.MAX_VALUE).toInt().toShort() }
+                    samples.size,
+                ) {
+                    (samples[it] * gain)
+                        .coerceIn(-1f, 1f)
+                        .times(Short.MAX_VALUE)
+                        .toInt()
+                        .toShort()
+                }
             }
         } finally {
             inputs.values.forEach(OnnxTensor::close)
@@ -60,8 +69,16 @@ class Voice private constructor(
 
     override fun close() = session.close()
 
+    // The model speaks at about a third of full scale, which a phone speaker leaves too quiet.
+    private fun normalisingGain(samples: FloatArray): Float {
+        val peak = samples.maxOfOrNull { abs(it) } ?: return 1f
+        return if (peak > 0f) minOf(PEAK / peak, MAX_GAIN) else 1f
+    }
+
     companion object {
         const val SAMPLE_RATE = 22_050
+        private const val PEAK = 0.95f
+        private const val MAX_GAIN = 8f
         const val MODEL = "voice/voice.onnx"
         const val FULL_MODEL = "voice/voice-full.onnx"
         private const val CONFIG = "voice/voice.onnx.json"
