@@ -105,9 +105,31 @@ def hour_after(preposition, hour):
     return " ".join(inflect(o) for o in HOURS[hour].split(" "))
 
 
+CLOCK_TIME = r"(?<![\w.,:])([01]?\d|2[0-4]):([0-5]\d)(?![\w]|[.,:]\d)"
+HOUR_NOUN = r"(?:\s+(?:godzinie|godziny|godzinę|godziną|godz\.))?"
+RANGE_JOIN_WORD = {"od": "do", "między": "a", "pomiędzy": "a"}
+
+
 def word_before(text, end):
-    m = re.search(r"([a-ząćęłńóśźż]+)\s*$", text[:end])
+    m = re.search(r"([a-ząćęłńóśźż]+)" + HOUR_NOUN + r"\s*$", text[:end])
     return m.group(1) if m else ""
+
+
+def hour_case(text, start):
+    word = word_before(text, start)
+    if word in HOUR_IN_GENITIVE_OR_LOCATIVE or word in HOUR_IN_ACCUSATIVE_OR_INSTRUMENTAL:
+        return word, ""
+    join = re.search(r"(?:\s+(a)" + HOUR_NOUN + r"\s+|\s*[\-–]\s*)$", text[:start])
+    first = join and next((m for m in re.finditer(CLOCK_TIME, text) if m.end() == join.start()), None)
+    if not first:
+        return "", ""
+    first_word, _ = hour_case(text, first.start())
+    join_word = RANGE_JOIN_WORD.get(first_word)
+    if join.group(1):
+        return (first_word, "") if join_word == "a" else ("", "")
+    if join_word is None:
+        return "", ""
+    return ("do" if join_word == "do" else first_word), join_word
 
 
 def time_words(hour, minute, preposition=""):
@@ -117,6 +139,11 @@ def time_words(hour, minute, preposition=""):
     elif minute or hour == 0:
         words.append(number_words(minute))
     return " ".join(words)
+
+
+def spoken_time(m, text):
+    preposition, join_word = hour_case(text, m.start())
+    return " ".join(["", join_word, time_words(int(m.group(1)), int(m.group(2)), preposition), ""])
 
 
 def spoken_number(digits):
@@ -259,9 +286,7 @@ def phonemize(text):
     text = re.sub(r"((?:(?<![\w])|(?<=:\d\d))[+\-−])?(\d+)(?:[.,](\d+))?\s*°\s*([cf](?![a-ząćęłńóśźż]))?",
                   lambda m: " " + temperature_words(m) + " ", text)
     before_times = text
-    text = re.sub(r"(?<![\w.,:])([01]?\d|2[0-4]):([0-5]\d)(?![\w]|[.,:]\d)",
-                  lambda m: " " + time_words(int(m.group(1)), int(m.group(2)),
-                                             word_before(before_times, m.start())) + " ", before_times)
+    text = re.sub(CLOCK_TIME, lambda m: spoken_time(m, before_times), before_times)
     text = re.sub(r"(?<![\w])[\-−](?=\d)", " minus ", text)
     text = re.sub(r"(?<![\w])\+(?=\d)", " plus ", text)
     text = re.sub(r"\d+", lambda m: " " + spoken_number(m.group()) + " ", text)

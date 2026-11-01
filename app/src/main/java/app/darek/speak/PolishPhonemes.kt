@@ -187,9 +187,16 @@ object PolishPhonemes {
             "dwudziesta czwarta",
         )
 
-    private val temperatureRange = Regex("(?<=\\d)(?<!:\\d\\d)(?:[\\-–−]|\\s+[\\-–−]\\s+)(?=\\d+(?:[.,]\\d+)?\\s*°)")
+    // Python's `\s`, which also matches the no-break space Polish typesetting puts after "o" or "w".
+    private const val SPACE = "[\t-\r \u001c-\u001f\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]"
+    private const val HOUR_NOUN = "(?:$SPACE+(?:godzinie|godziny|godzinę|godziną|godz\\.))?"
+
+    private val temperatureRange =
+        Regex("(?<=\\d)(?<!:\\d\\d)(?:[\\-–−]|$SPACE+[\\-–−]$SPACE+)(?=\\d+(?:[.,]\\d+)?$SPACE*°)")
     private val temperature =
-        Regex("((?:(?<![\\p{L}\\p{N}_])|(?<=:\\d\\d))[+\\-−])?(\\d+)(?:[.,](\\d+))?\\s*°\\s*([cf](?![a-ząćęłńóśźż]))?")
+        Regex(
+            "((?:(?<![\\p{L}\\p{N}_])|(?<=:\\d\\d))[+\\-−])?(\\d+)(?:[.,](\\d+))?$SPACE*°$SPACE*([cf](?![a-ząćęłńóśźż]))?",
+        )
     private val clockTime = Regex("(?<![\\p{L}\\p{N}_.,:])([01]?\\d|2[0-4]):([0-5]\\d)(?![\\p{L}\\p{N}_]|[.,:]\\d)")
     private val minusSign = Regex("(?<![\\p{L}\\p{N}_])[\\-−](?=\\d)")
     private val plusSign = Regex("(?<![\\p{L}\\p{N}_])\\+(?=\\d)")
@@ -200,7 +207,7 @@ object PolishPhonemes {
         var expanded = temperatureRange.replace(text.lowercase(), ", ")
         expanded = temperature.replace(expanded) { " " + temperatureWords(it) + " " }
         val beforeTimes = expanded
-        expanded = clockTime.replace(beforeTimes) { " " + timeWords(it, wordBefore(beforeTimes, it.range.first)) + " " }
+        expanded = clockTime.replace(beforeTimes) { spokenTime(it, beforeTimes) }
         expanded = minusSign.replace(expanded, " minus ")
         expanded = plusSign.replace(expanded, " plus ")
         expanded = digitRun.replace(expanded) { " " + spokenNumber(it.value) + " " }
@@ -292,10 +299,37 @@ object PolishPhonemes {
     private val hourInGenitiveOrLocative = setOf("o", "po", "do", "od", "około", "koło", "w")
     private val hourInAccusativeOrInstrumental = setOf("na", "przed", "między", "pomiędzy")
 
+    private val rangeJoinWord = mapOf("od" to "do", "między" to "a", "pomiędzy" to "a")
+    private val lastWord = Regex("([a-ząćęłńóśźż]+)$HOUR_NOUN$SPACE*$")
+    private val rangeJoin = Regex("(?:$SPACE+(a)$HOUR_NOUN$SPACE+|$SPACE*[\\-–]$SPACE*)$")
+
     private fun wordBefore(
         text: String,
         end: Int,
-    ): String = Regex("([a-ząćęłńóśźż]+)\\s*$").find(text.substring(0, end))?.groupValues?.get(1) ?: ""
+    ): String = lastWord.find(text.substring(0, end))?.groupValues?.get(1) ?: ""
+
+    private fun hourCase(
+        text: String,
+        start: Int,
+    ): Pair<String, String> {
+        val word = wordBefore(text, start)
+        if (word in hourInGenitiveOrLocative || word in hourInAccusativeOrInstrumental) return word to ""
+        val join = rangeJoin.find(text.substring(0, start)) ?: return "" to ""
+        val first = clockTime.findAll(text).firstOrNull { it.range.last + 1 == join.range.first } ?: return "" to ""
+        val firstWord = hourCase(text, first.range.first).first
+        val joinWord = rangeJoinWord[firstWord]
+        if (join.groupValues[1].isNotEmpty()) return if (joinWord == "a") firstWord to "" else "" to ""
+        if (joinWord == null) return "" to ""
+        return (if (joinWord == "do") "do" else firstWord) to joinWord
+    }
+
+    private fun spokenTime(
+        time: MatchResult,
+        text: String,
+    ): String {
+        val (preposition, joinWord) = hourCase(text, time.range.first)
+        return listOf("", joinWord, timeWords(time, preposition), "").joinToString(" ")
+    }
 
     private fun hourAfter(
         preposition: String,

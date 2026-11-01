@@ -77,6 +77,37 @@ class PolishPhonemesTest {
     }
 
     @Test
+    fun `a form of godzina between the preposition and the time takes the case, and the hour agrees`() {
+        same("o godzinie 7:00", "o godzinie siódmej")
+        same("od godziny 7:00", "od godziny siódmej")
+        same("do godziny 22:00", "do godziny dwudziestej drugiej")
+        same("na godzinę 7:00", "na godzinę siódmą")
+        same("przed godziną 7:00", "przed godziną siódmą")
+        same("o godz. 7:00", "o godz. siódmej")
+        same("jest godzina 7:00", "jest godzina siódma")
+    }
+
+    @Test
+    fun `the second time of a range takes its own preposition's case, or the first one's`() {
+        same("między 7:00 a 8:00", "między siódmą a ósmą")
+        same("pomiędzy godziną 7:00 a godziną 8:00", "pomiędzy godziną siódmą a godziną ósmą")
+        same("między 7:00-8:00", "między siódmą a ósmą")
+        same("od 7:00 do 8:00", "od siódmej do ósmej")
+        same("od 7:00-8:00", "od siódmej do ósmej")
+        same("od 7:00 – 8:30", "od siódmej do ósmej trzydzieści")
+        same("o 7:00 a 8:00", "o siódmej a ósma")
+        same("7:00-8:00", "siódma ósma")
+    }
+
+    @Test
+    fun `a no-break space separates words as a space does`() {
+        same("o 7:00", "o siódmej")
+        same("w 7:00", "w siódmej")
+        same("15 - 20°", "piętnaście, dwadzieścia stopni")
+        same("22 °C", "dwadzieścia dwa stopnie celsjusza")
+    }
+
+    @Test
     fun `only a colon makes a clock time, never a date, a price or a version`() {
         same("12.05.2026", "dwanaście. pięć. dwa tysiące dwadzieścia sześć")
         same("3.50 zł", "trzy. pięćdziesiąt zł")
