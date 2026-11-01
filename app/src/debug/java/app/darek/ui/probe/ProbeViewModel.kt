@@ -47,7 +47,7 @@ class ProbeViewModel(
     private val mutableState = MutableStateFlow(ProbeState())
     val state: StateFlow<ProbeState> = mutableState.asStateFlow()
 
-    private var model: Model? = null
+    @Volatile private var model: Model? = null
     private var job: Job? = null
 
     fun setFree(free: Boolean) {
@@ -65,7 +65,7 @@ class ProbeViewModel(
             viewModelScope.launch {
                 mutableState.update { it.copy(phase = ProbePhase.PREPARING, error = null) }
                 try {
-                    val loaded = model ?: withContext(Dispatchers.IO) { load() }.also { model = it }
+                    val loaded = withContext(Dispatchers.IO) { model ?: load().also { model = it } }
                     val free = state.value.free
                     val mode = if (free) "free" else "grammar"
                     mutableState.update { it.copy(phase = ProbePhase.LISTENING) }
@@ -118,9 +118,9 @@ class ProbeViewModel(
         }
     }
 
-    // Vosk counts its references: a Recognizer still closing on the IO thread keeps the model alive.
+    // A cancelled job's blocking load still runs to the end, so the model may not exist yet.
     override fun onCleared() {
-        model?.close()
+        job?.invokeOnCompletion { model?.close() } ?: model?.close()
     }
 
     private companion object {
