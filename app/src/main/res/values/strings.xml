@@ -20,7 +20,16 @@
     <string name="app_name" translatable="false">Darek</string>
 
     <!-- Home. The placeholder holds the place of the Listening switch until phase 2. -->
-    <string name="home_listening_placeholder">Darek will listen here.</string>
+    <string name="home_listen">Listen</string>
+    <string name="home_listening">Darek is listening</string>
+    <string name="home_stop">Stop</string>
+    <string name="home_preparing">Getting ready…</string>
+    <string name="mic_disclosure_title">Darek needs the microphone</string>
+    <string name="mic_disclosure_body">Darek listens only while the Listen button is on. What he hears is processed on this phone and is never recorded or sent anywhere.</string>
+    <string name="mic_disclosure_continue">Continue</string>
+    <string name="mic_denied">Darek can\'t hear you without the microphone.</string>
+    <string name="mic_allow">Allow</string>
+    <string name="mic_open_settings">Open settings</string>
     <!-- The tip's one ask (ADR-0007): once per install, so a moved install asks again -->
     <string name="home_tip_ask_title">This app is free, and stays free</string>
     <string name="home_tip_ask_body">If it is useful to you, you can leave the developer a tip. It unlocks nothing, and the app will not ask again on this phone.</string>

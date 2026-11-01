@@ -7,6 +7,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import app.darek.data.AppPreferences
+import app.darek.listen.Listening
+import app.darek.speak.VoiceVolume
 import app.darek.tip.TipJar
 import kotlinx.coroutines.CoroutineScope
 import java.time.Instant
@@ -52,7 +54,7 @@ class AppContainer(
     val preferences: AppPreferences,
     /** When this package was first installed on this phone, which the one-time markers are judged against. */
     val installedAt: Instant,
-    @Suppress("unused") private val applicationScope: CoroutineScope,
+    private val applicationScope: CoroutineScope,
 ) {
     private val appContext = context.applicationContext
 
@@ -61,4 +63,7 @@ class AppContainer(
      * screen that opened Play's sheet is gone, and it still has to be consumed — see [TipJar].
      */
     val tipJar = TipJar(appContext, applicationScope)
+
+    /** Here so the recogniser's model and the voice stay loaded between one *Słuchaj* and the next. */
+    val listening = Listening(appContext, applicationScope) { VoiceVolume.get(appContext) }
 }

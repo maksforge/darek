@@ -11,6 +11,9 @@
     -->
     <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
 
+    <!-- Słuchaj (ADR-0009, ADR-0010): asked for on its first tap, after the disclosure. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <!--
         Package visibility (API 30+) for the one OEM screen the app offers to open: Xiaomi's
         autostart manager, which on HyperOS decides whether background work runs at all. Without

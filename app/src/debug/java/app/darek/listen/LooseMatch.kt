@@ -1,6 +1,7 @@
 package app.darek.listen
 
 import android.content.Context
+import androidx.core.content.edit
 
 /**
  * Debug-only: lets a reply-only Command fire when each of its words is only *alike* what was heard,
@@ -20,9 +21,7 @@ object LooseMatch {
     ) {
         context
             .getSharedPreferences(FILE, Context.MODE_PRIVATE)
-            .edit()
-            .putFloat(KEY, likeness)
-            .apply()
+            .edit { putFloat(KEY, likeness) }
     }
 
     fun matches(

@@ -8,6 +8,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import app.darek.MainApplication
 import app.darek.data.AppPreferences
+import app.darek.listen.Command
+import app.darek.listen.Listening
 import app.darek.tip.TipJar
 import app.darek.tip.tipAskDue
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,19 +23,59 @@ import java.time.Instant
 data class HomeUiState(
     /** False wherever Play will not sell a tip: nothing is asked for that cannot be bought (ADR-0007). */
     val showTipAsk: Boolean = false,
+    val listening: Listening.Phase = Listening.Phase.OFF,
+    val lastReply: String? = null,
+    /** The system will not show its dialog again, so Home sends the user to the app's settings. */
+    val micDeniedForGood: Boolean = false,
 )
 
 class HomeViewModel(
     private val preferences: AppPreferences,
     private val tipJar: TipJar,
+    private val listening: Listening,
     private val installedAt: Instant,
 ) : ViewModel() {
     val state: StateFlow<HomeUiState> =
-        combine(preferences.tipAnsweredUnder, tipJar.offers) { answeredUnder, offers ->
+        combine(
+            preferences.tipAnsweredUnder,
+            tipJar.offers,
+            listening.state,
+            preferences.micDeniedUnder,
+        ) { answeredUnder, offers, heard, deniedUnder ->
             HomeUiState(
                 showTipAsk = offers.isNotEmpty() && tipAskDue(answeredUnder, installedAt, Instant.now()),
+                listening = heard.phase,
+                lastReply = heard.lastReply,
+                micDeniedForGood = deniedUnder == installedAt,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
+
+    /** In phase 1 only the Commands that reply can act; one that calls has no Number until phase 3. */
+    fun listen() = listening.start(Command.entries.filterNot { it.calls }.toSet())
+
+    fun stopListening() = listening.stop()
+
+    /**
+     * The microphone answer, judged the only way Android allows: a denial is for good when the
+     * rationale was due before the request and is not after it. A first dialog dismissed with Back
+     * also leaves it false, which is why the before-value is needed.
+     */
+    fun onMicAnswer(
+        granted: Boolean,
+        rationaleBefore: Boolean,
+        rationaleAfter: Boolean,
+    ) {
+        if (granted) {
+            listen()
+        } else if (rationaleBefore && !rationaleAfter) {
+            viewModelScope.launch { preferences.setMicDenied(installedAt) }
+        }
+    }
+
+    /** Re-read on every `ON_START`: a grant given in the app's settings clears the stored denial. */
+    fun onMicGrantRead(granted: Boolean) {
+        if (granted) viewModelScope.launch { preferences.setMicDenied(null) }
+    }
 
     init {
         // Prices are asked for only once the ask could be due, which saves a product query on every
@@ -53,7 +95,12 @@ class HomeViewModel(
             viewModelFactory {
                 initializer {
                     val app = this[APPLICATION_KEY] as MainApplication
-                    HomeViewModel(app.container.preferences, app.container.tipJar, app.container.installedAt)
+                    HomeViewModel(
+                        app.container.preferences,
+                        app.container.tipJar,
+                        app.container.listening,
+                        app.container.installedAt,
+                    )
                 }
             }
     }

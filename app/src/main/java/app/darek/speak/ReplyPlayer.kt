@@ -5,11 +5,10 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeoutOrNull
-
-/** How a played Reply ended, which phase 1's R3 reads from the `DarekVoice` log line. */
-enum class PlaybackEnd { MARKER, WATCHDOG, NOTHING_TO_PLAY }
 
 /** Plays one rendered Reply through a static [AudioTrack] and reports what ended it. */
 object ReplyPlayer {
@@ -19,6 +18,19 @@ object ReplyPlayer {
     ): PlaybackEnd {
         // One frame would put the end marker at 0, which may never fire.
         if (samples.size < 2) return PlaybackEnd.NOTHING_TO_PLAY
+        return try {
+            playTrack(samples, volume)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            PlaybackEnd.FAILED
+        }
+    }
+
+    private suspend fun playTrack(
+        samples: ShortArray,
+        volume: Float,
+    ): PlaybackEnd {
         val track =
             AudioTrack
                 .Builder()
@@ -55,9 +67,10 @@ object ReplyPlayer {
                 Handler(Looper.getMainLooper()),
             )
             track.play()
-            val watchdogMs = samples.size * 1000L / Voice.SAMPLE_RATE + 2_000
-            val marked = withTimeoutOrNull(watchdogMs) { ended.await() } != null
-            return if (marked) PlaybackEnd.MARKER else PlaybackEnd.WATCHDOG
+            val started = SystemClock.elapsedRealtime()
+            val marked = withTimeoutOrNull(ReplyEnd.watchdogMs(samples.size)) { ended.await() } != null
+            return ReplyEnd.of(samples.size, started, SystemClock.elapsedRealtime(), marked, failed = false)
+                ?: PlaybackEnd.WATCHDOG
         } finally {
             track.release()
         }

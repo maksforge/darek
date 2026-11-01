@@ -19,7 +19,7 @@ import kotlin.math.abs
 
 /**
  * Darek's own voice (ADR-0014): Polish text through [PolishPhonemes] into Piper's mc_speech model on
- * ONNX Runtime, 16-bit mono samples at [SAMPLE_RATE] out. Debug-only until phase 1's checkpoint B.
+ * ONNX Runtime, 16-bit mono samples at [SAMPLE_RATE] out.
  */
 class Voice private constructor(
     private val environment: OrtEnvironment,

@@ -32,7 +32,7 @@ class LicencesViewModel(
                             .open(LICENCES_ASSET)
                             .bufferedReader()
                             .use { it.readText() }
-                            .let(::groupLicences)
+                            .let { groupLicences(it, BUNDLED_MODELS) }
                     }.getOrDefault(emptyList())
                 }
         }
