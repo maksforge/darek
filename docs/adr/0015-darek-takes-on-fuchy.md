@@ -8,7 +8,7 @@ weather, a roast for a friend. Until now every Command was an app release
 could not add a phrase, because nothing would choose its Decoys and Vosk silently drops words its
 model does not know.
 
-The owner decided on 2026-11-01 that Darek grows through **fuchy** (`CONTEXT.md`, *Gig*): files of
+The owner decided on 2026-11-01 that Darek grows through **fuchy** (`CONTEXT.md`, *Fucha*): files of
 Commands made by MaksForge and by the community, installed from a page in the app, the way a
 handyman takes on side jobs. Darek is a little meme, and the word is chosen to say so.
 
@@ -23,10 +23,13 @@ Three constraints shape it:
 ## Decision
 
 **A fucha is data, never code.** It is a JSON file (`.darek`) of Commands, each with its phrase,
-its Reply and the action it uses. The actions are code inside Darek, each one written for its task
-(speak, call a Number, weather, later more): one general "fetch" cannot make sense of every
-service's answer without AI, and Darek is meant to grow into tasks harder than reading one field. A
-new kind of action is a Darek release.
+its Reply and the action it uses. From outside the fuchy page it arrives through Darek's own file
+picker (`ACTION_OPEN_DOCUMENT`), the dependable way in: file managers and messengers hand over a
+`content://` URI with no name to match and a generic MIME type, so an intent filter for `.darek` is
+a bonus, not the path. The actions are code inside Darek, each one written for its task (speak,
+call a Number, weather, later more): one general "fetch" cannot make sense of every service's answer
+without AI, and Darek is meant to grow into tasks harder than reading one field. A new kind of
+action is a Darek release.
 
 **Darek's own Commands are fuchy too**, bundled in the app in the same format, so there is one loader
 and one path into the grammar. A bundled fucha can be switched off, never removed. One that needs a
@@ -35,10 +38,18 @@ permission (a weather fucha needs the internet and the location) is off on a fre
 **What a fucha declares, the user sees before installing:**
 - **its permissions**, from a fixed list Darek defines, mostly Android's own (location, calling)
   plus Darek's (internet). A fucha that uses an action whose permission it did not declare is
-  refused;
-- **the exact addresses it contacts.** Darek refuses any other, including one found in an answer;
-- **each value it sends**, by name (*your approximate location*). **Audio and the words Darek heard
-  are never sent**, whatever a fucha declares;
+  refused. Location needs its own decision before a fucha can use it: read from the `microphone`
+  service with the screen off, Android 10+ counts it as background access, so it needs either the
+  `location` service type (another Play declaration, and on 14+ the grant before the service starts)
+  or `ACCESS_BACKGROUND_LOCATION` and Play's background-location declaration. A weather fucha that
+  takes the city as a slot needs neither;
+- **the exact addresses it contacts**: HTTPS only, each an exact host, plus a path prefix if one is
+  declared. Darek refuses any other, including one found in an answer, and follows no redirect;
+- **each value it sends**, by name, from a fixed list Darek defines in its code, like the
+  permissions: *your approximate location*, or the value said in one of its slots (*the city you
+  say*). A fucha declaring a value not on the list is refused. **Audio and the rest of what Darek
+  heard are never sent**, whatever a fucha declares
+  ([ADR-0008](0008-darek-connects-only-where-the-user-can-see.md));
 - **its language.** Only `pl` is accepted today ([ADR-0012](0012-darek-speaks-polish-and-opens-in-polish.md));
   the field exists so a later Darek can refuse what it cannot speak.
 
@@ -52,9 +63,11 @@ of all.
 
 **Approved** fuchy are the ones the owner reviewed: community authors open a PR in
 `maksforge/darek-fuchy` under published rules, and merging is the decision that a fucha goes live.
-CI signs it with a key held in that repo's secrets; Darek ships the public half and checks the
-signature offline. An approved fucha carries the MaksForge badge. Any other `.darek` file still
-installs, after a strong warning that MaksForge has not reviewed it.
+CI signs it with a key held in that repo's secrets, in a workflow that runs only on a push to
+`main`, after the merge, never on `pull_request_target` or in any job that runs a PR's code. Darek
+ships the public half and checks the signature offline. An approved fucha carries the MaksForge
+badge. Any other `.darek` file still installs, after a strong warning that MaksForge has not
+reviewed it.
 
 **The install screen** shows what the fucha does, its permissions, addresses and values sent, the
 badge or the warning, and that even an approved fucha may contain a mistake and is installed at the
@@ -66,17 +79,30 @@ default), allow for every fucha, or never, each with exceptions. "Allow for ever
 approved ones only; extending it to unapproved ones is a separate option behind a dialog whose
 confirm button unlocks after ten seconds.
 
-**Phrases that clash:** a fucha whose Command sounds like an enabled one installs switched off,
-behind a warning the user can override to keep both on. Identical phrases are never both on:
-switching one on switches the other off.
+**Phrases that clash** are compared after normalising (lower case, punctuation dropped), against
+ADR-0009's match rule, which ignores anything said before or after a Command:
+- **A phrase holding a cancel word** (*stop*, *anuluj*,
+  [ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)) is refused: cancel
+  words act on partial results, so saying it would cancel any call in its window.
+- **Identical phrases, and two where one contains the other** (*„Darek, otwórz bramę dwa"* holds
+  *„Darek, otwórz bramę"*, which would fire and call the other Number), are never both on:
+  switching one on switches the other off.
+- **A phrase that sounds like an enabled one**, within two letters of it in all (edit distance over
+  the normalised phrase), installs switched off, behind a warning the user can override to keep both
+  on. So does a fucha with a Decoy within two letters of *darek* (the name Decoys are Darek's
+  own) or of a word in another fucha's enabled Command, which would take that Command's
+  utterances; a Decoy equal to such a word is the same token and changes nothing.
 
-**The Gigs page is a native screen** drawn from the site's `fuchy.json`, not a web view. A fucha
+**The fuchy page is a native screen** drawn from the site's `fuchy.json`, not a web view. A fucha
 needing an action this Darek lacks is shown greyed out, *„Wymaga nowszej wersji Darka"*. Fuchy with
 profanity are marked *„Wulgaryzmy"* and hidden until the user turns them on in Settings.
 
-**Updates:** Darek checks for them while a fucha from the page is installed. Approved fuchy update
-automatically (a setting, on by default); others update on a tap; *„Darek, zaktualizuj fuchy"* does
-it by voice. An update that adds a permission, an address or a value sent waits for the user.
+**Updates:** Darek checks maksforge.com for them while an approved fucha other than his own is
+installed; his own update with the app. They update automatically (a setting, on by default) or,
+with it off, on a tap; *„Darek, zaktualizuj fuchy"* does it by voice. An unapproved fucha has
+nowhere to update from: a newer file installs over it. Every update passes the checks an install
+does (signature, vocabulary, clashes), and one that adds a permission, an address or a value sent
+waits for the user.
 
 **Personas stay in the app.** A persona (Daria) changes the name every Command starts with, the name
 Decoys and the grammatical gender of every Reply, so it is not one fucha among others.

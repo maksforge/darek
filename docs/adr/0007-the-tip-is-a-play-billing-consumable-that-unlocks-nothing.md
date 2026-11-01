@@ -80,3 +80,11 @@ Darek's Home screen. The answer is stored as the `PackageInfo.firstInstallTime` 
 judged at the read: it counts only while that equals the current install's. With the custom
 `BackupAgent` gone, Auto Backup carries the preference to the user's next phone, whose install time
 differs, so the new install is asked once more, a month after the move, as before.
+
+## Amendment — 2026-11-01
+
+*`INTERNET` stays out* holds until the phase that builds fuchy, which declares `INTERNET` for Darek
+itself ([ADR-0008](0008-darek-connects-only-where-the-user-can-see.md)). From then the manifest no
+longer removes it, and `datatransport`'s log upload is held off by ADR-0008's rule instead: its
+`CctBackendFactory` backend is removed, so it has nothing to upload through. Billing still needs no
+network of its own.
