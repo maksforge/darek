@@ -25,5 +25,8 @@ object Grammar {
             add(UNKNOWN)
         }.distinct()
 
-    fun json(enabled: Set<Command>): String = Json.encodeToString(phrases(enabled))
+    fun json(
+        enabled: Set<Command>,
+        extra: List<String> = emptyList(),
+    ): String = Json.encodeToString((phrases(enabled) + extra).distinct())
 }
