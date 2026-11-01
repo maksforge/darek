@@ -304,9 +304,10 @@ abstract class FetchVerifiedAsset : DefaultTask() {
                 partial.delete()
             }
         }
-        val destination = outputDirectory.get().asFile.resolve(assetPath.get())
+        val output = outputDirectory.get().asFile
+        output.deleteRecursively()
+        val destination = output.resolve(assetPath.get())
         if (unzip.get()) {
-            destination.deleteRecursively()
             cached.unzipInto(destination)
         } else {
             destination.parentFile.mkdirs()
@@ -351,20 +352,18 @@ data class VerifiedAsset(
     val unzip: Boolean = false,
 )
 
-// Darek's voice (ADR-0014): the int8 model and its config, published by `scripts/voice/quantize.py`
-// as assets of this repo's `voice-pl-mc_speech-int8-1` release. The recogniser's model is
-// ADR-0009's, unzipped to `vosk/vosk-model-small-pl-0.22/`. `-PfullVoice` adds the 63 MB original
-// voice to the debug build for phase 1's R3 comparison; no other build carries it.
-private val voiceRelease = "https://github.com/maksforge/darek/releases/download/voice-pl-mc_speech-int8-1"
+// Darek's voice (ADR-0014) is Piper's mc_speech model as published; the recogniser's model is
+// ADR-0009's, unzipped to `vosk/vosk-model-small-pl-0.22/`.
+private val piperVoice = "https://huggingface.co/rhasspy/piper-voices/resolve/main/pl/pl_PL/mc_speech/medium"
 private val shippedAssets =
     listOf(
         VerifiedAsset(
-            "$voiceRelease/pl_PL-mc_speech-medium-int8.onnx",
-            "4bca76cb9d30784bbfc06dcb7ced07fa67a2db1ea0c4a2d17bf5e06a06596e79",
+            "$piperVoice/pl_PL-mc_speech-medium.onnx",
+            "a6b043358bc81e6c111a5140606a21959ce7f34969b8b7207f62869787cc3907",
             "voice/voice.onnx",
         ),
         VerifiedAsset(
-            "$voiceRelease/pl_PL-mc_speech-medium-int8.onnx.json",
+            "$piperVoice/pl_PL-mc_speech-medium.onnx.json",
             "b8bb11228e15c505219846a88fdc129e93f57e774ed7f9bac263156d1aa3d324",
             "voice/voice.onnx.json",
         ),
@@ -375,19 +374,11 @@ private val shippedAssets =
             unzip = true,
         ),
     )
-private val fullVoice =
-    VerifiedAsset(
-        "https://huggingface.co/rhasspy/piper-voices/resolve/main/pl/pl_PL/mc_speech/medium/pl_PL-mc_speech-medium.onnx",
-        "a6b043358bc81e6c111a5140606a21959ce7f34969b8b7207f62869787cc3907",
-        "voice/voice-full.onnx",
-    )
-private val withFullVoice = providers.gradleProperty("fullVoice").isPresent
 
 androidComponents {
     onVariants { variant ->
         val suffix = variant.name.replaceFirstChar(Char::uppercase)
-        val assets = if (withFullVoice && variant.buildType == "debug") shippedAssets + fullVoice else shippedAssets
-        assets.forEach { asset ->
+        shippedAssets.forEach { asset ->
             val name = asset.url.substringAfterLast('/').replace(Regex("[^A-Za-z0-9]"), "")
             val fetch =
                 tasks.register<FetchVerifiedAsset>("fetch${suffix}Asset$name") {

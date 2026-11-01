@@ -13,9 +13,8 @@ Polish text, inside the app, offline.
 
 Read on the host on 2026-11-01:
 
-- **The voice.** Piper's `pl_PL-mc_speech-medium` (a VITS model in ONNX, 22.05 kHz). Dynamic int8
-  quantisation takes it from 63 MB to **19 MB**. It renders 4.6 s of speech in 0.09 s on the PC
-  CPU; the phone's time is a phase 1 reading.
+- **The voice.** Piper's `pl_PL-mc_speech-medium` (a VITS model in ONNX, 22.05 kHz), 63 MB. It
+  renders 4.6 s of speech in 0.09 s on the PC CPU; the phone's time is a phase 1 reading (R3).
 - **The pronunciation.** Piper turns text into phonemes with eSpeak NG, which is GPL-3.0. Linking it
   would put Darek's code under the GPL, which his all-rights-reserved licence cannot take. Polish
   spelling is regular enough for rules instead. A rule set written for this produces the model's
@@ -32,14 +31,15 @@ Read on the host on 2026-11-01:
   `jni/arm64-v8a/libonnxruntime.so` is 28.6 MB (x86_64: 34.6 MB), and every `LOAD` segment of both
   64-bit libraries is aligned to 16 KB (`0x4000`).
 - **The sound.** The owner heard the same sentence through our rules and through eSpeak, and went
-  ahead with ours on 2026-11-01. Whether int8 sounds as good as the full model is judged by ear on
-  the phone (phase 1, R3). If it does not, the full 63 MB model ships instead.
+  ahead with ours on 2026-11-01. On the phone the same day he compared the full model with a dynamic
+  int8 quantisation of it (19 MB) and heard a big difference: the full model ships. On the test
+  phone it is also the faster of the two (phase 1, R3).
 
 ## Decision
 
-- **The Reply is spoken by Darek's own voice:** the mc_speech model, int8, run by ONNX Runtime for
-  Android (`com.microsoft.onnxruntime:onnxruntime-android`, MIT), and played through `AudioTrack`.
-  Android's `TextToSpeech` is not used. No other app is involved, and every phone has the voice.
+- **The Reply is spoken by Darek's own voice:** the mc_speech model as Piper publishes it, run by
+  ONNX Runtime for Android (`com.microsoft.onnxruntime:onnxruntime-android`, MIT), and played
+  through `AudioTrack`. Android's `TextToSpeech` is not used. No other app is involved, and every phone has the voice.
 - **ONNX Runtime is pinned at 1.28.0,** the last version without the telemetry provider. The
   manifest also removes `ai.onnxruntime.TelemetryInitializer` with `tools:node="remove"`, beside
   `INTERNET`'s removal ([ADR-0008](0008-darek-connects-only-where-the-user-can-see.md)), so a later
@@ -71,6 +71,10 @@ Reply the user types.
 It brings the native library down to a few MB, at the cost of building ONNX Runtime ourselves: a
 custom native build in CI, redone for every version. Kept for the day the size reading hurts.
 
+**The model quantised to int8** (19 MB instead of 63 MB). The owner heard it as clearly worse
+on 2026-11-01, and on the test phone it loaded and spoke more slowly than the full model. Rejected:
+44 MB is not worth a voice that sounds worse.
+
 **Other free Polish voices.** Piper's *darkman* and *gosia* carry the same licence question as
 mc_speech (below). Meta's MMS-TTS and Coqui's XTTS are non-commercial.
 
@@ -82,8 +86,8 @@ mc_speech (below). Meta's MMS-TTS and Coqui's XTTS are non-commercial.
   Whether that reaches a fine-tuned model is unsettled. The Licences screen credits the voice with
   both facts. The way out is a voice trained from scratch on the CC0 MC Speech recordings, which
   swaps a file and changes no code.
-- About 48 MB more installed on an arm64 phone: the 19 MB model and the 28.6 MB `libonnxruntime.so`,
-  which AGP stores uncompressed in the APK. Phase 1 reads the real total (R10).
+- About 92 MB more installed on an arm64 phone: the 63 MB model and the 28.6 MB `libonnxruntime.so`,
+  both stored uncompressed in the APK. Phase 1 reads the real total (R10).
 - ONNX Runtime's version is held back on purpose. A newer one means reading its manifest for
   anything that reaches the network, the way ADR-0007 found `datatransport` behind billing.
 - Synthesis runs on the phone's CPU each time a Reply is spoken. Fixed Replies can be rendered once
