@@ -1,4 +1,6 @@
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
 import java.util.Properties
 
@@ -144,6 +146,11 @@ android {
         }
     }
 
+    // Darek's voice is memory-mapped from the APK (ADR-0014), which only an uncompressed asset allows.
+    androidResources {
+        noCompress += "onnx"
+    }
+
     lint {
         // "A newer version exists" is news, not a defect. Left informational so a red lint run
         // always means something is actually wrong with the code.
@@ -273,16 +280,25 @@ abstract class FetchVerifiedAsset : DefaultTask() {
         val cached = cacheDirectory.get().asFile.resolve("${sha256.get()}/${url.get().substringAfterLast('/')}")
         if (!cached.exists() || cached.sha256() != sha256.get()) {
             cached.parentFile.mkdirs()
-            val partial = File(cached.path + ".part")
-            URI(url.get()).toURL().openStream().use { input ->
-                partial.outputStream().use { input.copyTo(it) }
-            }
-            val actual = partial.sha256()
-            if (actual != sha256.get()) {
+            val partial = Files.createTempFile(cached.parentFile.toPath(), cached.name, ".part").toFile()
+            try {
+                val connection = URI(url.get()).toURL().openConnection()
+                connection.connectTimeout = 30_000
+                connection.readTimeout = 60_000
+                connection.getInputStream().use { input -> partial.outputStream().use { input.copyTo(it) } }
+                val actual = partial.sha256()
+                if (actual != sha256.get()) {
+                    throw GradleException("${url.get()}: SHA-256 $actual, expected ${sha256.get()}")
+                }
+                Files.move(
+                    partial.toPath(),
+                    cached.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.ATOMIC_MOVE,
+                )
+            } finally {
                 partial.delete()
-                throw GradleException("${url.get()}: SHA-256 $actual, expected ${sha256.get()}")
             }
-            partial.renameTo(cached)
         }
         val destination = outputDirectory.get().asFile.resolve(assetPath.get())
         destination.parentFile.mkdirs()

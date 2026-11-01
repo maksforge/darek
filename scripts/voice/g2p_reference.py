@@ -56,19 +56,21 @@ def degree_noun(whole, fraction):
 
 
 def temperature_words(m):
-    sign, whole, fraction, scale = m.group(1), int(m.group(2)), m.group(3), (m.group(4) or "").lower()
+    sign, whole, fraction, scale = m.group(1) or "", m.group(2), m.group(3) or "", m.group(4) or ""
+    value = int(whole)
+    has_fraction = fraction.strip("0") != ""
     words = []
-    if sign in ("-", "−") and (whole or fraction and int(fraction)):
+    if sign in ("-", "−") and (value or has_fraction):
         words.append("minus")
     elif sign == "+":
         words.append("plus")
-    if whole == 0 and fraction == "5":
-        words.append("pół")
+    if fraction == "5" and value in (0, 1):
+        words.append("pół" if value == 0 else "półtora")
     else:
-        words.append(number_words(whole))
-        if fraction and int(fraction):
-            words += ["i pół"] if fraction == "5" else ["przecinek", number_words(int(fraction))]
-    words.append(degree_noun(whole, fraction and int(fraction)))
+        words.append(spoken_number(whole))
+        if has_fraction:
+            words += ["i pół"] if fraction == "5" else ["przecinek", fraction_words(fraction)]
+    words.append(degree_noun(value, has_fraction))
     if scale == "c":
         words.append("celsjusza")
     elif scale == "f":
@@ -76,13 +78,23 @@ def temperature_words(m):
     return " ".join(words)
 
 
+def fraction_words(digits):
+    significant = digits.lstrip("0")
+    return " ".join(["zero"] * (len(digits) - len(significant)) + [spoken_number(significant)])
+
+
 def time_words(hour, minute):
     words = [HOURS[hour]]
     if 0 < minute < 10:
         words += ["zero", number_words(minute)]
-    elif minute:
+    elif minute or hour == 0:
         words.append(number_words(minute))
     return " ".join(words)
+
+
+def spoken_number(digits):
+    n = int(digits)
+    return number_words(n) if n < 1_000_000_000 else " ".join(ONES[int(d)] for d in digits)
 
 
 def number_words(n):
@@ -216,13 +228,14 @@ def word_segments(word):
 
 
 def phonemize(text):
-    text = re.sub(r"([+\-−]?)(\d+)(?:[.,](\d+))?\s*°\s*([cf](?![a-ząćęłńóśźż]))?",
-                  lambda m: " " + temperature_words(m) + " ", text.lower())
-    text = re.sub(r"\b([01]?\d|2[0-4])[:.]([0-5]\d)\b",
+    text = re.sub(r"(?<=\d)\s*[\-–−]\s*(?=\d+(?:[.,]\d+)?\s*°)", ", ", text.lower())
+    text = re.sub(r"((?<![\w])[+\-−])?(\d+)(?:[.,](\d+))?\s*°\s*([cf](?![a-ząćęłńóśźż]))?",
+                  lambda m: " " + temperature_words(m) + " ", text)
+    text = re.sub(r"(?<![\w.,:])([01]?\d|2[0-4]):([0-5]\d)(?![\w]|[.,:]\d)",
                   lambda m: " " + time_words(int(m.group(1)), int(m.group(2))) + " ", text)
     text = re.sub(r"(?<![\w])[\-−](?=\d)", " minus ", text)
     text = re.sub(r"(?<![\w])\+(?=\d)", " plus ", text)
-    text = re.sub(r"\d+", lambda m: " " + number_words(int(m.group())) + " ", text)
+    text = re.sub(r"\d+", lambda m: " " + spoken_number(m.group()) + " ", text)
     tokens = re.findall(r"[a-ząćęłńóśźż]+|[,.?!;:]", text)
     words = [(t, word_segments(t)) for t in tokens if t[0].isalpha()]
     out = []

@@ -1,5 +1,6 @@
 package app.darek.speak
 
+import java.math.BigInteger
 import java.text.Normalizer
 
 /**
@@ -113,8 +114,7 @@ object PolishPhonemes {
     private val digraphs =
         mapOf("ch" to "x", "cz" to "tʃ", "sz" to "ʃ", "rz" to RZ, "dż" to "dʒ", "dź" to "dʑ", "dz" to DZ)
 
-    // Order matters: "dzi" must be tried before "zi".
-    private val softBeforeI = linkedMapOf("dz" to "dʑ", "c" to "tɕ", "s" to "ɕ", "z" to "ʑ", "n" to "ɲ")
+    private val softBeforeI = mapOf("dz" to "dʑ", "c" to "tɕ", "s" to "ɕ", "z" to "ʑ", "n" to "ɲ")
     private val letterVowels = "aeiouóyąę".toSet()
 
     private val ones = listOf("zero", "jeden", "dwa", "trzy", "cztery", "pięć", "sześć", "siedem", "osiem", "dziewięć")
@@ -187,28 +187,22 @@ object PolishPhonemes {
             "dwudziesta czwarta",
         )
 
-    private val clockTime = Regex("\\b([01]?\\d|2[0-4])[:.]([0-5]\\d)\\b")
-    private val temperature = Regex("([+\\-−]?)(\\d+)(?:[.,](\\d+))?\\s*°\\s*([cf](?![a-ząćęłńóśźż]))?")
+    private val temperatureRange = Regex("(?<=\\d)\\s*[\\-–−]\\s*(?=\\d+(?:[.,]\\d+)?\\s*°)")
+    private val temperature =
+        Regex("((?<![\\p{L}\\p{N}_])[+\\-−])?(\\d+)(?:[.,](\\d+))?\\s*°\\s*([cf](?![a-ząćęłńóśźż]))?")
+    private val clockTime = Regex("(?<![\\p{L}\\p{N}_.,:])([01]?\\d|2[0-4]):([0-5]\\d)(?![\\p{L}\\p{N}_]|[.,:]\\d)")
     private val minusSign = Regex("(?<![\\p{L}\\p{N}_])[\\-−](?=\\d)")
     private val plusSign = Regex("(?<![\\p{L}\\p{N}_])\\+(?=\\d)")
     private val digitRun = Regex("\\d+")
     private val token = Regex("[a-ząćęłńóśźż]+|[,.?!;:]")
 
     fun phonemize(text: String): String {
-        var expanded = temperature.replace(text.lowercase()) { " " + temperatureWords(it) + " " }
+        var expanded = temperatureRange.replace(text.lowercase(), ", ")
+        expanded = temperature.replace(expanded) { " " + temperatureWords(it) + " " }
         expanded = clockTime.replace(expanded) { " " + timeWords(it) + " " }
         expanded = minusSign.replace(expanded, " minus ")
         expanded = plusSign.replace(expanded, " plus ")
-        expanded =
-            digitRun.replace(expanded) { run ->
-                val words =
-                    run.value
-                        .toLongOrNull()
-                        ?.takeIf { it < 1_000_000_000 }
-                        ?.let(::numberWords)
-                        ?: run.value.map { ones[it.digitToInt()] }.joinToString(" ")
-                " $words "
-            }
+        expanded = digitRun.replace(expanded) { " " + spokenNumber(it.value) + " " }
         val tokens = token.findAll(expanded).map { it.value }.toList()
         val words = tokens.filter { it[0].isLetter() }.map { it to wordSegments(it) }
         val out = mutableListOf<String>()
@@ -258,28 +252,28 @@ object PolishPhonemes {
 
     private fun temperatureWords(match: MatchResult): String {
         val (sign, wholeText, fraction, scale) = match.destructured
-        val whole = wholeText.toLong()
-        val hasFraction = fraction.isNotEmpty() && fraction.toLong() != 0L
+        val whole = wholeText.toBigInteger()
+        val hasFraction = fraction.any { it != '0' }
         val words = mutableListOf<String>()
-        if ((sign == "-" || sign == "−") && (whole != 0L || hasFraction)) {
+        if ((sign == "-" || sign == "−") && (whole.signum() != 0 || hasFraction)) {
             words += "minus"
         } else if (sign == "+") {
             words += "plus"
         }
-        if (whole == 0L && fraction == "5") {
-            words += "pół"
+        if (fraction == "5" && whole <= BigInteger.ONE) {
+            words += if (whole.signum() == 0) "pół" else "półtora"
         } else {
-            words += numberWords(whole)
+            words += spokenNumber(wholeText)
             if (hasFraction) {
-                words +=
-                    if (fraction == "5") listOf("i pół") else listOf("przecinek", numberWords(fraction.toLong()))
+                words += if (fraction == "5") listOf("i pół") else listOf("przecinek", fractionWords(fraction))
             }
         }
+        val lastTwo = whole.mod(BigInteger.valueOf(100)).toInt()
         words +=
             when {
                 hasFraction -> "stopnia"
-                whole == 1L -> "stopień"
-                whole % 10 in 2..4 && whole % 100 !in 12..14 -> "stopnie"
+                whole == BigInteger.ONE -> "stopień"
+                lastTwo % 10 in 2..4 && lastTwo !in 12..14 -> "stopnie"
                 else -> "stopni"
             }
         when (scale) {
@@ -289,16 +283,26 @@ object PolishPhonemes {
         return words.joinToString(" ")
     }
 
+    private fun fractionWords(digits: String): String {
+        val significant = digits.trimStart('0')
+        return (List(digits.length - significant.length) { "zero" } + spokenNumber(significant)).joinToString(" ")
+    }
+
     private fun timeWords(time: MatchResult): String {
+        val hour = time.groupValues[1].toInt()
         val minute = time.groupValues[2].toLong()
-        val words = mutableListOf(hours[time.groupValues[1].toInt()])
+        val words = mutableListOf(hours[hour])
         if (minute in 1..9) {
             words += listOf("zero", numberWords(minute))
-        } else if (minute != 0L) {
+        } else if (minute != 0L || hour == 0) {
             words += numberWords(minute)
         }
         return words.joinToString(" ")
     }
+
+    private fun spokenNumber(digits: String): String =
+        digits.toLongOrNull()?.takeIf { it < 1_000_000_000 }?.let(::numberWords)
+            ?: digits.map { ones[it.digitToInt()] }.joinToString(" ")
 
     internal fun numberWords(value: Long): String {
         var n = value
