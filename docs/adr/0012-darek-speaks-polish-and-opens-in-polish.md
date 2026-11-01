@@ -21,12 +21,10 @@ shows**:
   choice in the switcher, English or "follow the phone", sticks.
 - **Commands and Replies are Polish and are not translated.** They are speech, not UI: they live in
   the Command definitions, outside `strings.xml`, and the translation gate does not see them.
-- **The Reply needs an offline Polish voice.** Darek checks the text-to-speech engine for a `pl-PL`
-  voice that is installed and needs no network; without one he offers the engine's install screen and
-  shows that he cannot answer aloud. A Command still acts without a voice while Darek's screen is
-  visible (phase 1): its Reply is shown instead, and one that calls still waits out its cancel
-  window. Whether one that calls may act without a voice once Listening outlives the screen is
-  open until phase 2 ([ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)).
+- **The Reply is spoken in Darek's own Polish voice**, bundled in the app
+  ([ADR-0014](0014-darek-speaks-with-his-own-bundled-voice.md)), so every phone has it, whatever its
+  text-to-speech engine. What happens when that voice fails is
+  [ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)'s.
 
 ## Alternatives
 

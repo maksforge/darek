@@ -25,7 +25,8 @@ was extracted from and the first app built from it settled on exactly this split
 - [ ] **Phase P** — The pipeline: repository setup, upload key, Play entry, secrets, a green internal upload
 - [ ] **Phase 1** ([`phase-1.md`](phase-1.md)) — The mechanism on the phone, app open: *Słuchaj*
   on Home, the bundled model hears *"Hej Darek, powiedz coś"* from a real voice and Darek answers
-  *„Co tam, mordo?"* offline (ADR-0009, ADR-0013), with the microphone disclosure; the Gate call
+  *„Co tam, mordo?"* offline in his own bundled voice (ADR-0009, ADR-0013, ADR-0014), with the
+  microphone disclosure; the Gate call
   with its cancel window in the debug build only (ADR-0011). Readings: real voices at a distance and
   in a car, the offline Polish voice, the dial on the owner's phone
 - [ ] **Phase 2** — Listening: the microphone service, its notification, the start paths (switch,
@@ -34,7 +35,8 @@ was extracted from and the first app built from it settled on exactly this split
   first service start whether or not `RECORD_AUDIO` is already granted: phase 1's promised
   listening only with Home on screen
 - [ ] **Phase 3** — Safe for a stranger: the user's Numbers for the built-in Commands, which brings
-  `CALL_PHONE` and the call into the release, and the first-run path. It freezes `CALL_PHONE` and the
+  `CALL_PHONE` and the call into the release, the user's own Reply text for each Command
+  (ADR-0014), and the first-run path. It freezes `CALL_PHONE` and the
   `microphone` service type. *The door is already open*: closed testing started with phase 0's
   Alpha 0.2.0 (2026-10-31), so the microphone disclosure moved to phase 1, where `RECORD_AUDIO`
   arrives

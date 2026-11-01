@@ -3,13 +3,13 @@
 Sequence lives in [`PLAN.md`](PLAN.md); the live worklist lives in [`DOD.md`](DOD.md). This phase
 builds [ADR-0009](adr/0009-commands-are-recognised-offline-against-a-grammar-with-decoys.md)'s
 recogniser, [ADR-0011](adr/0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)'s Reply,
-cancel window and call, and [ADR-0012](adr/0012-darek-speaks-polish-and-opens-in-polish.md)'s offline
-Polish voice. It adds [ADR-0013](adr/0013-a-command-may-only-reply.md): a Command that only replies.
-It edits ADR-0009 (size, the grammar's encoding), ADR-0011 (which half of its HyperOS question this
-phase can answer, when a Reply is finished, and what stopping Listening does to a pending dial) and
-ADR-0012 (what a Reply does without a voice) in place. `CONTEXT.md` is owed a change to *Command*,
-which no longer always has a Number, to *Reply*, which is shown when there is no voice, and to
-*Listening*, which in this phase exists only while Home is on screen.
+cancel window and call, and [ADR-0014](adr/0014-darek-speaks-with-his-own-bundled-voice.md)'s
+bundled Polish voice. It adds [ADR-0013](adr/0013-a-command-may-only-reply.md): a Command that only
+replies. It edits ADR-0009 (size, the grammar's encoding), ADR-0011 (which half of its HyperOS
+question this phase can answer, when a Reply is finished, and what stopping Listening does to a
+pending dial) and ADR-0012 (the Reply's voice is Darek's own) in place. `CONTEXT.md` is owed a change
+to *Command*, which no longer always has a Number, to *Reply*, which is spoken in Darek's own voice,
+and to *Listening*, which in this phase exists only while Home is on screen.
 
 **`PLAN.md`'s phase 1 and phase 3 lines were wrong, and this PR corrects them.**
 
@@ -48,8 +48,12 @@ release AAB declares `RECORD_AUDIO` and not `CALL_PHONE`. Spoken to from 3 m, th
 - **The model is 53 MB zipped (SHA-256 `c4cd1649…6fce15f0d`) and 92 MB unpacked.** ADR-0009 said
   ~50 MB unpacked, which was wrong; it is corrected. After the first run the phone holds both the copy
   inside the APK and the unpacked one, ~145 MB in all.
-- **The test phone has Google's TTS engine** (`com.google.android.tts`). Whether it has an offline
-  `pl-PL` voice installed is reading R3.
+- **Darek's voice has a host reading** from 2026-11-01 (ADR-0014): Piper's mc_speech model, int8 at
+  19 MB, driven by our own Polish pronunciation rules. The rules agree with eSpeak on 92.4% of the
+  3,000 most frequent Polish words (1.4% phoneme error rate), and the model renders 4.6 s of speech
+  in 0.09 s on the PC. How fast it is on a 2019 phone, and whether int8 sounds as good as the full
+  model, are R3. The Python prototype of the rules is the reference the Kotlin port is tested
+  against (*Tests*).
 - **The release is minified** (`isMinifyEnabled = true`). JNA finds Vosk's native methods by
   reflection. Without keep rules for `com.sun.jna.**` and `org.vosk.**`, JNA's native side aborts
   the process (`UnsatisfiedLinkError`, *Can't obtain peer field ID*). B adds vosk-android's
@@ -65,7 +69,8 @@ release AAB declares `RECORD_AUDIO` and not `CALL_PHONE`. Spoken to from 3 m, th
 - The model, fetched at build time and unpacked on the phone.
 - A recogniser over `AudioRecord` with ADR-0009's grammar and match rule.
 - The Command catalogue with one Command that only replies (ADR-0013) and one that calls.
-- The offline Polish voice and what Home shows without one.
+- Darek's own voice: ONNX Runtime, the mc_speech model and our Polish pronunciation rules
+  (ADR-0014), with a debug-only field that speaks any text.
 - The *Słuchaj* button, with the microphone disclosure and the `RECORD_AUDIO` ask on its first tap.
 - In the debug build only: a Number for *brama*, `CALL_PHONE`, the cancel window and `placeCall`.
 - A debug-only probe screen that shows the recogniser's raw results, which is the gate's apparatus.
@@ -81,6 +86,8 @@ release AAB declares `RECORD_AUDIO` and not `CALL_PHONE`. Spoken to from 3 m, th
   `app/src/debug/`.
 - **Garaż and furtka.** They are the same code path as brama with different words. Their Decoys are
   read once brama's are settled. Adding them now triples the reading for no new knowledge.
+- **The user's own Reply text.** It needs the same editor as the Numbers, so it is phase 3's. The
+  voice already reads any Polish text, so phase 3 adds a field, not a capability.
 - **The Commands' stored shape** (the JSON list under one key). Phase 3's editor settles which
   fields a user changes. The debug Number is a debug-only store (section 4), so nothing in `main/`
   commits to a shape early.
@@ -97,7 +104,8 @@ only through verdict 4 below, by a new ADR.
 | | Checkpoint | Merges | Depends on |
 | --- | --- | --- | --- |
 | **A** | **The gate**: the probe, debug-only, and the reading with a real voice on both phones | `chore:` | — |
-| **B** | The reply-only Command in the release: *Słuchaj*, disclosure, voice, *powiedz coś* | `feat:` | A |
+| **V** | **Darek's voice**, debug-only: ONNX Runtime, the model, the Polish rules, a *say this* field | `chore:` | — |
+| **B** | The reply-only Command in the release: *Słuchaj*, disclosure, voice, *powiedz coś* | `feat:` | A, V |
 | **C** | The Gate call, debug-only: Number, `CALL_PHONE`, cancel window, `placeCall` | `chore:` | B |
 | **D1** | Listing, privacy policy and App content for B's release | `docs:` | B |
 | **D2** | Readings on both phones | `docs:` | B, C |
@@ -106,6 +114,11 @@ only through verdict 4 below, by a new ADR.
 Vosk dependency is `debugImplementation`, and the model is attached to the debug assets. The
 exception is the pure matcher in `main/`, which nothing in the release calls yet. A `feat:` would
 cut a release with no change a user can see. B moves the dependency and the model to `main`.
+
+**Why V is separate from A, and also a `chore:`.** V touches nothing A does, so the two run in
+either order. Like A it is debug-only until B moves it to `main`. It is its own checkpoint because
+it has its own risk: the phone's speed and the int8 sound (R3). If either fails, the fallback (the
+full model, or a smaller voice) is chosen before B builds on it.
 
 **Licences are A's first check, not B's.** Licensee runs per variant inside `assembleDebug`, so
 adding Vosk and JNA as `debugImplementation` is when an allowlist failure shows. JNA's POM lists
@@ -226,34 +239,35 @@ them:
 
 The Reply text is speech, not UI: it lives in the enum, outside `strings.xml` (ADR-0012).
 
-**The voice** comes from a pure function, `speak/pickVoice(voices)`. It picks the first voice that is:
-- Polish, compared as `voice.locale.isO3Language == "pol"` rather than `Locale` equality with
-  `pl-PL`, because engines report ISO-3 codes and extra variants,
-- `!isNetworkConnectionRequired`,
-- without `FEATURE_NOT_INSTALLED`.
-
-B adds an `<intent>` for `android.intent.action.TTS_SERVICE` to the manifest's `<queries>`. Without
-it, API 30+ package visibility hides the engine, `getVoices()` comes back empty, and every phone
-reads as having no Polish voice.
-
-If no voice qualifies, Home shows that Darek cannot answer aloud, with a button that opens the
-engine's `ACTION_INSTALL_TTS_DATA` screen. Commands still act without a voice (ADR-0012): the Reply
-is shown instead of spoken.
+**The voice** (ADR-0014) is three pieces in `speak/`:
+- **`PolishPhonemes.kt`**: text to the model's phonemes. It lower-cases, writes numbers as words,
+  then handles digraphs, soft *i*, nasal vowels by what follows them, voicing assimilation (with
+  *w* and *rz* assimilating to what precedes them), final devoicing and penultimate stress. It is a
+  port of the host prototype, pure Kotlin, and tested against it.
+- **`Voice.kt`**: phoneme ids into the model through ONNX Runtime, 22.05 kHz 16-bit samples out. The
+  model loads straight from the APK's assets into the session, with nothing unpacked. It loads on
+  the first *Słuchaj*, alongside the recogniser's unpack.
+- **The model file** is the int8 quantisation of `pl_PL-mc_speech-medium.onnx`, made once on the host
+  with ONNX Runtime's `quantize_dynamic` (`QUInt8` weights). V publishes it, with its `.onnx.json`,
+  as assets of a GitHub release of this repo tagged `voice-pl-mc_speech-int8-1`, marked pre-release
+  and outside release-please's `v*` tags. The build fetches and SHA-256-checks it as it does the
+  recogniser's model (section 2).
+- **Playback** through `AudioTrack` in static mode. The fixed Replies are rendered once and kept in
+  memory, so a Command does not wait on synthesis.
 
 **The Reply is finished** (ADR-0011) on the first of:
-- the engine's `onDone`, `onStop` or `onError`;
-- `speak()` returning `ERROR`, or no voice at all, as soon as the Reply is shown;
-- a watchdog 10 s after `speak()`, so an engine that never calls back cannot leave recognition
-  paused while Home says Darek is listening.
+- playback reaching its last frame (`AudioTrack`'s marker);
+- synthesis or playback failing, or the model not loading, as soon as the Reply is shown;
+- a watchdog 10 s after playback starts, so a stalled `AudioTrack` cannot leave recognition paused
+  while Home says Darek is listening.
 
 Recognition resumes then and, for a Command that calls, the cancel window starts then. The Reply is
-on screen from the moment the Command fires, so a user with no voice or the sound off sees what is
-about to happen. This is one pure function, `speak/ReplyEnd.kt`, over the engine's events and a
-clock.
+on screen from the moment the Command fires, so a user with the sound off sees what is about to
+happen. This is one pure function, `speak/ReplyEnd.kt`, over playback's events and a clock.
 
-The no-voice dial holds **for this phase only**, because Listening exists only while Home is on
-screen and the shown Reply is seen. With the phone in a pocket it is neither heard nor seen, so
-whether a Command that calls may dial without a voice there is left open for phase 2 (ADR-0011).
+A failed voice dials **in this phase only**, because Listening exists only while Home is on screen
+and the shown Reply is seen. With the phone in a pocket it is neither heard nor seen, so whether a
+Command that calls may dial on a failed voice there is left open for phase 2 (ADR-0011).
 
 **Home** loses its placeholder line and gains, in the middle:
 - **The *Słuchaj* button.** Off, it says *Słuchaj*; on, *Darek słucha* with *Zatrzymaj*. It turns
@@ -287,8 +301,6 @@ The copy, in English, translated once at the merge:
 - `mic_disclosure_continue` *Continue*
 - `mic_denied` *Darek can't hear you without the microphone.* · `mic_allow` *Allow* ·
   `mic_open_settings` *Open settings*
-- `voice_missing` *There's no offline Polish voice on this phone, so Darek can't answer aloud.* ·
-  `voice_install` *Install a voice*
 
 ## 4. The Gate call, in the debug build
 
@@ -337,8 +349,8 @@ The copy, in English, translated once at the merge:
     follows.
 
   It fails toward a **dial the user cancelled**.
-- **`ReplyEndTest`**: each of `onDone`, `onStop`, `onError`, `speak()` returning `ERROR`, no
-  voice, and 10 s of silence from the engine finishes the Reply. It fails toward **a Darek that
+- **`ReplyEndTest`**: playback's last frame, a synthesis or playback error, a model that does not
+  load, and 10 s with no marker each finish the Reply. It fails toward **a Darek that
   shows he is listening and hears nothing**.
 - **`GrammarTest`**, on the JVM against `listen/Grammar.kt` and the kotlinx.serialization encoder it
   uses:
@@ -348,8 +360,11 @@ The copy, in English, translated once at the merge:
     in.
 
   It fails toward **Commands that can never fire**, silently.
-- **`PickVoiceTest`**: a network voice is never picked, even when it is the only `pl-PL` one. It
-  fails toward **the Reply text leaving the phone** through the TTS engine (ADR-0008).
+- **`PolishPhonemesTest`**: the 3,000 most frequent Polish words and section 3's Replies, each with
+  the host prototype's phonemes, as a fixture in `app/src/test/resources/`. The fixture is generated
+  once from the prototype, and from then on the Kotlin rules are the source and the fixture is
+  edited with them. Not a safety value, but the only check that a port of ~200 lines of rules says
+  what was heard on the host. It fails toward **a Darek who mispronounces his own Replies**.
 
 ## Documents this phase amends
 
@@ -357,8 +372,9 @@ The copy, in English, translated once at the merge:
   UTF-8 grammar; Commands that only reply), **ADR-0011** (it applies to Commands that call; the
   HyperOS background question moves to phase 2; when a Reply is finished, and a shown Reply without
   a voice; stopping Listening cancels a pending dial; cancel words only after the Reply) and
-  **ADR-0012** (without a voice the Reply is shown, and a Command still acts, in phase 1 only)
-  edited in place. In this PR.
+  **ADR-0012** (the Reply's voice is Darek's own) edited in place. In this PR.
+- **New [ADR-0014](adr/0014-darek-speaks-with-his-own-bundled-voice.md)**, and **ADR-0008** (the
+  Reply never leaves the app) edited in place. In the own-voice PR.
 - **`CONTEXT.md`**: *Command*, *Reply* and *Listening*. In this PR.
 - **`PLAN.md`**: phase 1's and phase 3's lines, and the asks table rule 4 asks for. In this PR.
 - **In the release that ships B** (`DOD.md`, *Before the next upload*):
@@ -366,7 +382,9 @@ The copy, in English, translated once at the merge:
     with the app open, „Hej Darek, powiedz coś". Listening with the screen off and the call arrive in
     the next test builds."* The screenshots are re-shot with the *Słuchaj* button.
   - The privacy policy's microphone bullet. *"While it is on, a notification says that Darek is
-    listening"* becomes *"the app's screen, or later its notification, says…"*.
+    listening"* becomes *"the app's screen, or later its notification, says…"*. Its
+    *Text-to-speech* paragraph is replaced: Darek speaks with his own voice inside the app, and no
+    other app is given the Reply.
   - `play-app-content.md`: `RECORD_AUDIO` gets its row and leaves the *not in the artifact yet*
     list, and the Data safety answer is re-read (still *no data collected*: audio is processed on
     the phone). `CALL_PHONE` stays on that list.
@@ -375,7 +393,9 @@ The copy, in English, translated once at the merge:
   - Licences: the Vosk API and JNA reach the Licences screen through licensee (Apache 2.0, JNA
     dual-licensed and taken as Apache), already checked in A. The model is a zip fetched by a Gradle
     task, not a Maven artifact, so licensee never sees it: B gives it its own entry in `Licences.kt`
-    (source URL, Apache-2.0, SHA-256), a small code change.
+    (source URL, Apache-2.0, SHA-256), a small code change. ONNX Runtime (MIT) arrives through
+    licensee too. The voice gets its own entry the same way: Piper `pl_PL-mc_speech`, MIT, MC Speech
+    recordings CC0, and the *lessac* base's research-only licence named as ADR-0014 states it.
 
 ## Known gaps, deliberately
 
@@ -393,8 +413,10 @@ The copy, in English, translated once at the merge:
 - **~145 MB on the phone after the first *Słuchaj*.** It is the APK's copy plus the unpacked model.
   Removing the APK's copy means a download (ADR-0008 forbids it) or an install-time asset pack,
   which is still unpacked by us. Not worth it for one model.
-- **A Command that calls, with no voice, in phase 2** is not decided here: this phase dials on a
-  shown Reply because Home is on screen. ADR-0011 leaves the pocket case to phase 2.
+- **A Command that calls, on a failed voice, in phase 2** is not decided here: this phase dials on
+  a shown Reply because Home is on screen. ADR-0011 leaves the pocket case to phase 2.
+- **The voice's licence has a grey area** (ADR-0014): the *lessac* base. It is accepted and named
+  on the Licences screen. A voice trained from scratch on the CC0 recordings would swap a file.
 - **HyperOS and `placeCall` from the background** is unanswerable here: phase 1 dials only with the
   app open. ADR-0011 now gives it to phase 2.
 - **Dual-SIM phones set to *ask every time*** may show a SIM chooser on `placeCall`. R7 reads whether
@@ -417,7 +439,7 @@ The copy, in English, translated once at the merge:
 | --- | --- | --- | --- |
 | R1 | The gate script (section 1) on the test phone, debug build, probe | `adb logcat -s DarekProbe` while the owner reads the script | |
 | R2 | The same on the owner's phone | as R1, `-s 132bc856` | |
-| R3 | An offline `pl-PL` voice exists on each phone, and which one `pickVoice` chose | the `DarekVoice` log line on first *Słuchaj*; `adb shell settings get secure tts_default_synth` | |
+| R3 | Darek's voice on each phone: model load time, synthesis time for each fixed Reply, and the owner's ear on int8 against the full model | the `DarekVoice` log lines from V's *say this* field, both models | |
 | R4 | End to end on `-PreleaseShapedDebug`: *Słuchaj* → *"Hej Darek, powiedz coś"* → *„Co tam, mordo?"* heard and shown, on both phones | `./gradlew installDebug -PreleaseShapedDebug`, then the screen and `screencap` | |
 | R5 | Denial: deny once → *Zezwól*; deny again → *Otwórz ustawienia* opens the app's details screen; a first dialog dismissed with Back → still *Zezwól* | *Deny* tapped in the real system dialog, then the screen; `adb uninstall` and reinstall between runs (`pm revoke` sets neither the user-set nor the user-fixed flag, so it reproduces no denial) | |
 | R6 | First unpack time on the test phone, and that a killed half-unpack is redone | `DarekModel` log line; `adb shell am force-stop` mid-unpack, relaunch, `run-as … ls no_backup` | |
