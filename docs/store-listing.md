@@ -52,7 +52,7 @@ The line that appears under the name in search results, and the most-read text i
 Say "Darek, otwórz bramę" and he calls your gate opener. Offline, in Polish.
 ```
 
-### Full description — 2826/4000
+### Full description — 2869/4000
 
 **No health or safety claims**, here or on any page the listing links to — Play's enforcement reads a
 linked page as part of the listing. Say what the app cannot do instead.
@@ -68,13 +68,13 @@ renders no markup. The block below is what `play-metadata.py` uploads, so the ou
 5. `PERMISSIONS` — one line each, in the user's words.
 6. A last line pointing at the source: `github.com/maksforge/darek`.
 
-The second paragraph is for the test builds that have only Home and Settings. The release that ships
-phase 1, recognition and the call, rewrites or deletes it in both languages.
+The second paragraph says what the current test build can do. Each test build rewrites it, and the
+release that ships the call (phase 3) deletes it, in both languages.
 
 ```
 Darek is a Polish voice assistant for your gate. Say "Darek, otwórz bramę" and he answers out loud and calls your gate's GSM opener, so you do not have to reach for your phone. Recognition, speech and the call all happen on your phone, with no internet at all.
 
-This test build has only the home screen and settings. Listening and the call arrive in the next test builds.
+This test build answers one Command, "Hej Darek, powiedz coś", while the app is open on screen. Listening with the screen off and the call arrive in the next test builds.
 
 HOW IT WORKS
 
@@ -96,7 +96,7 @@ Darek calls your gate opener; he does not control the gate. Whether it opens is 
 
 He understands only his fixed Polish Commands, not free speech, and you cannot add phrases of your own. In a noisy place he can miss a Command; say it again.
 
-He answers through your phone's text-to-speech engine, which needs a Polish voice that works offline. Without one, Darek still makes the call, just without a spoken reply.
+He answers in his own Polish voice, which comes with the app and sounds the same on every phone; he needs no text-to-speech engine and no voice download.
 
 Listening keeps the microphone on and uses battery while it runs. Some phones, Xiaomi's among them, stop apps in the background; Darek opens the battery and autostart settings for you.
 
@@ -127,12 +127,12 @@ Darek
 Powiedz „Darek, otwórz bramę”, a on odpowie i zadzwoni do bramy. Bez internetu.
 ```
 
-### Full description — 2849/4000
+### Full description — 2921/4000
 
 ```
 Darek to głosowy asystent do twojej bramy. Powiedz „Darek, otwórz bramę”, a on odpowie na głos i zadzwoni do sterownika GSM bramy, więc nie musisz sięgać po telefon. Rozpoznawanie mowy, odpowiedź i połączenie odbywają się w telefonie, zupełnie bez internetu.
 
-Ta wersja testowa ma tylko ekran główny i ustawienia. Słuchanie i dzwonienie pojawią się w kolejnych wersjach testowych.
+Ta wersja testowa odpowiada na jedną komendę, „Hej Darek, powiedz coś”, gdy aplikacja jest otwarta na ekranie. Słuchanie przy wyłączonym ekranie i dzwonienie pojawią się w kolejnych wersjach testowych.
 
 JAK TO DZIAŁA
 
@@ -154,7 +154,7 @@ Darek dzwoni do sterownika bramy, ale nie steruje samą bramą. To, czy się otw
 
 Rozumie tylko swoje stałe polskie komendy, nie swobodną mowę, i nie da się dodać własnych zwrotów. W hałasie może nie usłyszeć komendy; wtedy ją powtórz.
 
-Odpowiada przez syntezator mowy w twoim telefonie, który potrzebuje do tego polskiego głosu działającego offline. Bez niego Darek i tak zadzwoni, tylko bez odpowiedzi na głos.
+Odpowiada własnym polskim głosem, który jest częścią aplikacji i na każdym telefonie brzmi tak samo; nie potrzebuje syntezatora mowy w telefonie ani pobierania głosu.
 
 Gdy Darek słucha, mikrofon jest włączony, co zużywa baterię. Niektóre telefony, w tym Xiaomi, zamykają aplikacje działające w tle; Darek sam otworzy ci ustawienia baterii i autostartu.
 

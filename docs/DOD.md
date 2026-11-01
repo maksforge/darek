@@ -70,7 +70,10 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
 - [x] **Capture the screenshots** with `scripts/screenshots.py` from a release-shaped build, in every
       listing language, into `art/play-screenshots/`. Play wants at least two before the first review.
       Done 2026-10-31 as **current-build placeholders**: Home and Settings, light, in pl and en, from
-      a local release build on the test phone (see *Before the next upload*).
+      a local release build on the test phone (see *Before the next upload*). Re-shot 2026-11-01 for
+      0.3.0: Home with *Słuchaj*, the microphone disclosure, Listening and Settings, by hand
+      (`screencap` + `pad-screenshot.py --status-bar-px 75`), because `screenshots.py --locale`
+      needs API 33 and the test phone is API 30.
 - [ ] **Put the app on maksforge.com.** Its icon goes at `assets/icons/<repo>.webp` in
       maksforge/maksforge.github.io, which the app's own site loads, and the app goes on that home
       page. Replace `description` in `docs/_config.yml` too: it is the tagline under the app's name.
@@ -153,6 +156,9 @@ Console matches. A new permission, foreground service or data type is a Console 
       `play-app-content.md` with the Data safety re-read,
       `aab-permissions.py`'s EXPECTED, and the licences of Vosk, its model, JNA, ONNX Runtime and the
       voice (with ADR-0014's grey area). `CALL_PHONE` stays out of the release until phase 3.
+      The repo half is done 2026-11-01 (listing, policy, `play-app-content.md`, screenshots; the
+      allowlist and licences came with B). Tick when 0.3.0 is uploaded with its listing and the
+      Console's Data safety is confirmed unchanged.
 
 ## After the closed test
 
