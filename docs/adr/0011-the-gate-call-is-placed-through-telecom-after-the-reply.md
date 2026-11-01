@@ -32,9 +32,9 @@ premium-rate fraud, and `CALL_PHONE` is otherwise unrestricted.
   **Phase 2's case is open**: with the phone in a pocket a shown Reply is neither heard nor seen,
   which the consent line below does not cover. Whether a Command that calls may dial there with a
   Reply nobody hears is decided in phase 2, not here.
-- A **cancel window** of about 2 s follows, in which *"Darek, stop"*, *"anuluj"* or the
-  notification's *Anuluj* action cancels; only then does he dial. Cancel words act on **partial**
-  results: one containing *"stop"* or *"anuluj"* cancels at once, because a final result comes only
+- A **cancel window** of about 2 s follows, in which *"stop"* or *"anuluj"*, with no name needed, or
+  the notification's *Anuluj* action cancels; only then does he dial. Cancel words act on
+  **partial** results: one containing *"stop"* or *"anuluj"* cancels at once, because a final result comes only
   after a pause and could land after the dial. They are heard only from the end of the Reply:
   recognition is paused while he speaks, so an *"anuluj"* said over the Reply is not heard.
 - **If Listening stops before the dial**, by the user or, in phase 1, by Darek's screen leaving the
