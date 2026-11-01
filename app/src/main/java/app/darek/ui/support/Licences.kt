@@ -113,7 +113,8 @@ val BUNDLED_MODELS =
             version = "medium",
             name = "Darek's voice: Piper pl_PL mc_speech",
             source =
-                "https://huggingface.co/rhasspy/piper-voices/resolve/main/pl/pl_PL/mc_speech/medium/" +
+                "https://huggingface.co/rhasspy/piper-voices/resolve/b4e358ffcb232591bf73a540e70f7de528e4174a/" +
+                    "pl/pl_PL/mc_speech/medium/" +
                     "pl_PL-mc_speech-medium.onnx · " +
                     "SHA-256 a6b043358bc81e6c111a5140606a21959ce7f34969b8b7207f62869787cc3907",
             spdxLicenses =
@@ -121,7 +122,8 @@ val BUNDLED_MODELS =
                     SpdxLicence(
                         "MIT",
                         "MIT License",
-                        "https://huggingface.co/rhasspy/piper-voices/blob/main/pl/pl_PL/mc_speech/medium/MODEL_CARD",
+                        "https://huggingface.co/rhasspy/piper-voices/blob/b4e358ffcb232591bf73a540e70f7de528e4174a/" +
+                            "pl/pl_PL/mc_speech/medium/MODEL_CARD",
                     ),
                     SpdxLicence("CC0-1.0", "Creative Commons Zero v1.0 Universal (MC Speech recordings)"),
                 ),
