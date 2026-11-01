@@ -232,3 +232,17 @@ On Android 13 and later, Darek now opens in Polish on the very first launch, as 
 ```
 Na Androidzie 13 i nowszym Darek od pierwszego uruchomienia mówi po polsku, tak jak na starszych telefonach.
 ```
+
+### 0.3.0 — Darek listens and answers
+
+**English** — 244/500:
+
+```
+Darek listens now. Tap Listen, allow the microphone and say „Hej Darek, powiedz coś" - he answers „Co tam, mordo?" out loud, in his own voice. He hears you only while the app is open on screen; everything happens on the phone, with no internet.
+```
+
+**Polish** — 251/500:
+
+```
+Darek już słucha. Stuknij Słuchaj, zezwól na mikrofon i powiedz „Hej Darek, powiedz coś" - odpowie na głos „Co tam, mordo?" własnym głosem. Słyszy cię tylko wtedy, gdy aplikacja jest otwarta na ekranie; wszystko dzieje się na telefonie, bez internetu.
+```
