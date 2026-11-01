@@ -259,8 +259,9 @@ The Reply text is speech, not UI: it lives in the enum, outside `strings.xml` (A
     garbage.
   - Beside it go `input_lengths` and `scales`: `noise_scale`, `length_scale` and `noise_w` from the
     `.onnx.json` (0.667, 1, 0.8).
-  - The output is float32. It is clipped to ±1 and scaled to 16-bit, as the host prototype's WAVs
-    were.
+  - The output is float32, peaking at about 0.3. It is normalised to a peak of 0.95 (the gain capped
+    at 8×), clipped to ±1 and scaled to 16-bit; at the model's own level a phone speaker was too
+    quiet (owner's phone, 2026-11-01).
   - The model loads straight from the APK's assets into the session, with nothing unpacked. It
     loads when *Słuchaj* is turned on and it is not yet loaded, alongside the recogniser's unpack.
     *Przygotowuję…* covers both, and Listening starts only once the model is unpacked **and** the
