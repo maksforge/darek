@@ -780,10 +780,10 @@ def relaunch() -> None:
 # The two needles the isolation step is built on, both from the shell rather than from any screen.
 # Darek has no tab bar: Home is the root of the back stack and everything else is pushed from it, so
 # "is a top-level destination on screen?" and "is Home on screen?" are the same question, asked of
-# the line that holds the Listening switch's place. Naming them here rather than inline is what lets
-# a locale run translate them with the rest of the table.
-TAB_BAR = "Darek will listen here."
-HOME_TAB = "Darek will listen here."
+# the Listen button. Naming them here rather than inline is what lets a locale run translate them
+# with the rest of the table.
+TAB_BAR = "Listen"
+HOME_TAB = "Listen"
 
 # The top-level destinations [tap] has to treat as tabs: matched exactly, and not believed until the
 # tab reports itself selected ([showing_tab]). Empty, because Darek has no tab bar; "Settings" is an
