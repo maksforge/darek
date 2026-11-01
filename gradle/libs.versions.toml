@@ -27,8 +27,12 @@ lifecycleViewmodelNav3 = "2.10.0"
 licensee = "1.14.1"
 # The tip (ADR-0007). Sells a consumable that unlocks nothing.
 billing = "9.1.0"
+# Darek's voice (ADR-0014). Pinned: from 1.29.0 the AAR merges INTERNET and a telemetry provider.
+# Re-read the AAR's manifest before any bump.
+onnxruntime = "1.28.0"
 
 [libraries]
+onnxruntime-android = { module = "com.microsoft.onnxruntime:onnxruntime-android", version.ref = "onnxruntime" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppCompat" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }

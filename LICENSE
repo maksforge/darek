@@ -10,6 +10,11 @@ through any app store or other channel, without prior written permission.
 Viewing and forking within GitHub, as permitted by the GitHub Terms of
 Service, is not a grant of any of the rights above.
 
+Test data: app/src/test/resources/polish-phonemes.tsv is derived from the
+Polish word list of hermitdave/FrequencyWords (OpenSubtitles 2018), licensed
+CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/), and is under
+that licence. It is used only by the tests and is not part of the built app.
+
 Third-party components bundled in the built application remain under their own
 licences, reproduced in the app's licences screen and in
 app/src/main/assets/licences/. Those obligations travel with every build.

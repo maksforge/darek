@@ -1,3 +1,5 @@
+import java.net.URI
+import java.security.MessageDigest
 import java.util.Properties
 
 plugins {
@@ -212,6 +214,8 @@ licensee {
     // Google Play services, behind the Play Billing Library (the tip, ADR-0007). Vendor terms rather
     // than an open licence, so the Licences screen links them instead of shipping their text.
     allowUrl("https://developer.android.com/studio/terms.html")
+    // ONNX Runtime, which runs Darek's voice (ADR-0014).
+    allow("MIT")
 }
 
 /**
@@ -243,7 +247,108 @@ abstract class BundleLicences : DefaultTask() {
     }
 }
 
+/**
+ * A large file the build needs but the repo does not hold: fetched once into Gradle's user cache,
+ * checked against its SHA-256, and copied into the variant's generated assets. A changed file fails
+ * the build rather than shipping.
+ */
+abstract class FetchVerifiedAsset : DefaultTask() {
+    @get:Input
+    abstract val url: Property<String>
+
+    @get:Input
+    abstract val sha256: Property<String>
+
+    @get:Input
+    abstract val assetPath: Property<String>
+
+    @get:Internal
+    abstract val cacheDirectory: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val outputDirectory: DirectoryProperty
+
+    @TaskAction
+    fun fetch() {
+        val cached = cacheDirectory.get().asFile.resolve("${sha256.get()}/${url.get().substringAfterLast('/')}")
+        if (!cached.exists() || cached.sha256() != sha256.get()) {
+            cached.parentFile.mkdirs()
+            val partial = File(cached.path + ".part")
+            URI(url.get()).toURL().openStream().use { input ->
+                partial.outputStream().use { input.copyTo(it) }
+            }
+            val actual = partial.sha256()
+            if (actual != sha256.get()) {
+                partial.delete()
+                throw GradleException("${url.get()}: SHA-256 $actual, expected ${sha256.get()}")
+            }
+            partial.renameTo(cached)
+        }
+        val destination = outputDirectory.get().asFile.resolve(assetPath.get())
+        destination.parentFile.mkdirs()
+        cached.copyTo(destination, overwrite = true)
+    }
+
+    private fun File.sha256(): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        inputStream().use { input ->
+            val buffer = ByteArray(1 shl 16)
+            while (true) {
+                val read = input.read(buffer)
+                if (read < 0) break
+                digest.update(buffer, 0, read)
+            }
+        }
+        return digest.digest().joinToString("") { "%02x".format(it) }
+    }
+}
+
+// Darek's voice (ADR-0014): the int8 model and its config, published by `scripts/voice/quantize.py`
+// as assets of this repo's `voice-pl-mc_speech-int8-1` release. `-PfullVoice` adds the 63 MB
+// original for phase 1's R3 comparison; no other build carries it.
+private val voiceRelease = "https://github.com/maksforge/darek/releases/download/voice-pl-mc_speech-int8-1"
+private val voiceAssets =
+    buildList {
+        add(
+            Triple(
+                "$voiceRelease/pl_PL-mc_speech-medium-int8.onnx",
+                "4bca76cb9d30784bbfc06dcb7ced07fa67a2db1ea0c4a2d17bf5e06a06596e79",
+                "voice/voice.onnx",
+            ),
+        )
+        add(
+            Triple(
+                "$voiceRelease/pl_PL-mc_speech-medium-int8.onnx.json",
+                "b8bb11228e15c505219846a88fdc129e93f57e774ed7f9bac263156d1aa3d324",
+                "voice/voice.onnx.json",
+            ),
+        )
+        if (providers.gradleProperty("fullVoice").isPresent) {
+            add(
+                Triple(
+                    "https://huggingface.co/rhasspy/piper-voices/resolve/main/pl/pl_PL/mc_speech/medium/pl_PL-mc_speech-medium.onnx",
+                    "a6b043358bc81e6c111a5140606a21959ce7f34969b8b7207f62869787cc3907",
+                    "voice/voice-full.onnx",
+                ),
+            )
+        }
+    }
+
 androidComponents {
+    onVariants(selector().withBuildType("debug")) { variant ->
+        val suffix = variant.name.replaceFirstChar(Char::uppercase)
+        voiceAssets.forEach { (url, sha, path) ->
+            val name = path.substringAfterLast('/').replace(Regex("[^A-Za-z0-9]"), "")
+            val fetch =
+                tasks.register<FetchVerifiedAsset>("fetch${suffix}Voice$name") {
+                    this.url.set(url)
+                    sha256.set(sha)
+                    assetPath.set(path)
+                    cacheDirectory.set(File(gradle.gradleUserHomeDir, "caches/darek-assets"))
+                }
+            variant.sources.assets?.addGeneratedSourceDirectory(fetch, FetchVerifiedAsset::outputDirectory)
+        }
+    }
     onVariants { variant ->
         // Per variant on purpose: the debug build ships `ui-tooling` and the release build does
         // not, so one shared list would be wrong for whichever variant it was not generated from.
@@ -297,6 +402,9 @@ dependencies {
 
     // Reads licensee's report for the Licences screen.
     implementation(libs.kotlinx.serialization.json)
+
+    // Darek's voice (ADR-0014), debug-only until phase 1's checkpoint B.
+    debugImplementation(libs.onnxruntime.android)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

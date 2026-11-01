@@ -17,4 +17,9 @@
 -->
 <resources>
     <string name="app_name" translatable="false">Darek debug</string>
+    <string name="debug_voice" translatable="false">Darek\'s voice</string>
+    <string name="debug_voice_text" translatable="false">Say this</string>
+    <string name="debug_voice_next" translatable="false">Next sample</string>
+    <string name="debug_voice_say" translatable="false">Say it</string>
+    <string name="debug_voice_full" translatable="false">Full model (63 MB)</string>
 </resources>
