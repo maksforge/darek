@@ -39,6 +39,52 @@ HUNDREDS = ["", "sto", "dwieście", "trzysta", "czterysta", "pięćset", "sześ�
             "dziewięćset"]
 
 
+HOURS = ["zero", "pierwsza", "druga", "trzecia", "czwarta", "piąta", "szósta", "siódma", "ósma", "dziewiąta",
+         "dziesiąta", "jedenasta", "dwunasta", "trzynasta", "czternasta", "piętnasta", "szesnasta", "siedemnasta",
+         "osiemnasta", "dziewiętnasta", "dwudziesta", "dwudziesta pierwsza", "dwudziesta druga",
+         "dwudziesta trzecia", "dwudziesta czwarta"]
+
+
+def degree_noun(whole, fraction):
+    if fraction:
+        return "stopnia"
+    if whole == 1:
+        return "stopień"
+    if whole % 10 in (2, 3, 4) and whole % 100 not in (12, 13, 14):
+        return "stopnie"
+    return "stopni"
+
+
+def temperature_words(m):
+    sign, whole, fraction, scale = m.group(1), int(m.group(2)), m.group(3), (m.group(4) or "").lower()
+    words = []
+    if sign in ("-", "−") and (whole or fraction and int(fraction)):
+        words.append("minus")
+    elif sign == "+":
+        words.append("plus")
+    if whole == 0 and fraction == "5":
+        words.append("pół")
+    else:
+        words.append(number_words(whole))
+        if fraction and int(fraction):
+            words += ["i pół"] if fraction == "5" else ["przecinek", number_words(int(fraction))]
+    words.append(degree_noun(whole, fraction and int(fraction)))
+    if scale == "c":
+        words.append("celsjusza")
+    elif scale == "f":
+        words.append("fahrenheita")
+    return " ".join(words)
+
+
+def time_words(hour, minute):
+    words = [HOURS[hour]]
+    if 0 < minute < 10:
+        words += ["zero", number_words(minute)]
+    elif minute:
+        words.append(number_words(minute))
+    return " ".join(words)
+
+
 def number_words(n):
     if n < 10:
         return ONES[n]
@@ -170,7 +216,13 @@ def word_segments(word):
 
 
 def phonemize(text):
-    text = re.sub(r"\d+", lambda m: " " + number_words(int(m.group())) + " ", text.lower())
+    text = re.sub(r"([+\-−]?)(\d+)(?:[.,](\d+))?\s*°\s*([cf](?![a-ząćęłńóśźż]))?",
+                  lambda m: " " + temperature_words(m) + " ", text.lower())
+    text = re.sub(r"\b([01]?\d|2[0-4])[:.]([0-5]\d)\b",
+                  lambda m: " " + time_words(int(m.group(1)), int(m.group(2))) + " ", text)
+    text = re.sub(r"(?<![\w])[\-−](?=\d)", " minus ", text)
+    text = re.sub(r"(?<![\w])\+(?=\d)", " plus ", text)
+    text = re.sub(r"\d+", lambda m: " " + number_words(int(m.group())) + " ", text)
     tokens = re.findall(r"[a-ząćęłńóśźż]+|[,.?!;:]", text)
     words = [(t, word_segments(t)) for t in tokens if t[0].isalpha()]
     out = []

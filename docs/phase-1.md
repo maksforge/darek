@@ -247,7 +247,9 @@ The Reply text is speech, not UI: it lives in the enum, outside `strings.xml` (A
 
 **The voice** (ADR-0014) lives in `speak/`:
 - **`PolishPhonemes.kt`**: text to the model's phonemes. It lower-cases, writes numbers as words,
-  then handles digraphs, soft *i*, nasal vowels by what follows them, voicing assimilation (with
+  reads clock times the formal way (*21:30* → *dwudziesta pierwsza trzydzieści*, the owner's choice
+  on 2026-11-01) and temperatures with their sign and the right form of *stopień* (*-0,5°C* → *minus
+  pół stopnia Celsjusza*), then handles digraphs, soft *i*, nasal vowels by what follows them, voicing assimilation (with
   *w* and *rz* assimilating to what precedes them), final devoicing and penultimate stress. It is a
   port of `scripts/voice/g2p_reference.py`, pure Kotlin, and tested against it.
 - **`Voice.kt`**: phonemes into the model through ONNX Runtime, 22.05 kHz 16-bit samples out.
@@ -485,7 +487,7 @@ The copy, in English, translated once at the merge:
 | --- | --- | --- | --- |
 | R1 | The gate script (section 1) on the test phone, debug build, probe | `adb logcat -s DarekProbe` while the owner reads the script | |
 | R2 | The same on the owner's phone | as R1, `-s 132bc856` | |
-| R3 | Darek's voice on each phone: model load time, synthesis time for each fixed Reply, what finished each Reply, and the owner's ear on int8 against the full model | the `DarekVoice` log lines from V's *say this* field, both models (`-PfullVoice`) | |
+| R3 | Darek's voice on each phone: model load time, synthesis time for each fixed Reply, what finished each Reply, and the owner's ear on int8 against the full model | the `DarekVoice` log lines from V's *say this* field, both models (`-PfullVoice`) || **Test phone, int8, 2026-11-01:** load 3.5–3.7 s cold; *„Co tam, mordo?"* 1.3 s of speech in 0.6 s, longer sentences at ~0.45× real time (5.5 s in 2.5 s); every Reply ended on the marker. The owner heard it, and asked for formal clock times, now in. **Owed:** the owner's phone (Wi-Fi adb dropped mid-reading) and the int8-against-full ear check |
 | R4 | End to end on `-PreleaseShapedDebug`: *Słuchaj* → *"Hej Darek, powiedz coś"* → *„Co tam, mordo?"* heard and shown, and finished by the marker, on both phones | `./gradlew installDebug -PreleaseShapedDebug`, then the screen, `screencap` and `adb logcat -s DarekVoice` | |
 | R5 | Denial: deny once → *Zezwól*; deny again → *Otwórz ustawienia* opens the app's details screen; a first dialog dismissed with Back → still *Zezwól* | *Deny* tapped in the real system dialog, then the screen; `adb uninstall` and reinstall between runs (`pm revoke` sets neither the user-set nor the user-fixed flag, so it reproduces no denial) | |
 | R6 | First unpack time on the test phone, and that a killed half-unpack is redone | `DarekModel` log line; `adb shell am force-stop` mid-unpack, relaunch, `run-as … ls no_backup` | |
