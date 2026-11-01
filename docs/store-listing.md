@@ -246,3 +246,17 @@ Darek listens now. Tap Listen, allow the microphone and say „Hej Darek, powied
 ```
 Darek już słucha. Stuknij Słuchaj, zezwól na mikrofon i powiedz „Hej Darek, powiedz coś” – odpowie na głos „Co tam, mordo?” własnym głosem. Gdy usłyszy swoje imię bez komendy, powie, że trzeba go najpierw skonfigurować; to przyjdzie w kolejnej wersji testowej. Słyszy cię tylko wtedy, gdy aplikacja jest otwarta na ekranie; wszystko dzieje się na telefonie, bez internetu.
 ```
+
+### 0.4.0 — Darek's voice in full quality
+
+**English** — 172/500:
+
+```
+Darek now speaks more clearly and naturally, in the full-quality version of his voice, so the app takes more space. Everything still happens on the phone, with no internet.
+```
+
+**Polish** — 174/500:
+
+```
+Darek mówi teraz wyraźniej i bardziej naturalnie, swoim głosem w pełnej jakości, więc aplikacja zajmuje więcej miejsca. Wszystko nadal dzieje się na telefonie, bez internetu.
+```
