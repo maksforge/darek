@@ -8,9 +8,12 @@ enum class Persona(
     val word: String,
     val voice: String,
     val correction: String,
+    val voiceScales: FloatArray? = null,
 ) {
     DAREK("darek", "voice/darek", "Daria? Tu Darek, stary."),
-    DARIA("daria", "voice/daria", "Nie jestem Darkiem, mówisz z Darią."),
+
+    // gosia lisps at her config's 0.667/1/0.8; the owner judged 0.4/1/0.5 best by ear, 2026-11-01.
+    DARIA("daria", "voice/daria", "Nie jestem Darkiem, mówisz z Darią.", floatArrayOf(0.4f, 1f, 0.5f)),
     ;
 
     val other: Persona get() = if (this == DAREK) DARIA else DAREK

@@ -86,10 +86,14 @@ class Voice private constructor(
         private const val PEAK = 0.95f
         private const val MAX_GAIN = 8f
 
-        /** [voice] is an asset path without its extension: the Persona's (ADR-0016). */
+        /**
+         * [voice] is an asset path without its extension: the Persona's (ADR-0016). [overrides], when
+         * given, replace the config's `noise_scale`, `length_scale` and `noise_w`.
+         */
         fun load(
             context: Context,
             voice: String,
+            overrides: FloatArray? = null,
         ): Voice {
             val config =
                 Json
@@ -115,7 +119,7 @@ class Voice private constructor(
                         it,
                     )
                 }
-            return Voice(environment, session, idMap, scales)
+            return Voice(environment, session, idMap, overrides ?: scales)
         }
 
         // openFd needs the asset stored uncompressed: `noCompress` in app/build.gradle.kts.
