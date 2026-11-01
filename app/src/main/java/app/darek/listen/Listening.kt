@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -83,7 +84,10 @@ class Listening(
                 try {
                     val loaded = withContext(Dispatchers.IO) { model ?: loadModel().also { model = it } }
                     withContext(Dispatchers.Default) { prepareVoice() }
-                    launch(Dispatchers.Default) { renderAhead(NOT_UNDERSTOOD) }
+                    if (enabled.any { it.calls }) {
+                        withContext(Dispatchers.Default) { renderAhead(NOT_UNDERSTOOD.take(1)) }
+                        launch(Dispatchers.Default) { renderAhead(NOT_UNDERSTOOD.drop(1)) }
+                    }
                     val grammar = Grammar.json(enabled, ListeningExtras.phrases())
                     mutableState.update { it.copy(phase = Phase.ON) }
                     while (true) {
@@ -146,28 +150,40 @@ class Listening(
     private suspend fun speak(text: String): PlaybackEnd {
         val samples =
             rendered[text]
-                ?: voice?.let { loaded -> withContext(Dispatchers.Default) { loaded.synthesize(text) } }
+                ?: voice?.let { loaded -> withContext(Dispatchers.Default) { synthesized(loaded, text) } }
                 ?: return PlaybackEnd.FAILED
         return ReplyPlayer.play(samples, volume())
     }
 
-    // A voice that fails to load leaves the Replies shown but silent; Listening goes on, and the
-    // next start tries again.
-    private fun prepareVoice() {
+    // A voice that fails to load or to synthesize leaves the Replies shown but silent; Listening
+    // goes on, and the next start tries again.
+    private suspend fun prepareVoice() {
         if (voice != null) return
         val started = SystemClock.elapsedRealtime()
         voice =
             runCatching { Voice.load(appContext) }
                 .onFailure { Log.e(VOICE_TAG, "voice failed to load", it) }
                 .getOrNull() ?: return
-        renderAhead(Command.entries.map { it.reply } + NOT_CONFIGURED + NOT_UNDERSTOOD.first())
+        renderAhead(Command.entries.map { it.reply } + NOT_CONFIGURED)
         Log.i(VOICE_TAG, "ready=${SystemClock.elapsedRealtime() - started}ms")
     }
 
-    private fun renderAhead(texts: List<String>) {
+    private suspend fun renderAhead(texts: List<String>) {
         val loaded = voice ?: return
-        texts.filterNot(rendered::containsKey).forEach { rendered[it] = loaded.synthesize(it) }
+        for (text in texts) {
+            currentCoroutineContext().ensureActive()
+            if (rendered.containsKey(text)) continue
+            synthesized(loaded, text)?.let { rendered[text] = it }
+        }
     }
+
+    private fun synthesized(
+        loaded: Voice,
+        text: String,
+    ): ShortArray? =
+        runCatching { loaded.synthesize(text) }
+            .onFailure { Log.e(VOICE_TAG, "synthesis failed", it) }
+            .getOrNull()
 
     private fun loadModel(): Model {
         val started = SystemClock.elapsedRealtime()
