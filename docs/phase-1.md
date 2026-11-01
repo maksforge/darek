@@ -57,9 +57,9 @@ release AAB declares `RECORD_AUDIO` and not `CALL_PHONE`. Spoken to from 3 m, th
   version without a telemetry provider (ADR-0014).
 - **The release is minified** (`isMinifyEnabled = true`). JNA finds Vosk's native methods by
   reflection. Without keep rules for `com.sun.jna.**` and `org.vosk.**`, JNA's native side aborts
-  the process (`UnsatisfiedLinkError`, *Can't obtain peer field ID*). B adds vosk-android's
-  documented keep rules to `proguard-rules.pro`, with R4's crash or `mapping.txt` as the evidence
-  that file asks for. `aab-reflection.py` does not cover it: it checks classes named in the
+  the process (`UnsatisfiedLinkError`, *Can't obtain peer field ID*). A adds those two keeps to
+  `proguard-rules.pro`, with the probe's crash on `-PreleaseShapedDebug` as the evidence that file
+  asks for. `aab-reflection.py` does not cover it: it checks classes named in the
   manifest, and JNA's are not. So the end-to-end reading is taken on `-PreleaseShapedDebug` (R4).
 - **Closed testers exist, or will within days** (above). Anything a `feat:` merge releases may reach
   a stranger's phone.

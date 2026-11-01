@@ -37,8 +37,6 @@ class Recogniser(
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun heard(grammar: String?): Flow<Heard> =
         flow {
-            val rate = SAMPLE_RATE.toFloat()
-            val recognizer = grammar?.let { Recognizer(model, rate, it) } ?: Recognizer(model, rate)
             val record =
                 AudioRecord(
                     MediaRecorder.AudioSource.VOICE_RECOGNITION,
@@ -56,28 +54,30 @@ class Recogniser(
                 )
             try {
                 check(record.state == AudioRecord.STATE_INITIALIZED) { "AudioRecord did not initialise" }
-                record.startRecording()
-                val buffer = ShortArray(CHUNK)
-                var lastPartial = emptyList<String>()
-                while (true) {
-                    currentCoroutineContext().ensureActive()
-                    val read = record.read(buffer, 0, buffer.size)
-                    check(read >= 0) { "AudioRecord.read returned $read" }
-                    if (recognizer.acceptWaveForm(buffer, read)) {
-                        lastPartial = emptyList()
-                        emit(Heard.Final(field(recognizer.result, "text")))
-                    } else {
-                        val partial = field(recognizer.partialResult, "partial")
-                        if (partial != lastPartial) {
-                            lastPartial = partial
-                            emit(Heard.Partial(partial))
+                val rate = SAMPLE_RATE.toFloat()
+                (grammar?.let { Recognizer(model, rate, it) } ?: Recognizer(model, rate)).use { recognizer ->
+                    record.startRecording()
+                    val buffer = ShortArray(CHUNK)
+                    var lastPartial = emptyList<String>()
+                    while (true) {
+                        currentCoroutineContext().ensureActive()
+                        val read = record.read(buffer, 0, buffer.size)
+                        check(read >= 0) { "AudioRecord.read returned $read" }
+                        if (recognizer.acceptWaveForm(buffer, read)) {
+                            lastPartial = emptyList()
+                            emit(Heard.Final(field(recognizer.result, "text")))
+                        } else {
+                            val partial = field(recognizer.partialResult, "partial")
+                            if (partial != lastPartial) {
+                                lastPartial = partial
+                                emit(Heard.Partial(partial))
+                            }
                         }
                     }
                 }
             } finally {
                 runCatching { record.stop() }
                 record.release()
-                recognizer.close()
             }
         }.flowOn(Dispatchers.IO)
 

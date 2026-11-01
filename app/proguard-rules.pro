@@ -40,7 +40,6 @@
 #     2026-11-01).
 #
 -keep class com.sun.jna.** { *; }
--keep class * implements com.sun.jna.** { *; }
 -keep class org.vosk.** { *; }
 # Kept whole, JNA's desktop-only `Native$AWT` names AWT classes Android does not have.
 -dontwarn java.awt.**
