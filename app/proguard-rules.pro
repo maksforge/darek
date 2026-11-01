@@ -1,8 +1,8 @@
 # R8 rules for the release build.
 #
-# It deliberately contains **no keep rules**, and that is a finding rather than an omission. Every
-# reflection-shaped thing in this app is already covered by a rule that some library ships, and the
-# evidence is in the build's own output rather than in a habit:
+# It holds one keep rule, for ONNX Runtime below. Everything else reflection-shaped in this app is
+# already covered by a rule that some library ships, and the evidence is in the build's own output
+# rather than in a habit:
 #
 #   app/build/outputs/mapping/release/configuration.txt   every rule R8 actually ran with
 #   app/build/outputs/mapping/release/mapping.txt         what was renamed, and to what
@@ -25,6 +25,13 @@
 #     usual `-keepclassmembers enum *` keeps field *names*, which is not what `.name` returns. It is
 #     a property of how R8 works, so prove it by behaviour on the phone as well as by grepping the
 #     compiled dex for the constants themselves.
+#
+#   * **ONNX Runtime** (Darek's voice, ADR-0014). Its AAR ships no consumer rules, and its JNI
+#     library finds classes, constructors and fields by name. Without this keep, R8 renamed
+#     `TensorInfo` and `OrtException` and the first `OrtSession.run` aborted the process with
+#     `JNI DETECTED ERROR: java_class == null` (test phone, `-PreleaseShapedDebug`, 2026-11-01).
+#
+-keep class ai.onnxruntime.** { *; }
 #
 # ---------------------------------------------------------------------------
 # The rule to follow when this file changes

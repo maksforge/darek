@@ -10,8 +10,11 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
+import java.io.FileInputStream
+import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.LongBuffer
+import java.nio.channels.FileChannel
 
 /**
  * Darek's own voice (ADR-0014): Polish text through [PolishPhonemes] into Piper's mc_speech model on
@@ -24,7 +27,9 @@ class Voice private constructor(
     private val scales: FloatArray,
 ) : AutoCloseable {
     fun synthesize(text: String): ShortArray {
-        val ids = PolishPhonemes.ids(PolishPhonemes.phonemize(text), idMap)
+        val phonemes = PolishPhonemes.phonemize(text)
+        if (phonemes.isBlank()) return ShortArray(0)
+        val ids = PolishPhonemes.ids(phonemes, idMap)
         val inputs =
             mapOf(
                 "input" to
@@ -87,8 +92,19 @@ class Voice private constructor(
                     inference.getValue("noise_w").jsonPrimitive.float,
                 )
             val environment = OrtEnvironment.getEnvironment()
-            val bytes = context.assets.open(model).use { it.readBytes() }
-            return Voice(environment, environment.createSession(bytes, OrtSession.SessionOptions()), idMap, scales)
+            val session = OrtSession.SessionOptions().use { environment.createSession(mapAsset(context, model), it) }
+            return Voice(environment, session, idMap, scales)
         }
+
+        // openFd needs the asset stored uncompressed: `noCompress` in app/build.gradle.kts.
+        private fun mapAsset(
+            context: Context,
+            path: String,
+        ): ByteBuffer =
+            context.assets.openFd(path).use { fd ->
+                FileInputStream(fd.fileDescriptor).channel.use {
+                    it.map(FileChannel.MapMode.READ_ONLY, fd.startOffset, fd.declaredLength)
+                }
+            }
     }
 }

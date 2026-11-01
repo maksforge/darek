@@ -12,12 +12,6 @@
     <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
 
     <!--
-        ONNX Runtime (Darek's voice, ADR-0014) is pinned at 1.28.0, which merges nothing. From 1.29.0
-        its manifest adds INTERNET, ACCESS_NETWORK_STATE and this provider, which starts Microsoft's
-        telemetry at process start. Removed here too, so a version bump cannot switch it on.
-    -->
-
-    <!--
         Package visibility (API 30+) for the one OEM screen the app offers to open: Xiaomi's
         autostart manager, which on HyperOS decides whether background work runs at all. Without
         this declaration `resolveActivity` returns null on a phone where the activity exists, and
@@ -70,6 +64,7 @@
         android:windowSoftInputMode="adjustResize"
         android:theme="@style/Theme.App"
         tools:targetApi="33">
+        <!-- ADR-0014: ONNX Runtime ≥1.29 merges this telemetry provider. -->
         <provider
             android:name="ai.onnxruntime.TelemetryInitializer"
             tools:ignore="MissingClass"

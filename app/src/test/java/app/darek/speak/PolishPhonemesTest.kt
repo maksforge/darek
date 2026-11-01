@@ -58,26 +58,52 @@ class PolishPhonemesTest {
 
     @Test
     fun `a clock time is read the formal way, with the hour as a feminine ordinal`() {
-        assertEquals(PolishPhonemes.phonemize("dwudziesta pierwsza trzydzieści"), PolishPhonemes.phonemize("21:30"))
-        assertEquals(PolishPhonemes.phonemize("siódma zero pięć"), PolishPhonemes.phonemize("7:05"))
-        assertEquals(PolishPhonemes.phonemize("dwunasta"), PolishPhonemes.phonemize("12.00"))
+        same("21:30", "dwudziesta pierwsza trzydzieści")
+        same("7:05", "siódma zero pięć")
+        same("12:00", "dwunasta")
+        same("00:00", "zero zero")
+    }
+
+    @Test
+    fun `only a colon makes a clock time, never a date, a price or a version`() {
+        same("12.05.2026", "dwanaście. pięć. dwa tysiące dwadzieścia sześć")
+        same("3.50 zł", "trzy. pięćdziesiąt zł")
+        same("wersja 1.15", "wersja jeden. piętnaście")
+        same("ż12:30", "ż dwanaście: trzydzieści")
     }
 
     @Test
     fun `temperatures take their sign, their scale and the right form of stopień`() {
-        fun same(
-            written: String,
-            spoken: String,
-        ) = assertEquals(written, PolishPhonemes.phonemize(spoken), PolishPhonemes.phonemize(written))
         same("-5°C", "minus pięć stopni celsjusza")
         same("+1°", "plus jeden stopień")
         same("22°C", "dwadzieścia dwa stopnie celsjusza")
         same("12°", "dwanaście stopni")
+        same("0,5°", "pół stopnia")
         same("-0,5°C", "minus pół stopnia celsjusza")
+        same("1,5°", "półtora stopnia")
+        same("21,5°", "dwadzieścia jeden i pół stopnia")
+        same("1,05°", "jeden przecinek zero pięć stopnia")
         same("-13,2°C", "minus trzynaście przecinek dwa stopnia celsjusza")
         same("0°C", "zero stopni celsjusza")
         same("Temperatura -3", "temperatura minus trzy")
     }
+
+    @Test
+    fun `a temperature range reads as two numbers, not a minus`() {
+        same("od 15-20°C", "od piętnaście, dwadzieścia stopni celsjusza")
+        same("15 - 20°", "piętnaście, dwadzieścia stopni")
+    }
+
+    @Test
+    fun `a number too long for a Long is read digit by digit`() {
+        same("10000000000000000000°", "jeden " + "zero ".repeat(19) + "stopni")
+        same("1,00000000000000000001°", "jeden przecinek " + "zero ".repeat(19) + "jeden stopnia")
+    }
+
+    private fun same(
+        written: String,
+        spoken: String,
+    ) = assertEquals(written, PolishPhonemes.phonemize(spoken), PolishPhonemes.phonemize(written))
 
     private fun resource(name: String): String =
         checkNotNull(javaClass.classLoader?.getResource(name)) { "missing test resource $name" }.readText()

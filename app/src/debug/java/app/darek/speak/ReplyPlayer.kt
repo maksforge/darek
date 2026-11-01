@@ -9,11 +9,13 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeoutOrNull
 
 /** How a played Reply ended, which phase 1's R3 reads from the `DarekVoice` log line. */
-enum class ReplyEnd { MARKER, WATCHDOG }
+enum class PlaybackEnd { MARKER, WATCHDOG, NOTHING_TO_PLAY }
 
 /** Plays one rendered Reply through a static [AudioTrack] and reports what ended it. */
 object ReplyPlayer {
-    suspend fun play(samples: ShortArray): ReplyEnd {
+    suspend fun play(samples: ShortArray): PlaybackEnd {
+        // One frame would put the end marker at 0, which may never fire.
+        if (samples.size < 2) return PlaybackEnd.NOTHING_TO_PLAY
         val track =
             AudioTrack
                 .Builder()
@@ -50,7 +52,8 @@ object ReplyPlayer {
             )
             track.play()
             val watchdogMs = samples.size * 1000L / Voice.SAMPLE_RATE + 2_000
-            return if (withTimeoutOrNull(watchdogMs) { ended.await() } != null) ReplyEnd.MARKER else ReplyEnd.WATCHDOG
+            val marked = withTimeoutOrNull(watchdogMs) { ended.await() } != null
+            return if (marked) PlaybackEnd.MARKER else PlaybackEnd.WATCHDOG
         } finally {
             track.release()
         }
