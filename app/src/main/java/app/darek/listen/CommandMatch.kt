@@ -13,13 +13,22 @@ fun commandIn(
     }
 
 /**
- * What one final result makes Darek do: fire a Command, say one of [NOT_UNDERSTOOD] when he heard
- * his own name and nothing he knows, or stay silent, so talk that never names him never gets an answer.
+ * What one final result makes Darek do: fire a Command; when he heard his own name and nothing he
+ * knows, say he does not understand, or, while no Command the user sets up is enabled, ask to be set
+ * up; or stay silent, so talk that never names him never gets an answer. The built-in Command that
+ * only replies does not count as set up (the owner's call, 2026-11-01).
  */
 fun reactionTo(
     tokens: List<String>,
     enabled: Collection<Command>,
-): Reaction? = commandIn(tokens, enabled)?.let(Reaction::Fires) ?: Reaction.NotUnderstood.takeIf { NAME in tokens }
+): Reaction? {
+    commandIn(tokens, enabled)?.let { return Reaction.Fires(it) }
+    return when {
+        NAME !in tokens -> null
+        enabled.any { it.calls } -> Reaction.NotUnderstood
+        else -> Reaction.NotConfigured
+    }
+}
 
 sealed interface Reaction {
     data class Fires(
@@ -27,7 +36,11 @@ sealed interface Reaction {
     ) : Reaction
 
     data object NotUnderstood : Reaction
+
+    data object NotConfigured : Reaction
 }
+
+const val NOT_CONFIGURED = "Stary, musisz mnie najpierw skonfigurować."
 
 const val NAME = "darek"
 

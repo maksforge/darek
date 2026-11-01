@@ -69,12 +69,18 @@ class CommandMatchTest {
     }
 
     @Test
-    fun his_name_without_a_command_is_not_understood_and_talk_without_it_is_ignored() {
+    fun his_name_without_a_command_asks_to_be_set_up_until_a_command_that_calls_is_on() {
         val sayOnly = listOf(Command.SAY_SOMETHING)
+        val setUp = Command.entries
         assertEquals(Reaction.Fires(Command.SAY_SOMETHING), reactionTo(tokensOf("darek powiedz coś"), sayOnly))
         listOf("darek", "darek [unk]", "[unk] darek", "darek powiedz", "darek powiedz [unk] coś", "darek otwórz bramę")
-            .forEach { assertEquals(it, Reaction.NotUnderstood, reactionTo(tokensOf(it), sayOnly)) }
+            .forEach { assertEquals(it, Reaction.NotConfigured, reactionTo(tokensOf(it), sayOnly)) }
+        listOf("darek", "darek powiedz [unk] coś", "darek otwórz")
+            .forEach { assertEquals(it, Reaction.NotUnderstood, reactionTo(tokensOf(it), setUp)) }
         listOf("marek powiedz coś", "darka", "darku powiedz coś", "powiedz coś", "[unk]", "")
-            .forEach { assertEquals(it, null, reactionTo(tokensOf(it), sayOnly)) }
+            .forEach {
+                assertEquals(it, null, reactionTo(tokensOf(it), sayOnly))
+                assertEquals(it, null, reactionTo(tokensOf(it), setUp))
+            }
     }
 }
