@@ -228,8 +228,8 @@ def word_segments(word):
 
 
 def phonemize(text):
-    text = re.sub(r"(?<=\d)\s*[\-–−]\s*(?=\d+(?:[.,]\d+)?\s*°)", ", ", text.lower())
-    text = re.sub(r"((?<![\w])[+\-−])?(\d+)(?:[.,](\d+))?\s*°\s*([cf](?![a-ząćęłńóśźż]))?",
+    text = re.sub(r"(?<=\d)(?<!:\d\d)(?:[\-–−]|\s+[\-–−]\s+)(?=\d+(?:[.,]\d+)?\s*°)", ", ", text.lower())
+    text = re.sub(r"((?:(?<![\w])|(?<=:\d\d))[+\-−])?(\d+)(?:[.,](\d+))?\s*°\s*([cf](?![a-ząćęłńóśźż]))?",
                   lambda m: " " + temperature_words(m) + " ", text)
     text = re.sub(r"(?<![\w.,:])([01]?\d|2[0-4]):([0-5]\d)(?![\w]|[.,:]\d)",
                   lambda m: " " + time_words(int(m.group(1)), int(m.group(2))) + " ", text)

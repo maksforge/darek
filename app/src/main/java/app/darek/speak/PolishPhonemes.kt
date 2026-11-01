@@ -187,9 +187,9 @@ object PolishPhonemes {
             "dwudziesta czwarta",
         )
 
-    private val temperatureRange = Regex("(?<=\\d)\\s*[\\-–−]\\s*(?=\\d+(?:[.,]\\d+)?\\s*°)")
+    private val temperatureRange = Regex("(?<=\\d)(?<!:\\d\\d)(?:[\\-–−]|\\s+[\\-–−]\\s+)(?=\\d+(?:[.,]\\d+)?\\s*°)")
     private val temperature =
-        Regex("((?<![\\p{L}\\p{N}_])[+\\-−])?(\\d+)(?:[.,](\\d+))?\\s*°\\s*([cf](?![a-ząćęłńóśźż]))?")
+        Regex("((?:(?<![\\p{L}\\p{N}_])|(?<=:\\d\\d))[+\\-−])?(\\d+)(?:[.,](\\d+))?\\s*°\\s*([cf](?![a-ząćęłńóśźż]))?")
     private val clockTime = Regex("(?<![\\p{L}\\p{N}_.,:])([01]?\\d|2[0-4]):([0-5]\\d)(?![\\p{L}\\p{N}_]|[.,:]\\d)")
     private val minusSign = Regex("(?<![\\p{L}\\p{N}_])[\\-−](?=\\d)")
     private val plusSign = Regex("(?<![\\p{L}\\p{N}_])\\+(?=\\d)")
