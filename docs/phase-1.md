@@ -162,6 +162,8 @@ and each phone's own microphone with the app open:
 - It keeps the screen on while it runs (`keepScreenOn`), so a screen timeout cannot end a reading
   partway. The test phone's `stayon` would hide that; the owner's phone has no such setting.
 - The probe has a grammar/free toggle, used **only** under verdict 4.
+- R1, R2 and R8 are read with **Reading mode** on: exact matching, the shipping grammar, and no
+  Reply spoken.
 - It writes no audio anywhere (ADR-0008 holds in the debug build too).
 
 The owner speaks; the session runs adb and reads the log. The script, each line said once unless a
