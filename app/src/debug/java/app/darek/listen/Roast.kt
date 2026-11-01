@@ -117,6 +117,7 @@ object Roast {
             stem.endsWith("r") -> stem + "ze"
             stem.endsWith("t") -> stem.dropLast(1) + "cie"
             stem.endsWith("d") -> stem.dropLast(1) + "dzie"
+            stem.endsWith("i") -> stem + "u"
             else -> stem + "ie"
         }
 

@@ -30,6 +30,7 @@
     <string name="debug_probe_start" translatable="false">Start</string>
     <string name="debug_probe_stop" translatable="false">Stop</string>
     <string name="debug_probe_free" translatable="false">Free decoding</string>
+    <string name="debug_probe_reading" translatable="false">Reading mode: exact, shipping grammar, silent</string>
     <string name="debug_probe_preparing" translatable="false">Unpacking and loading the model…</string>
     <string name="debug_probe_partial" translatable="false">Hearing: %1$s</string>
 </resources>
