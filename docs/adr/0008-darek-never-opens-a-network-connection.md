@@ -8,8 +8,8 @@ only privacy promise worth making is one a user can check: nothing it hears can 
 because the app has no way to send it.
 
 Nothing Darek does needs the network. Recognition runs on a bundled model
-([ADR-0009](0009-commands-are-recognised-offline-against-a-grammar-with-decoys.md)), the Reply is the
-phone's own text-to-speech engine, and the Gate call goes through the phone's dialler
+([ADR-0009](0009-commands-are-recognised-offline-against-a-grammar-with-decoys.md)), the Reply is
+Darek's own bundled voice ([ADR-0014](0014-darek-speaks-with-his-own-bundled-voice.md)), and the Gate call goes through the phone's dialler
 ([ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)).
 
 ## Decision
@@ -41,5 +41,5 @@ gate, and cannot run continuously in the background.
 
 - The privacy policy and Play's Data safety answers stay short: audio is processed on the phone and
   never stored or sent. Adding any network feature reopens both, and this ADR.
-- The text-to-speech engine is another app. Whether its Polish voice needs the network is that
-  engine's business; Darek picks a voice that does not and says so when there is none (ADR-0012).
+- The Reply never leaves the app: Darek speaks it with his own bundled voice, not through another
+  app's text-to-speech engine (ADR-0014).

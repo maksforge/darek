@@ -147,9 +147,10 @@ Console matches. A new permission, foreground service or data type is a Console 
 
 - [ ] **In the release that ships phase 1's checkpoint B** (`phase-1.md`, *Documents this phase
       amends*): the listing's test-build paragraph in both languages, the screenshots with *Słuchaj*,
-      the privacy policy's microphone bullet, `RECORD_AUDIO`'s row in `play-app-content.md` with the
-      Data safety re-read, `aab-permissions.py`'s EXPECTED, and the licences of Vosk, its model and
-      JNA. `CALL_PHONE` stays out of the release until phase 3.
+      the privacy policy's microphone bullet and its *Text-to-speech* paragraph (Darek's own voice,
+      ADR-0014), `RECORD_AUDIO`'s row in `play-app-content.md` with the Data safety re-read,
+      `aab-permissions.py`'s EXPECTED, and the licences of Vosk, its model, JNA, ONNX Runtime and the
+      voice (with ADR-0014's grey area). `CALL_PHONE` stays out of the release until phase 3.
 
 ## After the closed test
 
