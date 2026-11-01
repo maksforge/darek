@@ -23,15 +23,19 @@ was extracted from and the first app built from it settled on exactly this split
   2026-10-31: checkpoints A–E done, every reading taken; reading 3 on both phones (`phase-0.md`,
   *Taken 2026-10-31*)
 - [ ] **Phase P** — The pipeline: repository setup, upload key, Play entry, secrets, a green internal upload
-- [ ] **Phase 1** — The mechanism on the phone, app open: the bundled model hears one Command from a
-  real voice, Darek speaks the Reply offline, and `placeCall` dials (ADR-0009, ADR-0011). Readings:
-  real voices at a distance and in a car, the offline Polish voice, the dial on the owner's phone
+- [ ] **Phase 1** ([`phase-1.md`](phase-1.md)) — The mechanism on the phone, app open: *Słuchaj*
+  on Home, the bundled model hears *"Hej Darek, powiedz coś"* from a real voice and Darek answers
+  *„Co tam, mordo?"* offline (ADR-0009, ADR-0013), with the microphone disclosure; the Gate call
+  with its cancel window in the debug build only (ADR-0011). Readings: real voices at a distance and
+  in a car, the offline Polish voice, the dial on the owner's phone
 - [ ] **Phase 2** — Listening: the microphone service, its notification, the start paths (switch,
   notification after boot, Quick Settings tile), pausing during the Reply and the call, MIUI setup,
   a night's battery reading (ADR-0010)
-- [ ] **Phase 3** — Safe for a stranger: the user's Numbers for the built-in Commands, the microphone
-  disclosure before the permission ask, the first-run path ← **the door: closed testing opens here**.
-  It freezes `CALL_PHONE`, `RECORD_AUDIO` and the `microphone` service type
+- [ ] **Phase 3** — Safe for a stranger: the user's Numbers for the built-in Commands, which brings
+  `CALL_PHONE` and the call into the release, and the first-run path. It freezes `CALL_PHONE` and the
+  `microphone` service type. *The door is already open*: closed testing started with phase 0's
+  Alpha 0.2.0 (2026-10-31), so the microphone disclosure moved to phase 1, where `RECORD_AUDIO`
+  arrives
 - [ ] **Phase N** — Ship shape: Polish-first listing, screenshots, the foreground-service declaration
   and its video, the App content answers
 
@@ -93,6 +97,13 @@ ask owns its hand-off, its re-read, and what the user sees when the answer is no
 
 Write the table for your app — the ask, the moment it is made, the phase that owns it — and put it
 here, so a later phase cannot quietly move an ask forward to "get it out of the way".
+
+| Ask | Made when | Phase |
+| --- | --- | --- |
+| `RECORD_AUDIO`, after the disclosure sheet | the first tap of *Słuchaj* | 1 |
+| `CALL_PHONE` | a Number is first saved for a Command (debug-only in phase 1) | 1 (debug), 3 |
+| `POST_NOTIFICATIONS` | Listening is first started as the service | 2 |
+| Battery exemption, autostart (hand-offs, no permission) | after the first service start, on a ROM that needs them | 2 |
 
 **The third clause is the one that gets left out, and it is the one that generates support mail.**
 These denials nearly all fail *silently*: a denied notification permission leaves a foreground

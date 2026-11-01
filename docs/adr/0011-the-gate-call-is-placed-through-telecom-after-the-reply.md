@@ -18,6 +18,9 @@ premium-rate fraud, and `CALL_PHONE` is otherwise unrestricted.
 - **Calls are placed with `TelecomManager.placeCall(tel:<number>)`**, never with an activity intent.
 - **The number is one the user typed in** for that Command. Darek ships with no number and never
   reads contacts.
+- **This ADR covers Commands that call.** One that only replies
+  ([ADR-0013](0013-a-command-may-only-reply.md)) speaks and stops: no cancel window, no call. The
+  pause while Darek speaks applies to both.
 - **A Command is acknowledged before it acts**: Darek speaks the Reply (*"Otwieram bramę"*) and waits
   for the engine's `onDone`. A **cancel window** of about 2 s follows, in which *"Darek, stop"*,
   *"anuluj"* or the notification's *Anuluj* action cancels; only then does he dial. Cancel words act
@@ -52,7 +55,8 @@ appears.
 
 - The test phone has no SIM, so the dial is read on the owner's phone, with the owner's go-ahead each
   time (`CLAUDE.md`, environment notes). A dial is a real gate opening.
-- Whether MIUI/HyperOS add a check of their own to `placeCall` from a background service is phase 1's
-  reading on the owner's phone.
+- Whether MIUI/HyperOS add a check of their own to `placeCall` from a background service is phase 2's
+  reading on the owner's phone. Phase 1 dials only with the app open, and only in the debug build:
+  `CALL_PHONE` reaches the release with phase 3's Number editor.
 - The cancel window adds about 2 s between the Reply and the gate.
 - Dual-SIM phones dial on the default SIM; choosing a SIM per Command waits for someone who needs it.
