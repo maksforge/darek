@@ -89,9 +89,10 @@ ADR-0009's match rule, which ignores anything said before or after a Command:
   switching one on switches the other off.
 - **A phrase that sounds like an enabled one**, within two letters of it in all (edit distance over
   the normalised phrase), installs switched off, behind a warning the user can override to keep both
-  on. So does a fucha with a Decoy within two letters of *darek* (the name Decoys are Darek's
-  own) or of a word in another fucha's enabled Command, which would take that Command's
-  utterances; a Decoy equal to such a word is the same token and changes nothing.
+  on. So does a fucha with a Decoy or a Command word within two letters of *darek* (the name
+  Decoys are Darek's own) or of a word in another fucha's enabled Command: the grammar holds every
+  Command word as a token of its own too, so either would take that Command's utterances. A word
+  equal to such a word is the same token and changes nothing.
 
 **The fuchy page is a native screen** drawn from the site's `fuchy.json`, not a web view. A fucha
 needing an action this Darek lacks is shown greyed out, *„Wymaga nowszej wersji Darka"*. Fuchy with
@@ -100,9 +101,12 @@ profanity are marked *„Wulgaryzmy"* and hidden until the user turns them on in
 **Updates:** Darek checks maksforge.com for them while an approved fucha other than his own is
 installed; his own update with the app. They update automatically (a setting, on by default) or,
 with it off, on a tap; *„Darek, zaktualizuj fuchy"* does it by voice. An unapproved fucha has
-nowhere to update from: a newer file installs over it. Every update passes the checks an install
-does (signature, vocabulary, clashes), and one that adds a permission, an address or a value sent
-waits for the user.
+nowhere to update from: a newer file installs over it. A file without a valid MaksForge signature
+over an approved fucha with the same ID is a fresh install, not an update: the strong warning is
+shown, every grant is asked again, and its Commands' Numbers are cleared, so each one that calls
+stays off until the user picks a Number again. Every update passes the checks an install does
+(signature, vocabulary, clashes), and one that adds a permission, an address or a value sent waits
+for the user.
 
 **Personas stay in the app.** A persona (Daria) changes the name every Command starts with, the name
 Decoys and the grammatical gender of every Reply, so it is not one fucha among others.
