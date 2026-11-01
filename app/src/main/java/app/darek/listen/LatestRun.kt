@@ -9,8 +9,9 @@ import kotlinx.coroutines.launch
 /**
  * Runs [block] for the latest value asked for, one run at a time, so whatever burst of [run],
  * [change] and [stop] calls arrives from whichever threads, the last one is what ends up running. A
- * new value waits for the old run to finish cancelling. [ended] follows every run; a run that
- * returns on its own is forgotten before it, so a [run] of the same value starts it again.
+ * new value waits for the old run to finish cancelling. [ended] follows every run; a run that ends
+ * without being superseded, by returning or by any throw, is forgotten before it, so a [run] of the
+ * same value starts it again.
  */
 class LatestRun<T : Any>(
     scope: CoroutineScope,
@@ -31,8 +32,8 @@ class LatestRun<T : Any>(
                 if (request == null || wanted.value !== request) return@collectLatest
                 try {
                     block(request.value)
-                    wanted.compareAndSet(request, null)
                 } finally {
+                    wanted.compareAndSet(request, null)
                     ended()
                 }
             }
