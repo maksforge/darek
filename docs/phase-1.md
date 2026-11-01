@@ -305,6 +305,13 @@ A failed voice dials **in this phase only**, because Listening exists only while
 and the shown Reply is seen. With the phone in a pocket it is neither heard nor seen, so whether a
 Command that calls may dial on a failed voice there is left open for phase 2 (ADR-0011).
 
+**His name without a Command** (the owner's ask, 2026-11-01): a final result that holds *darek* and
+no enabled Command gets the Reply *„Stary, nie rozumiem cię."*, and one without *darek* gets nothing,
+so talk that never names him is never answered. While a partial result holds *darek*, Home shows
+*Darek cię słyszy…* in place of *Darek słucha*. `CommandMatchTest` pins which results answer. A room
+that says *„Darek mówił, że…"* hears *„nie rozumiem"*; phase 2 re-reads that before it listens in a
+pocket.
+
 **Home** loses its placeholder line and gains, in the middle:
 - **The *Słuchaj* button.** Off, it says *Słuchaj*; on, *Darek słucha* with *Zatrzymaj*. It turns
   itself off when Home leaves the screen (`ON_STOP`), because in this phase the microphone belongs
@@ -329,7 +336,7 @@ Command that calls may dial on a failed voice there is left open for phase 2 (AD
 
 The copy, in English, translated once at the merge:
 
-- `home_listen` *Listen* · `home_listening` *Darek is listening* · `home_stop` *Stop* ·
+- `home_listen` *Listen* · `home_listening` *Darek is listening* · `home_hearing` *Darek hears you…* · `home_stop` *Stop* ·
   `home_preparing` *Getting ready…*
 - `home_listen_failed` *Darek couldn't start listening. Try again.*, under the button after a start
   that failed, until the next one

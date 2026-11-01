@@ -26,6 +26,7 @@ data class HomeUiState(
     val listening: Listening.Phase = Listening.Phase.OFF,
     val lastReply: String? = null,
     val listenFailed: Boolean = false,
+    val hearingName: Boolean = false,
     /** The system will not show its dialog again, so Home sends the user to the app's settings. */
     val micDeniedForGood: Boolean = false,
 )
@@ -48,6 +49,7 @@ class HomeViewModel(
                 listening = heard.phase,
                 lastReply = heard.lastReply,
                 listenFailed = heard.failed,
+                hearingName = heard.hearingName,
                 micDeniedForGood = deniedUnder == installedAt,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())

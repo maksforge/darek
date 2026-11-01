@@ -140,6 +140,7 @@ fun HomeScreen(
                 ) {
                     ListenControl(
                         phase = state.listening,
+                        hearingName = state.hearingName,
                         failed = state.listenFailed,
                         onListen = {
                             when {
@@ -192,6 +193,7 @@ fun HomeScreen(
 @Composable
 private fun ListenControl(
     phase: Listening.Phase,
+    hearingName: Boolean,
     failed: Boolean,
     onListen: () -> Unit,
     onStop: () -> Unit,
@@ -219,7 +221,11 @@ private fun ListenControl(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(Spacing.tight),
             ) {
-                Text(stringResource(R.string.home_listening), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(if (hearingName) R.string.home_hearing else R.string.home_listening),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (hearingName) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                )
                 OutlinedButton(onClick = onStop) { Text(stringResource(R.string.home_stop)) }
             }
     }
