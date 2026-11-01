@@ -21,6 +21,7 @@
     <string name="mic_disclosure_body">Darek słucha tylko wtedy, gdy przycisk Słuchaj jest włączony. To, co słyszy, jest przetwarzane na tym telefonie i nigdy nie jest nagrywane ani nigdzie wysyłane.</string>
     <string name="mic_disclosure_continue">Dalej</string>
     <string name="mic_denied">Darek nie usłyszy cię bez mikrofonu.</string>
+    <string name="mic_denied_daria">Daria nie usłyszy cię bez mikrofonu.</string>
     <string name="mic_allow">Zezwól</string>
     <string name="mic_open_settings">Otwórz ustawienia</string>
     <string name="home_tip_ask_title">Ta aplikacja jest darmowa i taka zostanie</string>
@@ -48,7 +49,7 @@
     <string name="settings_restore">Przywróć ustawienia domyślne</string>
     <string name="settings_restore_hint">Kto odpowiada, motyw, kolory i język</string>
     <string name="settings_restore_confirm_title">Przywrócić ustawienia domyślne?</string>
-    <string name="settings_restore_confirm_body">Motyw i kolory wrócą do wartości początkowych, a język do polskiego. Tego nie można cofnąć.</string>
+    <string name="settings_restore_confirm_body">Odpowiadać będzie Darek, motyw i kolory wrócą do wartości początkowych, a język do polskiego. Tego nie można cofnąć.</string>
     <string name="settings_restore_confirm">Przywróć</string>
     <string name="settings_about">O aplikacji</string>
     <string name="settings_support">Pomoc i opinie</string>
