@@ -34,6 +34,11 @@ was extracted from and the first app built from it settled on exactly this split
   a night's battery reading (ADR-0010). An updated microphone disclosure, shown once before the
   first service start whether or not `RECORD_AUDIO` is already granted: phase 1's promised
   listening only with Home on screen
+- [ ] **Phase F** — Fuchy (ADR-0015): Commands stored as fuchy, Darek's own bundled; `INTERNET`
+  (ADR-0008); the native Gigs page, install from it or from a `.darek` file, the signature check and
+  badge, permissions per fucha and for all, updates, *„Zgłoś fuchę"*. The `darek-fuchy` repo and the
+  builder on the site are their own project. Which half of calling a Number lands here and which in
+  phase 3 is decided in `phase-F.md`
 - [ ] **Phase 3** — Safe for a stranger: the user's Numbers for the built-in Commands, which brings
   `CALL_PHONE` and the call into the release, the user's own Reply text for each Command
   (ADR-0014), and the first-run path. It freezes `CALL_PHONE` and the

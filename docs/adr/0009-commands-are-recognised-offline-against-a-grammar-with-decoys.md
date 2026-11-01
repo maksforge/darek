@@ -30,11 +30,14 @@ confidence 1.00. That is the failure this ADR exists to prevent.
 - **The model ships inside the app**, fetched at build time and checked against its SHA-256 rather
   than committed, and is unpacked to `noBackupFilesDir` on first use, never into
   Auto Backup: it is re-derivable from the APK and alone exceeds Auto Backup's 25 MB quota. No
-  download step, no network ([ADR-0008](0008-darek-never-opens-a-network-connection.md)).
-- **The Commands are a fixed catalogue shipped with the app** (*brama*, *garaż*, *furtka*, and
-  *powiedz coś*, which only replies: [ADR-0013](0013-a-command-may-only-reply.md)), each with Decoys
-  tuned for it. The user cannot type a phrase: nothing would choose its Decoys, and Vosk drops
-  grammar words its model does not know.
+  download step, no network ([ADR-0008](0008-darek-connects-only-where-the-user-can-see.md)).
+- **The Commands come in fuchy** ([ADR-0015](0015-darek-takes-on-fuchy.md)): Darek's bundled ones
+  (*brama*, *garaż*, *furtka*, and *powiedz coś*, which only replies:
+  [ADR-0013](0013-a-command-may-only-reply.md)), each with Decoys tuned for it, and the ones the user
+  installs, which may bring Decoys of their own. The user never types a phrase into Darek: a phrase
+  arrives in a fucha, every word of it is checked against the model's vocabulary when it is
+  installed, because Vosk drops grammar words its model does not know, and the name Decoys below
+  apply to every Command whichever fucha it came from.
 - **The grammar is the Commands, the cancel words (*"Darek, stop"*, *"anuluj"*,
   [ADR-0011](0011-the-gate-call-is-placed-through-telecom-after-the-reply.md)) and Decoys**: names and
   words close to the Commands' (*marek, jarek, janek, darka, darku, dawid, otwórz, zamknij, brama*)
@@ -73,5 +76,6 @@ launch without signal. Rejected with ADR-0008.
 - The reading is synthetic speech of isolated phrases. **Phase 1 owes the real one**: real voices,
   the phone's own microphone, at a distance and in a car, and Commands embedded in speech (*"…,
   proszę"*) to check the match rule. Decoys are added from what that reading mishears.
-- A new Command is an app release, with its Decoys read like the first one's.
+- A new bundled Command is an app release, with its Decoys read like the first one's. A fucha's
+  Command is not: its Decoys are its author's, checked by the owner's review.
 - Recognition pauses while Darek speaks, so he does not answer himself (ADR-0011).

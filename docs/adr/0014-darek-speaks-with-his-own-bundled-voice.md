@@ -42,7 +42,7 @@ Read on the host on 2026-11-01:
   Android's `TextToSpeech` is not used. No other app is involved, and every phone has the voice.
 - **ONNX Runtime is pinned at 1.28.0,** the last version without the telemetry provider. The
   manifest also removes `ai.onnxruntime.TelemetryInitializer` with `tools:node="remove"`, beside
-  `INTERNET`'s removal ([ADR-0008](0008-darek-never-opens-a-network-connection.md)), so a later
+  `INTERNET`'s removal ([ADR-0008](0008-darek-connects-only-where-the-user-can-see.md)), so a later
   version cannot switch it on silently. `ACCESS_NETWORK_STATE` stays Play Billing's alone. A bump
   past 1.28.0 re-reads the AAR's manifest first. 1.28.0's 64-bit `.so` files are 16 KB
   page-aligned, which Play requires; a version change re-reads that too.
