@@ -199,7 +199,8 @@ object PolishPhonemes {
     fun phonemize(text: String): String {
         var expanded = temperatureRange.replace(text.lowercase(), ", ")
         expanded = temperature.replace(expanded) { " " + temperatureWords(it) + " " }
-        expanded = clockTime.replace(expanded) { " " + timeWords(it) + " " }
+        val beforeTimes = expanded
+        expanded = clockTime.replace(beforeTimes) { " " + timeWords(it, wordBefore(beforeTimes, it.range.first)) + " " }
         expanded = minusSign.replace(expanded, " minus ")
         expanded = plusSign.replace(expanded, " plus ")
         expanded = digitRun.replace(expanded) { " " + spokenNumber(it.value) + " " }
@@ -288,10 +289,40 @@ object PolishPhonemes {
         return (List(digits.length - significant.length) { "zero" } + spokenNumber(significant)).joinToString(" ")
     }
 
-    private fun timeWords(time: MatchResult): String {
+    private val hourInGenitiveOrLocative = setOf("o", "po", "do", "od", "około", "koło", "w")
+    private val hourInAccusativeOrInstrumental = setOf("na", "przed", "między", "pomiędzy")
+
+    private fun wordBefore(
+        text: String,
+        end: Int,
+    ): String = Regex("([a-ząćęłńóśźż]+)\\s*$").find(text.substring(0, end))?.groupValues?.get(1) ?: ""
+
+    private fun hourAfter(
+        preposition: String,
+        hour: Int,
+    ): String {
+        val ending =
+            when (preposition) {
+                in hourInGenitiveOrLocative -> "ej"
+                in hourInAccusativeOrInstrumental -> "ą"
+                else -> return hours[hour]
+            }
+        return hours[hour].split(' ').joinToString(" ") { ordinal ->
+            when {
+                !ordinal.endsWith('a') -> ordinal
+                ending == "ej" && ordinal.dropLast(1).last() in "gk" -> ordinal.dropLast(1) + "iej"
+                else -> ordinal.dropLast(1) + ending
+            }
+        }
+    }
+
+    private fun timeWords(
+        time: MatchResult,
+        preposition: String,
+    ): String {
         val hour = time.groupValues[1].toInt()
         val minute = time.groupValues[2].toLong()
-        val words = mutableListOf(hours[hour])
+        val words = mutableListOf(hourAfter(preposition, hour))
         if (minute in 1..9) {
             words += listOf("zero", numberWords(minute))
         } else if (minute != 0L || hour == 0) {

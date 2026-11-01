@@ -65,6 +65,18 @@ class PolishPhonemesTest {
     }
 
     @Test
+    fun `a preposition puts the hour in the case it governs`() {
+        same("a o 7:05 zadzwoni", "a o siódmej zero pięć zadzwoni")
+        same("po 21:30", "po dwudziestej pierwszej trzydzieści")
+        same("do 2:15", "do drugiej piętnaście")
+        same("około 13:00", "około trzynastej")
+        same("na 7:00", "na siódmą")
+        same("przed 22:10", "przed dwudziestą drugą dziesięć")
+        same("jest 7:05", "jest siódma zero pięć")
+        same("o 00:00", "o zero zero")
+    }
+
+    @Test
     fun `only a colon makes a clock time, never a date, a price or a version`() {
         same("12.05.2026", "dwanaście. pięć. dwa tysiące dwadzieścia sześć")
         same("3.50 zł", "trzy. pięćdziesiąt zł")
@@ -93,7 +105,7 @@ class PolishPhonemesTest {
         same("od 15-20°C", "od piętnaście, dwadzieścia stopni celsjusza")
         same("15 - 20°", "piętnaście, dwadzieścia stopni")
         same("5 -3°C", "pięć minus trzy stopnie celsjusza")
-        same("O 6:00 -3°C", "o szósta minus trzy stopnie celsjusza")
+        same("O 6:00 -3°C", "o szóstej minus trzy stopnie celsjusza")
         same("10:30-12°C", "dziesiąta trzydzieści minus dwanaście stopni celsjusza")
     }
 
