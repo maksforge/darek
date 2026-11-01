@@ -18,6 +18,10 @@ Darek's own bundled voice ([ADR-0014](0014-darek-speaks-with-his-own-bundled-voi
 that merges one has it removed with `tools:node="remove"` and must work without it; a library that
 cannot is not used. The tip's Play Billing Library is the known case: its `INTERNET` is removed as
 [ADR-0007](0007-the-tip-is-a-play-billing-consumable-that-unlocks-nothing.md) describes.
+ONNX Runtime, which runs Darek's voice, is the other: from 1.29.0 it merges `INTERNET`,
+`ACCESS_NETWORK_STATE` and a telemetry provider that posts to Microsoft. It is pinned at 1.28.0,
+which merges none of them, and the manifest removes the provider anyway
+([ADR-0014](0014-darek-speaks-with-his-own-bundled-voice.md)).
 **`ACCESS_NETWORK_STATE` is allowed only as Play Billing's merge** under ADR-0007: reading network
 state opens no connection.
 

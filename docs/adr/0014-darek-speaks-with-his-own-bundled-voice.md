@@ -23,7 +23,14 @@ Read on the host on 2026-11-01:
   assimilation, final devoicing, penultimate stress and numbers as words. On the 3,000 most frequent
   Polish words it agrees with eSpeak exactly on 92.4%, with a phoneme error rate of 1.4%. Most
   differences are English names, abbreviations and eSpeak's own slips (*musimy* is [muˈɕimɨ], not
-  eSpeak's [muˈsimɨ]).
+  eSpeak's [muˈsimɨ]). The rules were written from Polish orthography, not ported from eSpeak's
+  `pl_rules` or `pl_list`; eSpeak was only the comparison oracle on the host. They are committed as
+  `scripts/voice/g2p_reference.py`.
+- **The runtime.** `onnxruntime-android` from **1.29.0** on (still in 1.31.1) merges `INTERNET`,
+  `ACCESS_NETWORK_STATE` and a `ContentProvider`, `ai.onnxruntime.TelemetryInitializer`, that starts
+  at process start and posts usage data to Microsoft. **1.28.0** merges none of them. Its
+  `jni/arm64-v8a/libonnxruntime.so` is 28.6 MB (x86_64: 34.6 MB), and every `LOAD` segment of both
+  64-bit libraries is aligned to 16 KB (`0x4000`).
 - **The sound.** The owner heard the same sentence through our rules and through eSpeak, and went
   ahead with ours on 2026-11-01. Whether int8 sounds as good as the full model is judged by ear on
   the phone (phase 1, R3). If it does not, the full 63 MB model ships instead.
@@ -33,8 +40,15 @@ Read on the host on 2026-11-01:
 - **The Reply is spoken by Darek's own voice:** the mc_speech model, int8, run by ONNX Runtime for
   Android (`com.microsoft.onnxruntime:onnxruntime-android`, MIT), and played through `AudioTrack`.
   Android's `TextToSpeech` is not used. No other app is involved, and every phone has the voice.
+- **ONNX Runtime is pinned at 1.28.0,** the last version without the telemetry provider. The
+  manifest also removes `ai.onnxruntime.TelemetryInitializer` with `tools:node="remove"`, beside
+  `INTERNET`'s removal ([ADR-0008](0008-darek-never-opens-a-network-connection.md)), so a later
+  version cannot switch it on silently. `ACCESS_NETWORK_STATE` stays Play Billing's alone. A bump
+  past 1.28.0 re-reads the AAR's manifest first. 1.28.0's 64-bit `.so` files are 16 KB
+  page-aligned, which Play requires; a version change re-reads that too.
 - **Text becomes phonemes through our own rules,** `speak/PolishPhonemes.kt`, mapped to the model's
-  ids from its `phoneme_id_map`. No eSpeak, no GPL code.
+  ids from its `phoneme_id_map`: `^`, then each codepoint's id followed by the pad `_`, then `$`
+  (phase 1, section 3). No eSpeak, no GPL code.
 - **The model ships inside the app.** It is fetched at build time from a release asset of this repo,
   pinned by SHA-256, as the recogniser's model is (ADR-0009). It is loaded straight from the APK's
   assets into the ONNX session, with nothing unpacked.
@@ -53,6 +67,10 @@ Reply the user types.
 
 **Piper or sherpa-onnx with eSpeak NG.** No rules to write, but GPL-3.0 inside the app.
 
+**A reduced-operator ONNX Runtime build** (an ORT-format model and only the operators it uses).
+It brings the native library down to a few MB, at the cost of building ONNX Runtime ourselves: a
+custom native build in CI, redone for every version. Kept for the day the size reading hurts.
+
 **Other free Polish voices.** Piper's *darkman* and *gosia* carry the same licence question as
 mc_speech (below). Meta's MMS-TTS and Coqui's XTTS are non-commercial.
 
@@ -64,7 +82,10 @@ mc_speech (below). Meta's MMS-TTS and Coqui's XTTS are non-commercial.
   Whether that reaches a fine-tuned model is unsettled. The Licences screen credits the voice with
   both facts. The way out is a voice trained from scratch on the CC0 MC Speech recordings, which
   swaps a file and changes no code.
-- About 19 MB more in the app, plus ONNX Runtime's native library, measured in phase 1.
+- About 48 MB more installed on an arm64 phone: the 19 MB model and the 28.6 MB `libonnxruntime.so`,
+  which AGP stores uncompressed in the APK. Phase 1 reads the real total (R10).
+- ONNX Runtime's version is held back on purpose. A newer one means reading its manifest for
+  anything that reaches the network, the way ADR-0007 found `datatransport` behind billing.
 - Synthesis runs on the phone's CPU each time a Reply is spoken. Fixed Replies can be rendered once
   and cached in memory.
 - The pronunciation rules are ours to maintain. A mispronounced word is a rule fix with a test, not
