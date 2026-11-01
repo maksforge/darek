@@ -91,6 +91,9 @@ EXPECTED = {
     # applicationId, which differs between the debug and release builds, so it is
     # matched by suffix rather than spelled out.
     "*.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION": "AndroidX, signature-level",
+    # Słuchaj (ADR-0009): asked for on its first tap, after the disclosure. It implies
+    # android.hardware.microphone as required, accepted: a phone without one cannot use Darek.
+    "android.permission.RECORD_AUDIO": "Słuchaj — the recogniser, on the phone only (ADR-0009)",
 }
 
 # Permissions that must never appear. Absence is what the Data safety answers

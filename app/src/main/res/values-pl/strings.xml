@@ -8,7 +8,16 @@
     supplying only `one` and `other` here would be a red build, not a silently wrong app.
 -->
 <resources>
-    <string name="home_listening_placeholder">Tu Darek będzie słuchał.</string>
+    <string name="home_listen">Słuchaj</string>
+    <string name="home_listening">Darek słucha</string>
+    <string name="home_stop">Zatrzymaj</string>
+    <string name="home_preparing">Przygotowuję…</string>
+    <string name="mic_disclosure_title">Darek potrzebuje mikrofonu</string>
+    <string name="mic_disclosure_body">Darek słucha tylko wtedy, gdy przycisk Słuchaj jest włączony. To, co słyszy, jest przetwarzane na tym telefonie i nigdy nie jest nagrywane ani nigdzie wysyłane.</string>
+    <string name="mic_disclosure_continue">Dalej</string>
+    <string name="mic_denied">Darek nie usłyszy cię bez mikrofonu.</string>
+    <string name="mic_allow">Zezwól</string>
+    <string name="mic_open_settings">Otwórz ustawienia</string>
     <string name="home_tip_ask_title">Ta aplikacja jest darmowa i taka zostanie</string>
     <string name="home_tip_ask_body">Jeśli ci się przydaje, możesz zostawić twórcy napiwek. Niczego nie odblokowuje, a na tym telefonie aplikacja więcej o to nie zapyta.</string>
     <string name="home_tip_ask_accept">Zostaw napiwek</string>

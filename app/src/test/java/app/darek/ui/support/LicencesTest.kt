@@ -56,4 +56,19 @@ class LicencesTest {
         // which is the right place for the decision — one caller, one policy.
         assertThrows(Exception::class.java) { groupLicences("not json") }
     }
+
+    @Test
+    fun `the bundled models join their licences, the voice under each of its three`() {
+        val report =
+            """
+            [{"groupId":"a","artifactId":"one","version":"1.0",
+              "spdxLicenses":[{"identifier":"MIT","name":"MIT License"}]}]
+            """.trimIndent()
+        val groups = groupLicences(report, BUNDLED_MODELS)
+        val voiceIn = groups.filter { group -> group.artifacts.any { it.artifactId == "pl_PL-mc_speech-medium" } }
+        assertEquals(listOf("CC0-1.0", "MIT", null), voiceIn.map { it.spdxId })
+        assertEquals(2, groups.single { it.spdxId == "MIT" }.artifacts.size)
+        val apache = groups.single { it.spdxId == "Apache-2.0" }
+        assertTrue(apache.artifacts.any { it.artifactId == "vosk-model-small-pl" })
+    }
 }

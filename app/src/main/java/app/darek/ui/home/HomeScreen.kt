@@ -1,5 +1,16 @@
 package app.darek.ui.home
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,26 +18,46 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.darek.R
+import app.darek.listen.Listening
 import app.darek.theme.Spacing
 import app.darek.ui.appViewModelExtras
+import app.darek.ui.common.startActivitySafely
 
-/** Darek's one screen. The line in the middle holds the place of the Listening switch (phase 2). */
+/**
+ * Darek's one screen: *Słuchaj* and the last Reply. In phase 1 the microphone belongs to the visible
+ * screen, so Listening stops at `ON_STOP` and keeps the screen on while it runs.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -37,6 +68,37 @@ fun HomeScreen(
         viewModel(factory = HomeViewModel.Factory, extras = appViewModelExtras()),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val activity = LocalActivity.current
+    var granted by remember { mutableStateOf(context.hasMicrophone()) }
+    var deniedNow by rememberSaveable { mutableStateOf(false) }
+    var disclosing by rememberSaveable { mutableStateOf(false) }
+    var rationaleBefore by remember { mutableStateOf(false) }
+
+    val ask =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+            granted = ok
+            deniedNow = !ok
+            viewModel.onMicAnswer(ok, rationaleBefore, activity?.rationaleDue() ?: false)
+        }
+    val request = {
+        rationaleBefore = activity?.rationaleDue() ?: false
+        ask.launch(Manifest.permission.RECORD_AUDIO)
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        granted = context.hasMicrophone()
+        if (granted) deniedNow = false
+        viewModel.onMicGrantRead(granted)
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.stopListening() }
+
+    val view = LocalView.current
+    val listening = state.listening != Listening.Phase.OFF
+    DisposableEffect(listening) {
+        view.keepScreenOn = listening
+        onDispose { view.keepScreenOn = false }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -65,13 +127,111 @@ fun HomeScreen(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = stringResource(R.string.home_listening_placeholder),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.base),
+                ) {
+                    ListenControl(
+                        phase = state.listening,
+                        onListen = {
+                            when {
+                                granted -> viewModel.listen()
+                                state.micDeniedForGood -> context.openAppSettings()
+                                else -> disclosing = true
+                            }
+                        },
+                        onStop = viewModel::stopListening,
+                    )
+                    state.lastReply?.let { reply ->
+                        Text(
+                            text = "„$reply”",
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                    if (!granted && (deniedNow || state.micDeniedForGood)) {
+                        MicDenied(
+                            forGood = state.micDeniedForGood,
+                            onAllow = request,
+                            onOpenSettings = context::openAppSettings,
+                        )
+                    }
+                }
             }
         }
     }
+
+    if (disclosing) {
+        ModalBottomSheet(onDismissRequest = { disclosing = false }) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.base).padding(bottom = Spacing.base),
+                verticalArrangement = Arrangement.spacedBy(Spacing.snug),
+            ) {
+                Text(stringResource(R.string.mic_disclosure_title), style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(R.string.mic_disclosure_body), style = MaterialTheme.typography.bodyLarge)
+                Button(
+                    onClick = {
+                        disclosing = false
+                        request()
+                    },
+                    modifier = Modifier.align(Alignment.End),
+                ) { Text(stringResource(R.string.mic_disclosure_continue)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ListenControl(
+    phase: Listening.Phase,
+    onListen: () -> Unit,
+    onStop: () -> Unit,
+) {
+    when (phase) {
+        Listening.Phase.OFF ->
+            Button(onClick = onListen) { Text(stringResource(R.string.home_listen)) }
+        Listening.Phase.PREPARING ->
+            Button(onClick = {}, enabled = false) { Text(stringResource(R.string.home_preparing)) }
+        Listening.Phase.ON ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(Spacing.tight),
+            ) {
+                Text(stringResource(R.string.home_listening), style = MaterialTheme.typography.titleMedium)
+                OutlinedButton(onClick = onStop) { Text(stringResource(R.string.home_stop)) }
+            }
+    }
+}
+
+@Composable
+private fun MicDenied(
+    forGood: Boolean,
+    onAllow: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = stringResource(R.string.mic_denied),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+            textAlign = TextAlign.Center,
+        )
+        if (forGood) {
+            TextButton(onClick = onOpenSettings) { Text(stringResource(R.string.mic_open_settings)) }
+        } else {
+            TextButton(onClick = onAllow) { Text(stringResource(R.string.mic_allow)) }
+        }
+    }
+}
+
+private fun Context.hasMicrophone(): Boolean =
+    ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+
+private fun Activity.rationaleDue(): Boolean =
+    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)
+
+private fun Context.openAppSettings() {
+    startActivitySafely(
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)),
+    )
 }

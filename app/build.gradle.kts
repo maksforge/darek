@@ -352,49 +352,42 @@ data class VerifiedAsset(
 )
 
 // Darek's voice (ADR-0014): the int8 model and its config, published by `scripts/voice/quantize.py`
-// as assets of this repo's `voice-pl-mc_speech-int8-1` release. `-PfullVoice` adds the 63 MB
-// original for phase 1's R3 comparison; no other build carries it. The recogniser's model is
-// ADR-0009's, unzipped to `vosk/vosk-model-small-pl-0.22/`.
+// as assets of this repo's `voice-pl-mc_speech-int8-1` release. The recogniser's model is
+// ADR-0009's, unzipped to `vosk/vosk-model-small-pl-0.22/`. `-PfullVoice` adds the 63 MB original
+// voice to the debug build for phase 1's R3 comparison; no other build carries it.
 private val voiceRelease = "https://github.com/maksforge/darek/releases/download/voice-pl-mc_speech-int8-1"
-private val debugAssets =
-    buildList {
-        add(
-            VerifiedAsset(
-                "$voiceRelease/pl_PL-mc_speech-medium-int8.onnx",
-                "4bca76cb9d30784bbfc06dcb7ced07fa67a2db1ea0c4a2d17bf5e06a06596e79",
-                "voice/voice.onnx",
-            ),
-        )
-        add(
-            VerifiedAsset(
-                "$voiceRelease/pl_PL-mc_speech-medium-int8.onnx.json",
-                "b8bb11228e15c505219846a88fdc129e93f57e774ed7f9bac263156d1aa3d324",
-                "voice/voice.onnx.json",
-            ),
-        )
-        if (providers.gradleProperty("fullVoice").isPresent) {
-            add(
-                VerifiedAsset(
-                    "https://huggingface.co/rhasspy/piper-voices/resolve/main/pl/pl_PL/mc_speech/medium/pl_PL-mc_speech-medium.onnx",
-                    "a6b043358bc81e6c111a5140606a21959ce7f34969b8b7207f62869787cc3907",
-                    "voice/voice-full.onnx",
-                ),
-            )
-        }
-        add(
-            VerifiedAsset(
-                "https://alphacephei.com/vosk/models/vosk-model-small-pl-0.22.zip",
-                "c4cd16498ea544f446f9e9a55cbd602b71cfe5a2b6f2b0834d81e1b6fce15f0d",
-                "vosk",
-                unzip = true,
-            ),
-        )
-    }
+private val shippedAssets =
+    listOf(
+        VerifiedAsset(
+            "$voiceRelease/pl_PL-mc_speech-medium-int8.onnx",
+            "4bca76cb9d30784bbfc06dcb7ced07fa67a2db1ea0c4a2d17bf5e06a06596e79",
+            "voice/voice.onnx",
+        ),
+        VerifiedAsset(
+            "$voiceRelease/pl_PL-mc_speech-medium-int8.onnx.json",
+            "b8bb11228e15c505219846a88fdc129e93f57e774ed7f9bac263156d1aa3d324",
+            "voice/voice.onnx.json",
+        ),
+        VerifiedAsset(
+            "https://alphacephei.com/vosk/models/vosk-model-small-pl-0.22.zip",
+            "c4cd16498ea544f446f9e9a55cbd602b71cfe5a2b6f2b0834d81e1b6fce15f0d",
+            "vosk",
+            unzip = true,
+        ),
+    )
+private val fullVoice =
+    VerifiedAsset(
+        "https://huggingface.co/rhasspy/piper-voices/resolve/main/pl/pl_PL/mc_speech/medium/pl_PL-mc_speech-medium.onnx",
+        "a6b043358bc81e6c111a5140606a21959ce7f34969b8b7207f62869787cc3907",
+        "voice/voice-full.onnx",
+    )
+private val withFullVoice = providers.gradleProperty("fullVoice").isPresent
 
 androidComponents {
-    onVariants(selector().withBuildType("debug")) { variant ->
+    onVariants { variant ->
         val suffix = variant.name.replaceFirstChar(Char::uppercase)
-        debugAssets.forEach { asset ->
+        val assets = if (withFullVoice && variant.buildType == "debug") shippedAssets + fullVoice else shippedAssets
+        assets.forEach { asset ->
             val name = asset.url.substringAfterLast('/').replace(Regex("[^A-Za-z0-9]"), "")
             val fetch =
                 tasks.register<FetchVerifiedAsset>("fetch${suffix}Asset$name") {
@@ -461,9 +454,9 @@ dependencies {
     // Reads licensee's report for the Licences screen.
     implementation(libs.kotlinx.serialization.json)
 
-    // Darek's voice (ADR-0014) and his ears (ADR-0009), debug-only until phase 1's checkpoint B.
-    debugImplementation(libs.onnxruntime.android)
-    debugImplementation(libs.vosk.android)
+    // Darek's voice (ADR-0014) and his ears (ADR-0009).
+    implementation(libs.onnxruntime.android)
+    implementation(libs.vosk.android)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

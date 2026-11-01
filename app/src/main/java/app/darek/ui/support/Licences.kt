@@ -83,6 +83,47 @@ data class LicenceGroup(
 )
 
 /**
+ * The two models the build fetches as files rather than Maven artifacts, which licensee never sees:
+ * the recogniser's (ADR-0009) and Darek's voice (ADR-0014), whose base voice's terms are named as
+ * that ADR states them.
+ */
+val BUNDLED_MODELS =
+    listOf(
+        LicensedArtifact(
+            groupId = "com.alphacephei",
+            artifactId = "vosk-model-small-pl",
+            version = "0.22",
+            name = "Vosk Polish speech model",
+            spdxLicenses =
+                listOf(
+                    SpdxLicence("Apache-2.0", "Apache License 2.0", "https://alphacephei.com/vosk/models"),
+                ),
+        ),
+        LicensedArtifact(
+            groupId = "rhasspy.piper-voices",
+            artifactId = "pl_PL-mc_speech-medium",
+            version = "int8-1",
+            name = "Darek's voice: Piper pl_PL mc_speech",
+            spdxLicenses =
+                listOf(
+                    SpdxLicence(
+                        "MIT",
+                        "MIT License",
+                        "https://huggingface.co/rhasspy/piper-voices/blob/main/pl/pl_PL/mc_speech/medium/MODEL_CARD",
+                    ),
+                    SpdxLicence("CC0-1.0", "Creative Commons Zero v1.0 Universal (MC Speech recordings)"),
+                ),
+            unknownLicenses =
+                listOf(
+                    UnknownLicence(
+                        "Blizzard 2013 lessac recordings, the base voice it was fine-tuned from: research use only",
+                        "https://www.cstr.ed.ac.uk/projects/blizzard/2013/lessac_blizzard2013/license.html",
+                    ),
+                ),
+        ),
+    )
+
+/**
  * Lenient on purpose — see the file header. `isLenient` is *not* set: the input is machine-written
  * JSON, and accepting malformed input would only hide a broken generator.
  */
@@ -100,8 +141,11 @@ private val json = Json { ignoreUnknownKeys = true }
  * which the sort at the end then replaces; it is used for determinism while building, not for the
  * final order.
  */
-fun groupLicences(report: String): List<LicenceGroup> {
-    val artifacts = json.decodeFromString<List<LicensedArtifact>>(report)
+fun groupLicences(
+    report: String,
+    bundled: List<LicensedArtifact> = emptyList(),
+): List<LicenceGroup> {
+    val artifacts = json.decodeFromString<List<LicensedArtifact>>(report) + bundled
 
     // Key → (title, spdxId, url). The key is the identity of the licence itself: an SPDX identifier
     // where there is one, and the terms' own URL otherwise, so two POMs spelling the same terms with

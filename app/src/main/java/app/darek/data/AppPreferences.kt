@@ -47,6 +47,7 @@ class AppPreferences(
         val MATERIAL_YOU = booleanPreferencesKey("material_you")
         val TIP_ANSWERED_UNDER = longPreferencesKey("tip_answered_under")
         val LANGUAGE_JUDGED_UNDER = longPreferencesKey("language_judged_under")
+        val MIC_DENIED_UNDER = longPreferencesKey("mic_denied_under")
 
         /** What *Restore to default* removes: everything the user chose, so each reads its default again. */
         val SETTINGS: List<Preferences.Key<*>> =
@@ -63,6 +64,7 @@ class AppPreferences(
             listOf(
                 TIP_ANSWERED_UNDER,
                 LANGUAGE_JUDGED_UNDER,
+                MIC_DENIED_UNDER,
             )
     }
 
@@ -104,6 +106,16 @@ class AppPreferences(
         }
 
     /**
+     * The `firstInstallTime` under which the microphone was denied for good, so Home offers the
+     * app's settings instead of a dialog the system will no longer show. A later launch cannot tell
+     * this from the grant alone; it is cleared once the grant is found.
+     */
+    val micDeniedUnder: Flow<Instant?> =
+        store.data.map { prefs ->
+            prefs[Keys.MIC_DENIED_UNDER]?.let(Instant::ofEpochMilli)
+        }
+
+    /**
      * The theme mode, read once, before any Activity exists.
      *
      * The one place a `suspend` read is worth its cost: `MainApplication.onCreate` needs the answer
@@ -123,6 +135,18 @@ class AppPreferences(
 
     suspend fun markTipAnswered(installedAt: Instant) {
         store.edit { it[Keys.TIP_ANSWERED_UNDER] = installedAt.toEpochMilli() }
+    }
+
+    suspend fun setMicDenied(installedAt: Instant?) {
+        store.edit { prefs ->
+            if (installedAt ==
+                null
+            ) {
+                prefs.remove(Keys.MIC_DENIED_UNDER)
+            } else {
+                prefs[Keys.MIC_DENIED_UNDER] = installedAt.toEpochMilli()
+            }
+        }
     }
 
     suspend fun markLanguageJudged(installedAt: Instant) {
