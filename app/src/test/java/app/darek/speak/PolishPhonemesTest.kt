@@ -92,6 +92,9 @@ class PolishPhonemesTest {
     fun `a temperature range reads as two numbers, not a minus`() {
         same("od 15-20°C", "od piętnaście, dwadzieścia stopni celsjusza")
         same("15 - 20°", "piętnaście, dwadzieścia stopni")
+        same("5 -3°C", "pięć minus trzy stopnie celsjusza")
+        same("O 6:00 -3°C", "o szósta minus trzy stopnie celsjusza")
+        same("10:30-12°C", "dziesiąta trzydzieści minus dwanaście stopni celsjusza")
     }
 
     @Test
