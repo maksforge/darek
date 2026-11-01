@@ -251,6 +251,10 @@ on screen from the moment the Command fires, so a user with no voice or the soun
 about to happen. This is one pure function, `speak/ReplyEnd.kt`, over the engine's events and a
 clock.
 
+The no-voice dial holds **for this phase only**, because Listening exists only while Home is on
+screen and the shown Reply is seen. With the phone in a pocket it is neither heard nor seen, so
+whether a Command that calls may dial without a voice there is left open for phase 2 (ADR-0011).
+
 **Home** loses its placeholder line and gains, in the middle:
 - **The *Słuchaj* button.** Off, it says *Słuchaj*; on, *Darek słucha* with *Zatrzymaj*. It turns
   itself off when Home leaves the screen (`ON_STOP`), because in this phase the microphone belongs
@@ -353,7 +357,8 @@ The copy, in English, translated once at the merge:
   UTF-8 grammar; Commands that only reply), **ADR-0011** (it applies to Commands that call; the
   HyperOS background question moves to phase 2; when a Reply is finished, and a shown Reply without
   a voice; stopping Listening cancels a pending dial; cancel words only after the Reply) and
-  **ADR-0012** (without a voice the Reply is shown) edited in place. In this PR.
+  **ADR-0012** (without a voice the Reply is shown, and a Command still acts, in phase 1 only)
+  edited in place. In this PR.
 - **`CONTEXT.md`**: *Command*, *Reply* and *Listening*. In this PR.
 - **`PLAN.md`**: phase 1's and phase 3's lines, and the asks table rule 4 asks for. In this PR.
 - **In the release that ships B** (`DOD.md`, *Before the next upload*):
@@ -388,6 +393,8 @@ The copy, in English, translated once at the merge:
 - **~145 MB on the phone after the first *Słuchaj*.** It is the APK's copy plus the unpacked model.
   Removing the APK's copy means a download (ADR-0008 forbids it) or an install-time asset pack,
   which is still unpacked by us. Not worth it for one model.
+- **A Command that calls, with no voice, in phase 2** is not decided here: this phase dials on a
+  shown Reply because Home is on screen. ADR-0011 leaves the pocket case to phase 2.
 - **HyperOS and `placeCall` from the background** is unanswerable here: phase 1 dials only with the
   app open. ADR-0011 now gives it to phase 2.
 - **Dual-SIM phones set to *ask every time*** may show a SIM chooser on `placeCall`. R7 reads whether
