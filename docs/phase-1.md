@@ -48,12 +48,13 @@ release AAB declares `RECORD_AUDIO` and not `CALL_PHONE`. Spoken to from 3 m, th
 - **The model is 53 MB zipped (SHA-256 `c4cd1649…6fce15f0d`) and 92 MB unpacked.** ADR-0009 said
   ~50 MB unpacked, which was wrong; it is corrected. After the first run the phone holds both the copy
   inside the APK and the unpacked one, ~145 MB in all.
-- **Darek's voice has a host reading** from 2026-11-01 (ADR-0014): Piper's mc_speech model, int8 at
-  19 MB, driven by our own Polish pronunciation rules. The rules agree with eSpeak on 92.4% of the
-  3,000 most frequent Polish words (1.4% phoneme error rate), and the model renders 4.6 s of speech
-  in 0.09 s on the PC. How fast it is on a 2019 phone, and whether int8 sounds as good as the full
-  model, are R3. The rules' Python prototype is committed as `scripts/voice/g2p_reference.py`, the
-  reference the Kotlin port is tested against (*Tests*). ONNX Runtime is pinned at 1.28.0, the last
+- **Darek's voice has a host reading** from 2026-11-01 (ADR-0014): Piper's mc_speech model, driven
+  by our own Polish pronunciation rules. The rules agree with eSpeak on 92.4% of the 3,000 most
+  frequent Polish words (1.4% phoneme error rate), and the model renders 4.6 s of speech in 0.09 s
+  on the PC. It was read as an int8 quantisation at 19 MB; R3 then chose the full model, at 63 MB,
+  for its sound, and on the test phone it is the faster of the two as well. The rules' Python
+  prototype is committed as `scripts/voice/g2p_reference.py`, the reference the Kotlin port is
+  tested against (*Tests*). ONNX Runtime is pinned at 1.28.0, the last
   version without a telemetry provider (ADR-0014).
 - **The release is minified** (`isMinifyEnabled = true`). JNA finds Vosk's native methods by
   reflection. Without keep rules for `com.sun.jna.**` and `org.vosk.**`, JNA's native side aborts
@@ -118,8 +119,8 @@ cut a release with no change a user can see. B moves the dependency and the mode
 
 **Why V is separate from A, and also a `chore:`.** V touches nothing A does, so the two run in
 either order. Like A it is debug-only until B moves it to `main`. It is its own checkpoint because
-it has its own risk: the phone's speed and the int8 sound (R3). If either fails, the fallback (the
-full model, or a smaller voice) is chosen before B builds on it. V's manifest removes
+it has its own risk: the phone's speed and the model's sound (R3). R3 read the int8 quantisation V
+first shipped against the full model and chose the full one, at 63 MB, before B builds on it. V's manifest removes
 `ai.onnxruntime.TelemetryInitializer` with `tools:node="remove"` beside `INTERNET`'s removal, and
 pins `onnxruntime-android` at 1.28.0 (ADR-0014); a bump past it re-reads the AAR's manifest.
 
@@ -500,7 +501,7 @@ The copy, in English, translated once at the merge:
 | --- | --- | --- | --- |
 | R1 | The gate script (section 1) on the test phone, debug build, probe | `adb logcat -s DarekProbe` while the owner reads the script | |
 | R2 | The same on the owner's phone | as R1, `-s 132bc856` | |
-| R3 | Darek's voice on each phone: model load time, synthesis time for each fixed Reply, what finished each Reply, and the owner's ear on int8 against the full model | the `DarekVoice` log lines from V's *say this* field, both models (`-PfullVoice`) | **Test phone, int8, 2026-11-01:** load 3.5–3.7 s cold; *„Co tam, mordo?"* 1.3 s of speech in 0.6 s, longer sentences at ~0.45× real time (5.5 s in 2.5 s); every Reply ended on the marker. The owner heard it, and asked for formal clock times, now in. **Owner's phone, int8, 2026-11-01:** load 1.9 s; ~0.25× real time (8.5 s of speech in 2.0 s); all four samples ended on the marker. **Owner's phone, int8 against full, 2026-11-01:** the owner heard "a big difference" and chose the full model. **Test phone, full model, 2026-11-01:** load 2.4 s cold; *„Co tam, mordo?"* 1.2 s of speech in 0.27 s, longer sentences at ~0.18–0.2× real time (8.6 s in 1.6 s); all seven samples ended on the marker. The full model is faster than int8 on this phone as well as better |
+| R3 | Darek's voice on each phone: model load time, synthesis time for each fixed Reply, what finished each Reply, and the owner's ear on the voice | the `DarekVoice` log lines from V's *say this* field | **Test phone, int8, 2026-11-01:** load 3.5–3.7 s cold; *„Co tam, mordo?"* 1.3 s of speech in 0.6 s, longer sentences at ~0.45× real time (5.5 s in 2.5 s); every Reply ended on the marker. The owner heard it, and asked for formal clock times, now in. **Owner's phone, int8, 2026-11-01:** load 1.9 s; ~0.25× real time (8.5 s of speech in 2.0 s); all four samples ended on the marker. **Owner's phone, int8 against full, 2026-11-01:** the owner heard "a big difference" and chose the full model. **Test phone, full model, 2026-11-01:** load 2.4 s cold; *„Co tam, mordo?"* 1.2 s of speech in 0.27 s, longer sentences at ~0.18–0.2× real time (8.6 s in 1.6 s); all seven samples ended on the marker. The full model is faster than int8 on this phone as well as better. **Done:** the int8-against-full comparison is settled, and the full model ships (ADR-0014) |
 | R4 | End to end on `-PreleaseShapedDebug`: *Słuchaj* → *"Hej Darek, powiedz coś"* → *„Co tam, mordo?"* heard and shown, and finished by the marker, on both phones | `./gradlew installDebug -PreleaseShapedDebug`, then the screen, `screencap` and `adb logcat -s DarekVoice` | |
 | R5 | Denial: deny once → *Zezwól*; deny again → *Otwórz ustawienia* opens the app's details screen; a first dialog dismissed with Back → still *Zezwól* | *Deny* tapped in the real system dialog, then the screen; `adb uninstall` and reinstall between runs (`pm revoke` sets neither the user-set nor the user-fixed flag, so it reproduces no denial) | |
 | R6 | First unpack time on the test phone, and that a killed half-unpack is redone | `DarekModel` log line; `adb shell am force-stop` mid-unpack, relaunch, `run-as … ls no_backup` | **Probe, test phone, `-PreleaseShapedDebug`, 2026-11-01:** unpack 755 ms, model load 893 ms (`DarekProbe`'s `model` line, after `pm clear`). Owed: the same from *Słuchaj*, and the killed half-unpack |
